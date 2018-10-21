@@ -10,7 +10,7 @@ function config(_, argv) {
     entry: './src/index.ts',
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: PROD_MODE ? 'leaflet-map.min.js' : 'leaflet-map.js',
+      filename: PROD_MODE ? 'leaflet-layer.min.js' : 'leaflet-layer.js',
       library: 'leafletMap',
       libraryTarget: 'umd',
     },

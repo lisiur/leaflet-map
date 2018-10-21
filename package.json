@@ -1,8 +1,8 @@
 {
-  "name": "leaflet-map",
+  "name": "leaflet-layer",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/leaflet-map.js",
+  "main": "./dist/leaflet-layer.js",
   "types": "./dist/typings/index.d.ts",
   "scripts": {
     "build:prod": "npx webpack --mode production",

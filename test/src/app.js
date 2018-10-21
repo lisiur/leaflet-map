@@ -1,5 +1,5 @@
 // @ts-ignore
-import leafletMap from '../../../leaflet-map'
+import leafletMap from '../../../leaflet-layer'
 
 // @ts-ignore
 const L = window.L
