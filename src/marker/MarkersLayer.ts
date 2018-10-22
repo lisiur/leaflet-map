@@ -363,6 +363,7 @@ export default class MarkersLayer {
             `
           }
         }
+        break
       }
       case 'segmented': {
         switch (this.options.iconType) {
@@ -401,6 +402,7 @@ export default class MarkersLayer {
             `
           }
         }
+        break
       }
       default: {
         throw new Error(

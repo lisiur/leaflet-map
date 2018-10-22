@@ -17,7 +17,7 @@ interface PolygonLayerOptions extends L.PolylineOptions {
   segmentedAttr?: string
   segmentedColors?: string[]
 }
-export default class PolygonLayer {
+export default class PolygonsLayer {
   private map: L.Map
   private dataList: DataListItem[]
   private options: PolygonLayerOptions
