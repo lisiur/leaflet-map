@@ -109,6 +109,8 @@ export default class MarkersLayer {
     this.segmentedMin = Infinity
     this.segmentedStep = 1
 
+    // 缓存 segment 相关数据
+    this.cacheSegmentParams()
     this.initMarkers()
   }
   public draw(options?: MarkersLayerOptions) {
@@ -191,9 +193,6 @@ export default class MarkersLayer {
   }
   private initMarkers() {
     this.dataList.forEach((data) => {
-      // 缓存 segment 相关数据
-      this.cacheSegmentParams()
-
       const layer = L.geoJSON(data.geometry).getLayers()[0]
 
       const marker = new Marker(
