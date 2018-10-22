@@ -195,11 +195,16 @@ export default class MarkersLayer {
       this.cacheSegmentParams()
 
       const layer = L.geoJSON(data.geometry).getLayers()[0]
-      let marker = layer as Marker
 
-      marker = new Marker([marker.getLatLng().lng, marker.getLatLng().lat], {
-        icon: this.getMarkerIcon(data),
-      })
+      const marker = new Marker(
+        [
+          (layer as L.Marker).getLatLng().lng,
+          (layer as L.Marker).getLatLng().lat,
+        ],
+        {
+          icon: this.getMarkerIcon(data),
+        }
+      )
 
       // 将相关值绑定到 marker上
       marker.setData(data)

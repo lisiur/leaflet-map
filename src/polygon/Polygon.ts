@@ -1,10 +1,16 @@
 import { DataListItem } from '../definitions'
 
-export default class Marker extends L.Marker {
+export default class Polygon extends L.Polygon {
   // tslint:disable-next-line:variable-name
   private __data: DataListItem
-  constructor(latlng: L.LatLngExpression, options?: L.MarkerOptions) {
-    super(latlng, options)
+  constructor(
+    latlngs:
+      | L.LatLngExpression[]
+      | L.LatLngExpression[][]
+      | L.LatLngExpression[][][],
+    options?: L.PolylineOptions
+  ) {
+    super(latlngs, options)
   }
   public setData(data: DataListItem) {
     this.__data = data
