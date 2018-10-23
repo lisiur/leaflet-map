@@ -18,6 +18,7 @@ interface PolygonLayerOptions extends L.PolylineOptions {
   segmentedColors?: string[]
 }
 export default class PolygonsLayer {
+  public type: string
   private map: L.Map
   private dataList: DataListItem[]
   private options: PolygonLayerOptions
@@ -26,6 +27,7 @@ export default class PolygonsLayer {
   private segmentedMin: number
   private segmentedStep: number
   // private focusedPolygon: Polygon
+  private visible: boolean
   private layer: L.LayerGroup
   private polygonLayer: L.LayerGroup
   constructor(
@@ -35,13 +37,18 @@ export default class PolygonsLayer {
     channelFunc: ChannelFunc
   ) {
     const defaultOptions: PolygonLayerOptions = {
+      color: '#3388FF',
       renderPolygonColorType: 'single',
+      segmentedColors: ['#3388FF'],
     }
+    this.type = 'polygon'
     this.map = map
     this.dataList = dataList
     this.options = options
     this.channelFunc = channelFunc
 
+    this.visible = true
+    this.polygons = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
     // this.focusedPolygon = null
@@ -57,12 +64,47 @@ export default class PolygonsLayer {
     return this.redraw()
   }
   public redraw() {
+    if (!this.visible) {
+      return
+    }
     if (this.layer) {
-      this.map.removeLayer(this.layer)
+      this.layer.remove()
     }
     this.layer = this.configPolygonLayer()
     this.map.addLayer(this.layer)
     return this
+  }
+  public fitBounds() {
+    this.map.fitBounds(this.getBounds())
+  }
+  public getBounds(): L.LatLngBoundsExpression {
+    if (this.polygons.length <= 0) {
+      return this.map.getBounds()
+    }
+    return this.polygons.reduce(
+      (prev, curr) => prev.extend(curr.getBounds()),
+      this.polygons[0].getBounds()
+    )
+  }
+  public destroy() {
+    if (this.layer) {
+      this.layer.remove()
+    }
+  }
+  public toggleVisible(visible: boolean) {
+    this.visible = visible
+    if (!this.layer) {
+      return
+    }
+    if (visible) {
+      this.map.addLayer(this.layer)
+    } else {
+      this.map.removeLayer(this.layer)
+    }
+  }
+  public changeColor(color: string) {
+    this.options.fillColor = color
+    this.redraw()
   }
   private initPolygons() {
     this.dataList.forEach((data) => {
@@ -83,8 +125,12 @@ export default class PolygonsLayer {
       polygon.on('click', () => {
         this.polygonClickHandler(polygon)
       })
+      let fillColor = this.options.fillColor
+      if (this.options.renderPolygonColorType === 'segmented') {
+        fillColor = this.getSegmentedPolygonColor(polygon.getData())
+      }
       const options: L.PolylineOptions = Object.assign({}, this.options, {
-        color: this.getSegmentedPolygonColor(polygon.getData()),
+        fillColor,
       })
       const newPolygon = new Polygon(polygon.getLatLngs(), options)
       this.polygonLayer.addLayer(newPolygon)

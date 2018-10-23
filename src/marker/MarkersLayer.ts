@@ -50,7 +50,7 @@ export interface MarkersLayerOptions {
 
 /** 转化为热力图的 options */
 interface MarkersHeatLayerOptions extends L.HeatLayerOptions {
-  dimensionAttr: string
+  dimensionAttr?: string
 }
 
 export default class MarkersLayer {
@@ -58,6 +58,8 @@ export default class MarkersLayer {
   public dataList: DataListItem[]
   public options: MarkersLayerOptions
   public channelFunc: ChannelFunc
+
+  public type: string
 
   protected markers: Marker[]
 
@@ -67,6 +69,7 @@ export default class MarkersLayer {
   protected focusedDisplayMarker: Marker
   protected markerLayer: L.CanvasIconLayer
 
+  protected visible: boolean
   private layer:
     | L.CanvasIconLayer
     | L.HeatLayer
@@ -91,12 +94,18 @@ export default class MarkersLayer {
       iconClass: 'iconfont',
       iconColor: '#3388FF',
       iconAnchor: [10, 10],
+      segmentedColors: ['#3388FF'],
+      heatOptions: {
+        max: 1,
+      },
     }
+    this.type = 'marker'
     this.map = map
     this.dataList = dataList
     this.options = Object.assign({}, defaultOptions, options)
     this.channelFunc = channelFunc
 
+    this.visible = true
     this.layer = null
     this.focusedMarker = null
     this.hoveredMarker = null
@@ -114,12 +123,16 @@ export default class MarkersLayer {
     this.initMarkers()
   }
   public draw(options?: MarkersLayerOptions) {
+    this.visible = true
     this.options = Object.assign(this.options, options)
     return this.redraw()
   }
   public redraw() {
+    if (!this.visible) {
+      return
+    }
     if (this.layer) {
-      this.map.removeLayer(this.layer)
+      this.layer.remove()
     }
     switch (this.options.renderType) {
       case 'point': {
@@ -146,6 +159,43 @@ export default class MarkersLayer {
     if (redraw) {
       this.redraw()
     }
+  }
+  public fitBounds() {
+    this.map.fitBounds(this.getBounds())
+  }
+  public getBounds(): L.LatLngBoundsExpression {
+    if (this.markers.length <= 0) {
+      return this.map.getBounds()
+    }
+    return this.markers.map(
+      (marker) =>
+        [marker.getLatLng().lat, marker.getLatLng().lng] as [number, number]
+    )
+  }
+  public destroy() {
+    // TODO: 将事件移除
+    if (this.layer) {
+      this.layer.remove()
+    }
+  }
+  public toggleVisible(visible: boolean) {
+    this.visible = visible
+    if (!this.layer) {
+      return
+    }
+    if (visible) {
+      this.map.addLayer(this.layer)
+    } else {
+      this.map.removeLayer(this.layer)
+    }
+  }
+  public changeColor(color: string) {
+    this.options.iconColor = color
+    this.redraw()
+  }
+  public changeIcon(iconUnicode: string) {
+    this.options.iconUnicode = iconUnicode
+    this.redraw()
   }
   /** 渲染为散点图 */
   protected configMarkerLayer() {
@@ -177,10 +227,14 @@ export default class MarkersLayer {
     canvasIconLayer.addMarkers(this.markers)
 
     this.map.on('zoomstart', () => {
-      this.map.removeLayer(this.markerLayer)
+      if (this.layer === this.markerLayer) {
+        this.map.removeLayer(this.markerLayer)
+      }
     })
     this.map.on('zoomend', () => {
-      this.map.addLayer(this.markerLayer)
+      if (this.layer === this.markerLayer) {
+        this.map.addLayer(this.markerLayer)
+      }
     })
 
     // 解决初次渲染不出图标问题
@@ -197,8 +251,8 @@ export default class MarkersLayer {
 
       const marker = new Marker(
         [
-          (layer as L.Marker).getLatLng().lng,
           (layer as L.Marker).getLatLng().lat,
+          (layer as L.Marker).getLatLng().lng,
         ],
         {
           icon: this.getMarkerIcon(data),
@@ -257,7 +311,9 @@ export default class MarkersLayer {
   private configHeatLayer() {
     this.markers.forEach((marker) => {
       const latLng = marker.getLatLng()
-      let alt = marker.getData()[this.options.heatOptions.dimensionAttr]
+      const dimensionAttr =
+        this.options.heatOptions && this.options.heatOptions.dimensionAttr
+      let alt = marker.getData()[dimensionAttr]
       if (typeof alt !== 'number') {
         alt = this.options.heatOptions.max
       }

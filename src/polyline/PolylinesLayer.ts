@@ -18,6 +18,7 @@ interface PolylineLayerOptions extends L.PolylineOptions {
   segmentedColors?: string[]
 }
 export default class PolylinesLayer {
+  public type: string
   private map: L.Map
   private dataList: DataListItem[]
   private options: PolylineLayerOptions
@@ -26,6 +27,7 @@ export default class PolylinesLayer {
   private segmentedMin: number
   private segmentedStep: number
   // private focusedPolyline: Polyline
+  private visible: boolean
   private layer: L.LayerGroup
   private polylineLayer: L.LayerGroup
   constructor(
@@ -35,13 +37,18 @@ export default class PolylinesLayer {
     channelFunc: ChannelFunc
   ) {
     const defaultOptions: PolylineLayerOptions = {
+      color: '#3388FF',
       renderPolylineColorType: 'single',
+      segmentedColors: ['#3388FF'],
     }
+    this.type = 'polyline'
     this.map = map
     this.dataList = dataList
     this.options = options
     this.channelFunc = channelFunc
 
+    this.visible = true
+    this.polylines = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
     // this.focusedPolyline = null
@@ -57,20 +64,60 @@ export default class PolylinesLayer {
     return this.redraw()
   }
   public redraw() {
+    if (!this.visible) {
+      return
+    }
     if (this.layer) {
-      this.map.removeLayer(this.layer)
+      this.layer.remove()
     }
     this.layer = this.configPolylineLayer()
     this.map.addLayer(this.layer)
     return this
+  }
+  public fitBounds() {
+    this.map.fitBounds(this.getBounds())
+  }
+  public getBounds(): L.LatLngBoundsExpression {
+    if (this.polylines.length <= 0) {
+      return this.map.getBounds()
+    }
+    return this.polylines.reduce(
+      (prev, curr) => prev.extend(curr.getBounds()),
+      this.polylines[0].getBounds()
+    )
+  }
+  public destroy() {
+    if (this.layer) {
+      this.layer.remove()
+    }
+  }
+  public toggleVisible(visible: boolean) {
+    this.visible = visible
+    if (!this.layer) {
+      return
+    }
+    if (visible) {
+      this.map.addLayer(this.layer)
+    } else {
+      this.map.removeLayer(this.layer)
+    }
+  }
+  public changeColor(color: string) {
+    this.options.fillColor = color
+    this.redraw()
   }
   private initPolylines() {
     this.dataList.forEach((data) => {
       this.cacheSegmentParams()
 
       const layer = L.geoJSON(data.geometry).getLayers()[0]
+      let fillColor = this.options.fillColor
+      if (this.options.renderPolylineColorType === 'segmented') {
+        fillColor = this.getSegmentedPolylineColor(data)
+      }
       const polyline = new Polyline(
-        (layer as L.Polyline).getLatLngs() as PolylineOptions
+        (layer as L.Polyline).getLatLngs() as PolylineOptions,
+        Object.assign({}, this.options, { fillColor })
       )
 
       // 将相关值绑定到 marker上

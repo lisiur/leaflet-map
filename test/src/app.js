@@ -50,31 +50,31 @@ var dataList = [
   },
 ]
 
-const layer = new leafletMap.MarkersBufferLayer(
+const layer = new leafletMap.MarkersLayer(
   map,
   dataList,
   {
-    renderType: 'point',
-    renderPointColorType: 'segmented',
-    iconType: 'unicode',
+    // renderType: 'point',
+    // renderPointColorType: 'segmented',
+    // iconType: 'unicode',
 
-    // iconImageUrl: 'img/marker.png',
-    iconSize: [20, 20],
+    // // iconImageUrl: 'img/marker.png',
+    // iconSize: [20, 20],
     iconUnicode: '&#xe655;',
-    iconAnchor: [10, 10],
-    iconColor: 'red',
-    iconClass: 'iconfont',
+    // iconAnchor: [10, 10],
+    // iconColor: 'red',
+    // iconClass: 'iconfont',
 
-    /** popup 展示字段 */
-    popupAttr: 'price',
-    /** tooltip 展示字段 */
-    tooltipAttr: 'price',
+    // /** popup 展示字段 */
+    // popupAttr: 'price',
+    // /** tooltip 展示字段 */
+    // tooltipAttr: 'price',
 
-    /** 分段渲染统计字段 */
-    segmentedAttr: 'price',
-    segmentedColors: ['red', 'green', 'blue', 'pink'],
+    // /** 分段渲染统计字段 */
+    // segmentedAttr: 'price',
+    // segmentedColors: ['red', 'green', 'blue', 'pink'],
 
-    heatOptions: {},
+    // heatOptions: {},
     // iconRenderer(data, params) {
     //   return `<i style="font-size: 20px; color: red;">X</i>`
     // },

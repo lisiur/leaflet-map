@@ -1,6 +1,7 @@
 import { DataListItem, ChannelFunc } from '../definitions'
 import MarkersLayer, { MarkersLayerOptions } from './MarkersLayer'
 interface MarkersBufferLayerOptions extends MarkersLayerOptions {
+  bufferTooltipAttr: string
   bufferOptions: L.CircleMarkerOptions
 }
 export default class MarkersBufferLayer extends MarkersLayer {
@@ -30,6 +31,9 @@ export default class MarkersBufferLayer extends MarkersLayer {
   }
 
   public redraw() {
+    if (!this.visible) {
+      return
+    }
     if (this.markerLayer) {
       this.map.removeLayer(this.markerLayer)
     }
@@ -49,6 +53,9 @@ export default class MarkersBufferLayer extends MarkersLayer {
       const circleLayer = L.circle(
         marker.getLatLng(),
         this.options.bufferOptions
+      )
+      circleLayer.bindTooltip(
+        '' + marker.getData()[this.options.bufferTooltipAttr]
       )
       groupLayer.addLayer(circleLayer)
     })
