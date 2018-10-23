@@ -199,6 +199,9 @@ export default class MarkersLayer {
   }
   /** 渲染为散点图 */
   protected configMarkerLayer() {
+    if (this.markerLayer) {
+      this.markerLayer.remove()
+    }
     const canvasIconLayer = L.canvasIconLayer({}).addTo(this.map)
     // 添加点击事件
     canvasIconLayer.addOnClickListener((_, [{ data: marker }]) => {
@@ -289,6 +292,9 @@ export default class MarkersLayer {
   }
   private configClusterLayer() {
     // 展示聚合图层
+    if (this.clusterLayer) {
+      this.clusterLayer.remove()
+    }
     this.clusterLayer = L.markerClusterGroup()
     this.clusterLayer.addLayers(
       this.markers.map((m) => {
@@ -308,6 +314,9 @@ export default class MarkersLayer {
 
   /** 渲染为热力图 */
   private configHeatLayer() {
+    if (this.heatLayer) {
+      this.heatLayer.remove()
+    }
     this.markers.forEach((marker) => {
       const latLng = marker.getLatLng()
       const dimensionAttr =

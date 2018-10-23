@@ -55,9 +55,11 @@ export default class MarkersBufferLayer extends MarkersLayer {
         marker.getLatLng(),
         this.options.bufferOptions
       )
-      circleLayer.bindTooltip(
-        '' + marker.getData()[this.options.bufferTooltipAttr]
-      )
+      if (this.options.bufferTooltipAttr) {
+        circleLayer.bindTooltip(
+          '' + marker.getData()[this.options.bufferTooltipAttr]
+        )
+      }
       groupLayer.addLayer(circleLayer)
     })
     return groupLayer
