@@ -121,11 +121,10 @@ export default class MarkersLayer {
 
     this.segmentedMin = Infinity
     this.segmentedStep = 1
-
-    this.initMarkers()
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
+    this.initMarkers()
     this.options = Object.assign(this.options, options)
     return this.redraw()
   }
@@ -218,8 +217,6 @@ export default class MarkersLayer {
     if (this.markerLayer) {
       this.markerLayer.remove()
     }
-    // TODO: 优化
-    this.initMarkers()
     const canvasIconLayer = L.canvasIconLayer({}).addTo(this.map)
     // 添加点击事件
     canvasIconLayer.addOnClickListener((_, [{ data: marker }]) => {
@@ -252,7 +249,7 @@ export default class MarkersLayer {
         return
       }
       if (this.type === 'marker') {
-        if (this.options.renderType === 'point') {
+        if (this.options.renderType === 'point' && !this.options.isCluster) {
           this.map.removeLayer(this.markerLayer)
         }
       } else {
@@ -264,7 +261,7 @@ export default class MarkersLayer {
         return
       }
       if (this.type === 'marker') {
-        if (this.options.renderType === 'point') {
+        if (this.options.renderType === 'point' && !this.options.isCluster) {
           this.map.addLayer(this.markerLayer)
         }
       } else {
@@ -537,7 +534,7 @@ export default class MarkersLayer {
   private getSegmentedMarkerColor(data: DataListItem): string {
     const val = data[this.options.segmentedAttr]
     const color = this.options.segmentedColors[
-      (val - this.segmentedMin) / this.segmentedStep
+      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
     ]
     return color
   }

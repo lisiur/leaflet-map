@@ -177,7 +177,7 @@ export default class PolygonsLayer {
   private getSegmentedPolygonColor(data: DataListItem): string {
     const val = data[this.options.segmentedAttr]
     const color = this.options.segmentedColors[
-      (val - this.segmentedMin) / this.segmentedStep
+      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
     ]
     return color
   }
