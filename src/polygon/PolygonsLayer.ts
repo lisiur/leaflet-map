@@ -128,9 +128,6 @@ export default class PolygonsLayer {
   private configPolygonLayer() {
     this.polygonLayer = L.layerGroup()
     this.polygons.forEach((polygon) => {
-      polygon.on('click', () => {
-        this.polygonClickHandler(polygon)
-      })
       let fillColor = this.options.fillColor
       if (this.options.renderPolygonColorType === 'segmented') {
         fillColor = this.getSegmentedPolygonColor(polygon.getData())
@@ -138,7 +135,16 @@ export default class PolygonsLayer {
       const options: L.PolylineOptions = Object.assign({}, this.options, {
         fillColor,
       })
+      // 重新应用 options
       const newPolygon = new Polygon(polygon.getLatLngs(), options)
+      newPolygon.setData(polygon.getData())
+      newPolygon.on('click', () => {
+        this.polygonClickHandler(polygon)
+      })
+      if (this.options.tooltipAttr) {
+        newPolygon.bindTooltip(this.getToolTipContent(newPolygon.getData()))
+      }
+
       this.polygonLayer.addLayer(newPolygon)
     })
     return this.polygonLayer

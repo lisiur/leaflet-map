@@ -145,9 +145,6 @@ export default class PolylinesLayer {
   private configPolylineLayer() {
     this.polylineLayer = L.layerGroup()
     this.polylines.forEach((polyline) => {
-      polyline.on('click', () => {
-        this.polylineClickHandler(polyline)
-      })
       const options: L.PolylineOptions = Object.assign({}, this.options, {
         color: this.getSegmentedPolylineColor(polyline.getData()),
       })
@@ -155,6 +152,13 @@ export default class PolylinesLayer {
         polyline.getLatLngs() as PolylineOptions,
         options
       )
+      newPolyline.on('click', () => {
+        this.polylineClickHandler(polyline)
+      })
+      newPolyline.setData(polyline.getData())
+      if (this.options.tooltipAttr) {
+        newPolyline.bindTooltip(this.getToolTipContent(newPolyline.getData()))
+      }
       this.polylineLayer.addLayer(newPolyline)
     })
     return this.polylineLayer

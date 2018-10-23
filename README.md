@@ -17,6 +17,11 @@
 | heatOptions          | 热力图 options   | MarkersHeatLayerOptions           |
 | clusterOptions       | 聚合 options     | MarkersClusterOptions             |
 
+# MarkersBufferLayerOptions extends MarkerLayerOptions
+| 参数名               | 说明             | 类型                              |
+| -------------------- | ---------------- | --------------------------------- |
+
+
 # MarkersHeatLayerOptions
 | 参数名        | 说明               | 类型   |
 | ------------- | ------------------ | ------ |

@@ -227,14 +227,10 @@ export default class MarkersLayer {
     canvasIconLayer.addMarkers(this.markers)
 
     this.map.on('zoomstart', () => {
-      if (this.layer === this.markerLayer) {
-        this.map.removeLayer(this.markerLayer)
-      }
+      this.map.removeLayer(this.markerLayer)
     })
     this.map.on('zoomend', () => {
-      if (this.layer === this.markerLayer) {
-        this.map.addLayer(this.markerLayer)
-      }
+      this.map.addLayer(this.markerLayer)
     })
 
     // 解决初次渲染不出图标问题
