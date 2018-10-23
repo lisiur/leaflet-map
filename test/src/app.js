@@ -47,10 +47,15 @@ const layer = new leafletMap.MarkersLayer(
 
 layer.draw()
 
-L.marker(L.latLng(39.90778, 116.401216)).addTo(map)
+L.marker(L.latLng(39.90778, 116.401216))
+  .addTo(map)
+  .bindTooltip('adf')
 
 L.marker(L.latLng(39.90778, 116.401216), {
+  opacity: 0.2,
   icon: L.divIcon({
+    iconAnchor: [10, 20],
+    iconSize: [20, 20],
     html: `
     <i
       class="iconfont"

@@ -5,3 +5,10 @@
   border: none;
   line-height: 1;
 }
+.leaflet-div-icon {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  line-height: 1;
+}

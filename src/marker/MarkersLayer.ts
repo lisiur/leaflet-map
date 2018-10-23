@@ -93,7 +93,7 @@ export default class MarkersLayer {
       iconSize: [20, 20],
       iconClass: 'iconfont',
       iconColor: '#3388FF',
-      iconAnchor: [10, 10],
+      iconAnchor: [10, 20],
       segmentedColors: ['#3388FF'],
       heatOptions: {
         max: 1,
