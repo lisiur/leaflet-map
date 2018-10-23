@@ -59,8 +59,6 @@ export default class PolygonsLayer {
 
     this.options = Object.assign({}, defaultOptions, options)
 
-    // 缓存 segment 相关数据
-    this.cacheSegmentParams()
     this.initPolygons()
   }
   public draw(options?: PolygonLayerOptions) {
@@ -122,9 +120,10 @@ export default class PolygonsLayer {
     return '' + data[this.options.tooltipAttr]
   }
   private initPolygons() {
+    // 缓存 segment 相关数据
+    this.cacheSegmentParams()
+    this.polygons = []
     this.dataList.forEach((data) => {
-      this.cacheSegmentParams()
-
       const layer = L.geoJSON(data.geometry).getLayers()[0]
       const polygon = new Polygon((layer as L.Polygon).getLatLngs())
 

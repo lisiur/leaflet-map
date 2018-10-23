@@ -57,8 +57,6 @@ export default class PolylinesLayer {
 
     this.options = Object.assign({}, defaultOptions, options)
 
-    // 缓存 segment 相关数据
-    this.cacheSegmentParams()
     this.initPolylines()
   }
   public draw(options?: PolylineLayerOptions) {
@@ -117,9 +115,11 @@ export default class PolylinesLayer {
     })
   }
   protected initPolylines() {
-    this.dataList.forEach((data) => {
-      this.cacheSegmentParams()
+    // 缓存 segment 相关数据
+    this.cacheSegmentParams()
 
+    this.polylines = []
+    this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
       let fillColor = this.options.fillColor
       if (this.options.renderPolylineColorType === 'segmented') {

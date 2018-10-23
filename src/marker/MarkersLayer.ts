@@ -33,6 +33,8 @@ export interface MarkersLayerOptions {
   iconAnchor?: [number, number]
   iconRenderer?: IconRenderFunc
 
+  isCluster?: boolean
+
   /** popup 展示字段 */
   popupAttr?: string
   /** tooltip 展示字段 */
@@ -95,6 +97,7 @@ export default class MarkersLayer {
       iconColor: '#3388FF',
       iconAnchor: [10, 20],
       segmentedColors: ['#3388FF'],
+      isCluster: false,
       heatOptions: {
         max: 1,
         minOpacity: 1,
@@ -119,8 +122,6 @@ export default class MarkersLayer {
     this.segmentedMin = Infinity
     this.segmentedStep = 1
 
-    // 缓存 segment 相关数据
-    this.cacheSegmentParams()
     this.initMarkers()
   }
   public draw(options?: MarkersLayerOptions) {
@@ -135,21 +136,27 @@ export default class MarkersLayer {
     if (this.layer) {
       this.layer.remove()
     }
-    switch (this.options.renderType) {
-      case 'point': {
-        this.layer = this.configMarkerLayer()
-        break
-      }
-      case 'cluster': {
-        this.layer = this.configClusterLayer()
-        break
-      }
-      case 'heat': {
-        this.layer = this.configHeatLayer()
-        break
-      }
-      default: {
-        throw new Error(`renderType 不支持"${this.options.renderType}"`)
+
+    // 优先判断 isCluster
+    if (this.options.isCluster && this.options.renderType === 'point') {
+      this.layer = this.configClusterLayer()
+    } else {
+      switch (this.options.renderType) {
+        case 'point': {
+          this.layer = this.configMarkerLayer()
+          break
+        }
+        case 'cluster': {
+          this.layer = this.configClusterLayer()
+          break
+        }
+        case 'heat': {
+          this.layer = this.configHeatLayer()
+          break
+        }
+        default: {
+          throw new Error(`renderType 不支持"${this.options.renderType}"`)
+        }
       }
     }
     this.map.addLayer(this.layer)
@@ -277,6 +284,8 @@ export default class MarkersLayer {
     return '' + data[this.options.tooltipAttr]
   }
   private initMarkers() {
+    // 缓存 segment 相关数据
+    this.cacheSegmentParams()
     this.markers = []
     this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
