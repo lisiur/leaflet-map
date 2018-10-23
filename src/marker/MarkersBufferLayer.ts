@@ -17,7 +17,8 @@ export default class MarkersBufferLayer extends MarkersLayer {
     this.type = 'markerBuffer'
     const defaultBufferOptions: L.CircleMarkerOptions = {
       radius: 1000,
-      stroke: false,
+      stroke: true,
+      weight: 1,
     }
     this.options = Object.assign(
       this.options,

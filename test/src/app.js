@@ -5,7 +5,7 @@ import { red } from 'ansi-colors'
 // @ts-ignore
 const L = window.L
 
-var position = new L.LatLng(32.0304, 118.7968)
+var position = new L.LatLng(39.90778, 116.401216)
 var map = L.map('map').setView(position, 13)
 
 L.tileLayer
@@ -23,17 +23,23 @@ L.tileLayer
 var dataList = [
   {
     geometry: {
-      type: 'LineString',
-      coordinates: [[32.0404, 118.7968], [32.0404, 118.7868]],
+      type: 'Point',
+      coordinates: [116.401216, 39.90778],
     },
     price: 2,
   },
 ]
 
-const layer = new leafletMap.PolylinesBufferLayer(
+const layer = new leafletMap.MarkersLayer(
   map,
   dataList,
-  { tooltipAttr: 'price' },
+  {
+    iconUnicode: '&#xe655;',
+    iconSize: [20, 20],
+    iconAnchor: [10, 20],
+    popupAttr: 'price',
+    tooltipAttr: 'price',
+  },
   function(eventName) {
     console.log(eventName)
   }
@@ -41,4 +47,21 @@ const layer = new leafletMap.PolylinesBufferLayer(
 
 layer.draw()
 
+L.marker(L.latLng(39.90778, 116.401216)).addTo(map)
+
+L.marker(L.latLng(39.90778, 116.401216), {
+  icon: L.divIcon({
+    html: `
+    <i
+      class="iconfont"
+      style="
+        color: red;
+        font-size: 20px;
+      "
+      >
+      &#xe655;
+    </i>
+  `,
+  }),
+}).addTo(map)
 window.layer = layer

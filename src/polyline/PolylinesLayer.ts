@@ -108,6 +108,14 @@ export default class PolylinesLayer {
     this.options.fillColor = color
     this.redraw()
   }
+  public pitch(id: string) {
+    this.polylines.forEach((polyline) => {
+      if (polyline.getData().id === id) {
+        polyline.fire('click')
+        return
+      }
+    })
+  }
   protected initPolylines() {
     this.dataList.forEach((data) => {
       this.cacheSegmentParams()

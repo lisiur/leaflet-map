@@ -41,6 +41,7 @@ export default class PolygonsLayer {
   ) {
     const defaultOptions: PolygonLayerOptions = {
       color: '#3388FF',
+      fillColor: '#3388FF',
       renderPolygonColorType: 'single',
       segmentedColors: ['#3388FF'],
     }
@@ -109,6 +110,14 @@ export default class PolygonsLayer {
     this.options.fillColor = color
     this.redraw()
   }
+  public pitch(id: string) {
+    this.polygons.forEach((polygon) => {
+      if (polygon.getData().id === id) {
+        polygon.fire('click')
+        return
+      }
+    })
+  }
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
@@ -128,12 +137,12 @@ export default class PolygonsLayer {
   private configPolygonLayer() {
     this.polygonLayer = L.layerGroup()
     this.polygons.forEach((polygon) => {
-      let fillColor = this.options.fillColor
+      let color = this.options.color
       if (this.options.renderPolygonColorType === 'segmented') {
-        fillColor = this.getSegmentedPolygonColor(polygon.getData())
+        color = this.getSegmentedPolygonColor(polygon.getData())
       }
       const options: L.PolylineOptions = Object.assign({}, this.options, {
-        fillColor,
+        color,
       })
       // 重新应用 options
       const newPolygon = new Polygon(polygon.getLatLngs(), options)

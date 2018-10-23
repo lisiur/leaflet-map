@@ -99,7 +99,7 @@ export default class PolylinesBufferLayer extends PolylinesLayer {
 
       const polylineBuffer = L.corridor(
         (polyline.getLatLngs() as L.LatLng[]).map((latLng) =>
-          L.latLng([latLng.lng, latLng.lat])
+          L.latLng([latLng.lat, latLng.lng])
         ),
         options
       )

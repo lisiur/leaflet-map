@@ -1,14 +1,14 @@
 !(function(t) {
   var n = {}
-  function i(a) {
-    if (n[a]) return n[a].exports
-    var e = (n[a] = { i: a, l: !1, exports: {} })
-    return t[a].call(e.exports, e, e.exports, i), (e.l = !0), e.exports
+  function i(e) {
+    if (n[e]) return n[e].exports
+    var a = (n[e] = { i: e, l: !1, exports: {} })
+    return t[e].call(a.exports, a, a.exports, i), (a.l = !0), a.exports
   }
   ;(i.m = t),
     (i.c = n),
-    (i.d = function(t, n, a) {
-      i.o(t, n) || Object.defineProperty(t, n, { enumerable: !0, get: a })
+    (i.d = function(t, n, e) {
+      i.o(t, n) || Object.defineProperty(t, n, { enumerable: !0, get: e })
     }),
     (i.r = function(t) {
       'undefined' != typeof Symbol &&
@@ -19,21 +19,21 @@
     (i.t = function(t, n) {
       if ((1 & n && (t = i(t)), 8 & n)) return t
       if (4 & n && 'object' == typeof t && t && t.__esModule) return t
-      var a = Object.create(null)
+      var e = Object.create(null)
       if (
-        (i.r(a),
-        Object.defineProperty(a, 'default', { enumerable: !0, value: t }),
+        (i.r(e),
+        Object.defineProperty(e, 'default', { enumerable: !0, value: t }),
         2 & n && 'string' != typeof t)
       )
-        for (var e in t)
+        for (var a in t)
           i.d(
-            a,
             e,
+            a,
             function(n) {
               return t[n]
-            }.bind(null, e)
+            }.bind(null, a)
           )
-      return a
+      return e
     }),
     (i.n = function(t) {
       var n =
@@ -53,16 +53,16 @@
     i((i.s = 0))
 })([
   function(t, n, i) {
-    var a = i(1),
-      e = i(3)
-    ;(window.L.CanvasIconLayer = e(L)), (window.rbush = a)
+    var e = i(1),
+      a = i(3)
+    ;(window.L.CanvasIconLayer = a(L)), (window.rbush = e)
   },
   function(t, n, i) {
     'use strict'
-    ;(t.exports = e), (t.exports.default = e)
-    var a = i(2)
-    function e(t, n) {
-      if (!(this instanceof e)) return new e(t, n)
+    ;(t.exports = a), (t.exports.default = a)
+    var e = i(2)
+    function a(t, n) {
+      if (!(this instanceof a)) return new a(t, n)
       ;(this._maxEntries = Math.max(4, t || 9)),
         (this._minEntries = Math.max(2, Math.ceil(0.4 * this._maxEntries))),
         n && this._initFormat(n),
@@ -70,21 +70,21 @@
     }
     function r(t, n, i) {
       if (!i) return n.indexOf(t)
-      for (var a = 0; a < n.length; a++) if (i(t, n[a])) return a
+      for (var e = 0; e < n.length; e++) if (i(t, n[e])) return e
       return -1
     }
     function o(t, n) {
       s(t, 0, t.children.length, n, t)
     }
-    function s(t, n, i, a, e) {
-      e || (e = g(null)),
-        (e.minX = 1 / 0),
-        (e.minY = 1 / 0),
-        (e.maxX = -1 / 0),
-        (e.maxY = -1 / 0)
+    function s(t, n, i, e, a) {
+      a || (a = g(null)),
+        (a.minX = 1 / 0),
+        (a.minY = 1 / 0),
+        (a.maxX = -1 / 0),
+        (a.maxY = -1 / 0)
       for (var r, o = n; o < i; o++)
-        (r = t.children[o]), h(e, t.leaf ? a(r) : r)
-      return e
+        (r = t.children[o]), h(a, t.leaf ? e(r) : r)
+      return a
     }
     function h(t, n) {
       return (
@@ -115,10 +115,10 @@
     }
     function d(t, n) {
       var i = Math.max(t.minX, n.minX),
-        a = Math.max(t.minY, n.minY),
-        e = Math.min(t.maxX, n.maxX),
+        e = Math.max(t.minY, n.minY),
+        a = Math.min(t.maxX, n.maxX),
         r = Math.min(t.maxY, n.maxY)
-      return Math.max(0, e - i) * Math.max(0, r - a)
+      return Math.max(0, a - i) * Math.max(0, r - e)
     }
     function _(t, n) {
       return (
@@ -147,26 +147,26 @@
         maxY: -1 / 0,
       }
     }
-    function x(t, n, i, e, r) {
+    function x(t, n, i, a, r) {
       for (var o, s = [n, i]; s.length; )
-        (i = s.pop()) - (n = s.pop()) <= e ||
-          ((o = n + Math.ceil((i - n) / e / 2) * e),
-          a(t, o, n, i, r),
+        (i = s.pop()) - (n = s.pop()) <= a ||
+          ((o = n + Math.ceil((i - n) / a / 2) * a),
+          e(t, o, n, i, r),
           s.push(n, o, o, i))
     }
-    e.prototype = {
+    a.prototype = {
       all: function() {
         return this._all(this.data, [])
       },
       search: function(t) {
         var n = this.data,
           i = [],
-          a = this.toBBox
+          e = this.toBBox
         if (!p(t, n)) return i
-        for (var e, r, o, s, h = []; n; ) {
-          for (e = 0, r = n.children.length; e < r; e++)
-            (o = n.children[e]),
-              p(t, (s = n.leaf ? a(o) : o)) &&
+        for (var a, r, o, s, h = []; n; ) {
+          for (a = 0, r = n.children.length; a < r; a++)
+            (o = n.children[a]),
+              p(t, (s = n.leaf ? e(o) : o)) &&
                 (n.leaf ? i.push(o) : _(t, s) ? this._all(o, i) : h.push(o))
           n = h.pop()
         }
@@ -176,9 +176,9 @@
         var n = this.data,
           i = this.toBBox
         if (!p(t, n)) return !1
-        for (var a, e, r, o, s = []; n; ) {
-          for (a = 0, e = n.children.length; a < e; a++)
-            if (((r = n.children[a]), p(t, (o = n.leaf ? i(r) : r)))) {
+        for (var e, a, r, o, s = []; n; ) {
+          for (e = 0, a = n.children.length; e < a; e++)
+            if (((r = n.children[e]), p(t, (o = n.leaf ? i(r) : r)))) {
               if (n.leaf || _(t, o)) return !0
               s.push(r)
             }
@@ -192,17 +192,17 @@
           for (var n = 0, i = t.length; n < i; n++) this.insert(t[n])
           return this
         }
-        var a = this._build(t.slice(), 0, t.length - 1, 0)
+        var e = this._build(t.slice(), 0, t.length - 1, 0)
         if (this.data.children.length)
-          if (this.data.height === a.height) this._splitRoot(this.data, a)
+          if (this.data.height === e.height) this._splitRoot(this.data, e)
           else {
-            if (this.data.height < a.height) {
-              var e = this.data
-              ;(this.data = a), (a = e)
+            if (this.data.height < e.height) {
+              var a = this.data
+              ;(this.data = e), (e = a)
             }
-            this._insert(a, this.data.height - a.height - 1, !0)
+            this._insert(e, this.data.height - e.height - 1, !0)
           }
-        else this.data = a
+        else this.data = e
         return this
       },
       insert: function(t) {
@@ -214,21 +214,21 @@
       remove: function(t, n) {
         if (!t) return this
         for (
-          var i, a, e, o, s = this.data, h = this.toBBox(t), l = [], c = [];
+          var i, e, a, o, s = this.data, h = this.toBBox(t), l = [], c = [];
           s || l.length;
 
         ) {
           if (
             (s ||
-              ((s = l.pop()), (a = l[l.length - 1]), (i = c.pop()), (o = !0)),
-            s.leaf && -1 !== (e = r(t, s.children, n)))
+              ((s = l.pop()), (e = l[l.length - 1]), (i = c.pop()), (o = !0)),
+            s.leaf && -1 !== (a = r(t, s.children, n)))
           )
-            return s.children.splice(e, 1), l.push(s), this._condense(l), this
+            return s.children.splice(a, 1), l.push(s), this._condense(l), this
           o || s.leaf || !_(s, h)
-            ? a
-              ? (i++, (s = a.children[i]), (o = !1))
+            ? e
+              ? (i++, (s = e.children[i]), (o = !1))
               : (s = null)
-            : (l.push(s), c.push(i), (i = 0), (a = s), (s = s.children[0]))
+            : (l.push(s), c.push(i), (i = 0), (e = s), (s = s.children[0]))
         }
         return this
       },
@@ -249,16 +249,16 @@
             (t = i.pop())
         return n
       },
-      _build: function(t, n, i, a) {
-        var e,
+      _build: function(t, n, i, e) {
+        var a,
           r = i - n + 1,
           s = this._maxEntries
-        if (r <= s) return o((e = g(t.slice(n, i + 1))), this.toBBox), e
-        a ||
-          ((a = Math.ceil(Math.log(r) / Math.log(s))),
-          (s = Math.ceil(r / Math.pow(s, a - 1)))),
-          ((e = g([])).leaf = !1),
-          (e.height = a)
+        if (r <= s) return o((a = g(t.slice(n, i + 1))), this.toBBox), a
+        e ||
+          ((e = Math.ceil(Math.log(r) / Math.log(s))),
+          (s = Math.ceil(r / Math.pow(s, e - 1)))),
+          ((a = g([])).leaf = !1),
+          (a.height = e)
         var h,
           l,
           c,
@@ -272,17 +272,17 @@
             l += m
           )
             (u = Math.min(l + m - 1, c)),
-              e.children.push(this._build(t, l, u, a - 1))
-        return o(e, this.toBBox), e
+              a.children.push(this._build(t, l, u, e - 1))
+        return o(a, this.toBBox), a
       },
-      _chooseSubtree: function(t, n, i, a) {
+      _chooseSubtree: function(t, n, i, e) {
         for (
-          var e, r, o, s, h, l, c, m;
-          a.push(n), !n.leaf && a.length - 1 !== i;
+          var a, r, o, s, h, l, c, m;
+          e.push(n), !n.leaf && e.length - 1 !== i;
 
         ) {
-          for (c = m = 1 / 0, e = 0, r = n.children.length; e < r; e++)
-            (h = u((o = n.children[e]))),
+          for (c = m = 1 / 0, a = 0, r = n.children.length; a < r; a++)
+            (h = u((o = n.children[a]))),
               (l = f(t, o) - h) < m
                 ? ((m = l), (c = h < c ? h : c), (s = o))
                 : l === m && h < c && ((c = h), (s = o))
@@ -291,24 +291,24 @@
         return n
       },
       _insert: function(t, n, i) {
-        var a = this.toBBox,
-          e = i ? t : a(t),
+        var e = this.toBBox,
+          a = i ? t : e(t),
           r = [],
-          o = this._chooseSubtree(e, this.data, n, r)
+          o = this._chooseSubtree(a, this.data, n, r)
         for (
-          o.children.push(t), h(o, e);
+          o.children.push(t), h(o, a);
           n >= 0 && r[n].children.length > this._maxEntries;
 
         )
           this._split(r, n), n--
-        this._adjustParentBBoxes(e, r, n)
+        this._adjustParentBBoxes(a, r, n)
       },
       _split: function(t, n) {
         var i = t[n],
-          a = i.children.length,
-          e = this._minEntries
-        this._chooseSplitAxis(i, e, a)
-        var r = this._chooseSplitIndex(i, e, a),
+          e = i.children.length,
+          a = this._minEntries
+        this._chooseSplitAxis(i, a, e)
+        var r = this._chooseSplitIndex(i, a, e),
           s = g(i.children.splice(r, i.children.length - r))
         ;(s.height = i.height),
           (s.leaf = i.leaf),
@@ -323,37 +323,37 @@
           o(this.data, this.toBBox)
       },
       _chooseSplitIndex: function(t, n, i) {
-        var a, e, r, o, h, l, c, m
-        for (l = c = 1 / 0, a = n; a <= i - n; a++)
-          (o = d((e = s(t, 0, a, this.toBBox)), (r = s(t, a, i, this.toBBox)))),
-            (h = u(e) + u(r)),
+        var e, a, r, o, h, l, c, m
+        for (l = c = 1 / 0, e = n; e <= i - n; e++)
+          (o = d((a = s(t, 0, e, this.toBBox)), (r = s(t, e, i, this.toBBox)))),
+            (h = u(a) + u(r)),
             o < l
-              ? ((l = o), (m = a), (c = h < c ? h : c))
-              : o === l && h < c && ((c = h), (m = a))
+              ? ((l = o), (m = e), (c = h < c ? h : c))
+              : o === l && h < c && ((c = h), (m = e))
         return m
       },
       _chooseSplitAxis: function(t, n, i) {
-        var a = t.leaf ? this.compareMinX : l,
-          e = t.leaf ? this.compareMinY : c
-        this._allDistMargin(t, n, i, a) < this._allDistMargin(t, n, i, e) &&
-          t.children.sort(a)
+        var e = t.leaf ? this.compareMinX : l,
+          a = t.leaf ? this.compareMinY : c
+        this._allDistMargin(t, n, i, e) < this._allDistMargin(t, n, i, a) &&
+          t.children.sort(e)
       },
-      _allDistMargin: function(t, n, i, a) {
-        t.children.sort(a)
-        var e,
+      _allDistMargin: function(t, n, i, e) {
+        t.children.sort(e)
+        var a,
           r,
           o = this.toBBox,
           l = s(t, 0, n, o),
           c = s(t, i - n, i, o),
           u = m(l) + m(c)
-        for (e = n; e < i - n; e++)
-          (r = t.children[e]), h(l, t.leaf ? o(r) : r), (u += m(l))
-        for (e = i - n - 1; e >= n; e--)
-          (r = t.children[e]), h(c, t.leaf ? o(r) : r), (u += m(c))
+        for (a = n; a < i - n; a++)
+          (r = t.children[a]), h(l, t.leaf ? o(r) : r), (u += m(l))
+        for (a = i - n - 1; a >= n; a--)
+          (r = t.children[a]), h(c, t.leaf ? o(r) : r), (u += m(c))
         return u
       },
       _adjustParentBBoxes: function(t, n, i) {
-        for (var a = i; a >= 0; a--) h(n[a], t)
+        for (var e = i; e >= 0; e--) h(n[e], t)
       },
       _condense: function(t) {
         for (var n, i = t.length - 1; i >= 0; i--)
@@ -386,40 +386,40 @@
     t.exports = (function() {
       'use strict'
       function t(t, n, i) {
-        var a = t[n]
-        ;(t[n] = t[i]), (t[i] = a)
+        var e = t[n]
+        ;(t[n] = t[i]), (t[i] = e)
       }
       function n(t, n) {
         return t < n ? -1 : t > n ? 1 : 0
       }
-      return function(i, a, e, r, o) {
-        !(function n(i, a, e, r, o) {
-          for (; r > e; ) {
-            if (r - e > 600) {
-              var s = r - e + 1,
-                h = a - e + 1,
+      return function(i, e, a, r, o) {
+        !(function n(i, e, a, r, o) {
+          for (; r > a; ) {
+            if (r - a > 600) {
+              var s = r - a + 1,
+                h = e - a + 1,
                 l = Math.log(s),
                 c = 0.5 * Math.exp((2 * l) / 3),
                 u =
                   0.5 *
                   Math.sqrt((l * c * (s - c)) / s) *
                   (h - s / 2 < 0 ? -1 : 1),
-                m = Math.max(e, Math.floor(a - (h * c) / s + u)),
-                f = Math.min(r, Math.floor(a + ((s - h) * c) / s + u))
-              n(i, a, m, f, o)
+                m = Math.max(a, Math.floor(e - (h * c) / s + u)),
+                f = Math.min(r, Math.floor(e + ((s - h) * c) / s + u))
+              n(i, e, m, f, o)
             }
-            var d = i[a],
-              _ = e,
+            var d = i[e],
+              _ = a,
               p = r
-            for (t(i, e, a), o(i[r], d) > 0 && t(i, e, r); _ < p; ) {
+            for (t(i, a, e), o(i[r], d) > 0 && t(i, a, r); _ < p; ) {
               for (t(i, _, p), _++, p--; o(i[_], d) < 0; ) _++
               for (; o(i[p], d) > 0; ) p--
             }
-            0 === o(i[e], d) ? t(i, e, p) : t(i, ++p, r),
-              p <= a && (e = p + 1),
-              a <= p && (r = p - 1)
+            0 === o(i[a], d) ? t(i, a, p) : t(i, ++p, r),
+              p <= e && (a = p + 1),
+              e <= p && (r = p - 1)
           }
-        })(i, a, e || 0, r || i.length - 1, o || n)
+        })(i, e, a || 0, r || i.length - 1, o || n)
       }
     })()
   },
@@ -441,24 +441,24 @@
         addMarkers: function(t) {
           var n = this,
             i = [],
-            a = []
+            e = []
           t.forEach(function(t) {
             if ('markerPane' == t.options.pane && t.options.icon) {
-              var e = t.getLatLng(),
-                r = n._map.getBounds().contains(e),
-                o = n._addMarker(t, e, r)
-              !0 === r && i.push(o[0]), a.push(o[1])
+              var a = t.getLatLng(),
+                r = n._map.getBounds().contains(a),
+                o = n._addMarker(t, a, r)
+              !0 === r && i.push(o[0]), e.push(o[1])
             } else console.error("Layer isn't a marker")
           }),
             n._markers.load(i),
-            n._latlngMarkers.load(a)
+            n._latlngMarkers.load(e)
         },
         addMarker: function(t) {
           var n = t.getLatLng(),
             i = this._map.getBounds().contains(n),
-            a = this._addMarker(t, n, i)
-          !0 === i && this._markers.insert(a[0]),
-            this._latlngMarkers.insert(a[1])
+            e = this._addMarker(t, n, i)
+          !0 === i && this._markers.insert(e[0]),
+            this._latlngMarkers.insert(e[1])
         },
         addLayer: function(t) {
           'markerPane' == t.options.pane && t.options.icon
@@ -474,14 +474,14 @@
         removeMarker: function(t, n) {
           t.minX && (t = t.data)
           var i = t.getLatLng(),
-            a = this._map.getBounds().contains(i),
-            e = { minX: i.lng, minY: i.lat, maxX: i.lng, maxY: i.lat, data: t }
-          this._latlngMarkers.remove(e, function(t, n) {
+            e = this._map.getBounds().contains(i),
+            a = { minX: i.lng, minY: i.lat, maxX: i.lng, maxY: i.lat, data: t }
+          this._latlngMarkers.remove(a, function(t, n) {
             return t.data._leaflet_id === n.data._leaflet_id
           }),
             this._latlngMarkers.total--,
             this._latlngMarkers.dirty++,
-            !0 === a && !0 === n && this._redraw(!0)
+            !0 === e && !0 === n && this._redraw(!0)
         },
         onAdd: function(t) {
           ;(this._map = t),
@@ -511,7 +511,7 @@
             (this._markers = null),
             this._redraw(!0)
         },
-        _addMarker: function(n, i, a) {
+        _addMarker: function(n, i, e) {
           ;(n._map = this._map),
             this._markers || (this._markers = new rbush()),
             this._latlngMarkers ||
@@ -519,16 +519,16 @@
               (this._latlngMarkers.dirty = 0),
               (this._latlngMarkers.total = 0)),
             t.Util.stamp(n)
-          var e = this._map.latLngToContainerPoint(i),
+          var a = this._map.latLngToContainerPoint(i),
             r = n.options.icon.options.iconSize,
             o = r[0] / 2,
             s = r[1] / 2,
             h = [
               {
-                minX: e.x - o,
-                minY: e.y - s,
-                maxX: e.x + o,
-                maxY: e.y + s,
+                minX: a.x - o,
+                minY: a.y - s,
+                maxX: a.x + o,
+                maxY: a.y + s,
                 data: n,
               },
               { minX: i.lng, minY: i.lat, maxX: i.lng, maxY: i.lat, data: n },
@@ -536,7 +536,7 @@
           return (
             this._latlngMarkers.dirty++,
             this._latlngMarkers.total++,
-            !0 === a && this._drawMarker(n, e),
+            !0 === e && this._drawMarker(n, a),
             h
           )
         },
@@ -544,22 +544,22 @@
           var i = this
           this._imageLookup || (this._imageLookup = {}),
             n || (n = i._map.latLngToContainerPoint(t.getLatLng()))
-          var a = t.options.icon.options.iconUrl
+          var e = t.options.icon.options.iconUrl
           if (t.canvas_img) i._drawImage(t, n)
           else if (t.options.icon.options.html) i._drawHtml(t, n)
-          else if (i._imageLookup[a])
-            (t.canvas_img = i._imageLookup[a][0]),
-              !1 === i._imageLookup[a][1]
-                ? i._imageLookup[a][2].push([t, n])
+          else if (i._imageLookup[e])
+            (t.canvas_img = i._imageLookup[e][0]),
+              !1 === i._imageLookup[e][1]
+                ? i._imageLookup[e][2].push([t, n])
                 : i._drawImage(t, n)
           else {
-            var e = new Image()
-            ;(e.src = a),
-              (t.canvas_img = e),
-              (i._imageLookup[a] = [e, !1, [[t, n]]]),
-              (e.onload = function() {
-                ;(i._imageLookup[a][1] = !0),
-                  i._imageLookup[a][2].forEach(function(t) {
+            var a = new Image()
+            ;(a.src = e),
+              (t.canvas_img = a),
+              (i._imageLookup[e] = [a, !1, [[t, n]]]),
+              (a.onload = function() {
+                ;(i._imageLookup[e][1] = !0),
+                  i._imageLookup[e][2].forEach(function(t) {
                     i._drawImage(t[0], t[1])
                   })
               })
@@ -577,20 +577,20 @@
         },
         _drawHtml: function(t, n) {
           var i = t.options.icon.options,
-            a = (function(t) {
+            e = (function(t) {
               var n = document.createElement('div')
               return (n.innerHTML = t.trim()), n.firstChild
             })(i.html),
-            e = a.style['font-size'],
-            r = a.style.color,
-            o = a.className
-          ;(this._context.font = `${e} ${o}`),
+            a = e.style['font-size'],
+            r = e.style.color,
+            o = e.className
+          ;(this._context.font = `${a} ${o}`),
             (this._context.textBaseline = 'bottom'),
             (this._context.fillStyle = r),
             this._context.fillText(
-              a.textContent.trim(),
-              n.x - parseFloat(e) / 2,
-              n.y + parseFloat(e) - i.iconAnchor[1]
+              e.textContent.trim(),
+              n.x - i.iconAnchor[0],
+              n.y - i.iconAnchor[1]
             )
         },
         _reset: function() {
@@ -622,26 +622,26 @@
               n._latlngMarkers.load(i),
               (n._latlngMarkers.dirty = 0),
               (i = []))
-            var a = n._map.getBounds(),
-              e = {
-                minX: a.getWest(),
-                minY: a.getSouth(),
-                maxX: a.getEast(),
-                maxY: a.getNorth(),
+            var e = n._map.getBounds(),
+              a = {
+                minX: e.getWest(),
+                minY: e.getSouth(),
+                maxX: e.getEast(),
+                maxY: e.getNorth(),
               }
-            n._latlngMarkers.search(e).forEach(function(t) {
-              var a = n._map.latLngToContainerPoint(t.data.getLatLng()),
-                e = t.data.options.icon.options.iconSize,
-                r = e[0] / 2,
-                o = e[1] / 2,
+            n._latlngMarkers.search(a).forEach(function(t) {
+              var e = n._map.latLngToContainerPoint(t.data.getLatLng()),
+                a = t.data.options.icon.options.iconSize,
+                r = a[0] / 2,
+                o = a[1] / 2,
                 s = {
-                  minX: a.x - r,
-                  minY: a.y - o,
-                  maxX: a.x + r,
-                  maxY: a.y + o,
+                  minX: e.x - r,
+                  minY: e.y - o,
+                  maxX: e.x + r,
+                  maxY: e.y + o,
                   data: t.data,
                 }
-              i.push(s), n._drawMarker(t.data, a)
+              i.push(s), n._drawMarker(t.data, e)
             }),
               this._markers.clear(),
               this._markers.load(i)
@@ -662,10 +662,10 @@
           ;(this._canvas.width = i.x),
             (this._canvas.height = i.y),
             (this._context = this._canvas.getContext('2d'))
-          var a = this._map.options.zoomAnimation && t.Browser.any3d
+          var e = this._map.options.zoomAnimation && t.Browser.any3d
           t.DomUtil.addClass(
             this._canvas,
-            'leaflet-zoom-' + (a ? 'animated' : 'hide')
+            'leaflet-zoom-' + (e ? 'animated' : 'hide')
           )
         },
         addOnClickListener: function(t) {
@@ -678,22 +678,22 @@
           if (this._markers) {
             var n = this,
               i = t.containerPoint.x,
-              a = t.containerPoint.y
+              e = t.containerPoint.y
             n._openToolTip &&
               (n._openToolTip.closeTooltip(), delete n._openToolTip)
-            var e = this._markers.search({ minX: i, minY: a, maxX: i, maxY: a })
-            e && e.length > 0
+            var a = this._markers.search({ minX: i, minY: e, maxX: i, maxY: e })
+            a && a.length > 0
               ? ((n._map._container.style.cursor = 'pointer'),
                 'click' === t.type &&
-                  (e[0].data.getPopup() && e[0].data.openPopup(),
+                  (a[0].data.getPopup() && a[0].data.openPopup(),
                   n._onClickListeners.forEach(function(n) {
-                    n(t, e)
+                    n(t, a)
                   })),
                 'mousemove' === t.type &&
-                  (e[0].data.getTooltip() &&
-                    ((n._openToolTip = e[0].data), e[0].data.openTooltip()),
+                  (a[0].data.getTooltip() &&
+                    ((n._openToolTip = a[0].data), a[0].data.openTooltip()),
                   n._onHoverListeners.forEach(function(n) {
-                    n(t, e)
+                    n(t, a)
                   })))
               : (n._map._container.style.cursor = '')
           }

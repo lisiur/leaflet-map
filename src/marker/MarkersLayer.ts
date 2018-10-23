@@ -97,6 +97,7 @@ export default class MarkersLayer {
       segmentedColors: ['#3388FF'],
       heatOptions: {
         max: 1,
+        minOpacity: 1,
       },
     }
     this.type = 'marker'
@@ -197,11 +198,21 @@ export default class MarkersLayer {
     this.options.iconUnicode = iconUnicode
     this.redraw()
   }
+  public pitch(id: string) {
+    this.markers.forEach((marker) => {
+      if (marker.getData().id === id) {
+        marker.fire('click')
+        return
+      }
+    })
+  }
   /** 渲染为散点图 */
   protected configMarkerLayer() {
     if (this.markerLayer) {
       this.markerLayer.remove()
     }
+    // TODO: 优化
+    this.initMarkers()
     const canvasIconLayer = L.canvasIconLayer({}).addTo(this.map)
     // 添加点击事件
     canvasIconLayer.addOnClickListener((_, [{ data: marker }]) => {
@@ -230,10 +241,28 @@ export default class MarkersLayer {
     canvasIconLayer.addMarkers(this.markers)
 
     this.map.on('zoomstart', () => {
-      this.map.removeLayer(this.markerLayer)
+      if (!this.visible) {
+        return
+      }
+      if (this.type === 'marker') {
+        if (this.options.renderType === 'point') {
+          this.map.removeLayer(this.markerLayer)
+        }
+      } else {
+        this.map.removeLayer(this.markerLayer)
+      }
     })
     this.map.on('zoomend', () => {
-      this.map.addLayer(this.markerLayer)
+      if (!this.visible) {
+        return
+      }
+      if (this.type === 'marker') {
+        if (this.options.renderType === 'point') {
+          this.map.addLayer(this.markerLayer)
+        }
+      } else {
+        this.map.addLayer(this.markerLayer)
+      }
     })
 
     // 解决初次渲染不出图标问题
@@ -248,6 +277,7 @@ export default class MarkersLayer {
     return '' + data[this.options.tooltipAttr]
   }
   private initMarkers() {
+    this.markers = []
     this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
 
@@ -321,7 +351,9 @@ export default class MarkersLayer {
       const latLng = marker.getLatLng()
       const dimensionAttr =
         this.options.heatOptions && this.options.heatOptions.dimensionAttr
-      let alt = marker.getData()[dimensionAttr]
+      let alt =
+        (dimensionAttr && marker.getData()[dimensionAttr]) ||
+        this.options.heatOptions.max
       if (typeof alt !== 'number') {
         alt = this.options.heatOptions.max
       }
@@ -329,7 +361,8 @@ export default class MarkersLayer {
     })
     this.heatLayer = L.heatLayer(
       this.markers.map((it) => it.getLatLng()),
-      this.options.heatOptions
+      // TODO: 使用 mergeConfig 简化
+      Object.assign({}, this.options.heatOptions, { minOpacity: 1 })
     )
     return this.heatLayer
   }
@@ -347,34 +380,38 @@ export default class MarkersLayer {
     data: DataListItem,
     isLarger: boolean
   ): L.Icon | L.DivIcon {
-    let iconSize = this.options.iconSize
-    let iconAnchor = this.options.iconAnchor
-    iconSize = isLarger ? [iconSize[0] * 1.5, iconSize[1] * 1.5] : iconSize
-    iconAnchor = isLarger
-      ? [iconAnchor[0] * 1.5, iconAnchor[1] * 1.5]
-      : iconAnchor
+    const iconSize = this.options.iconSize
+    const iconAnchor = this.options.iconAnchor
+    const largerIconSize = [iconSize[0] * 1.5, iconSize[1] * 1.5] as [
+      number,
+      number
+    ]
+    const largerIconAnchor = [iconAnchor[0] * 1.5, iconAnchor[1] * 1.5] as [
+      number,
+      number
+    ]
 
     const iconColor = this.options.iconColor
 
     switch (this.options.iconType) {
       case 'image': {
-        return L.icon({
-          iconUrl: this.options.iconImageUrl,
-          iconSize,
-          iconAnchor,
-        })
+        // return L.icon({
+        //   iconUrl: this.options.iconImageUrl,
+        //   iconSize: isLarger ? largerIconSize : iconSize,
+        //   iconAnchor,
+        // })
       }
       case 'font_class':
       case 'symbol':
       case 'unicode': {
         return L.divIcon({
           html: this.getCustomIconHTML(data, {
-            iconSize,
+            iconSize: isLarger ? largerIconSize : iconSize,
             iconColor,
           }),
           className: isLarger ? 'large-div-icon-marker' : '',
-          iconSize,
-          iconAnchor,
+          iconSize: isLarger ? largerIconSize : iconSize,
+          iconAnchor: isLarger ? largerIconAnchor : iconAnchor,
         })
       }
       default: {
