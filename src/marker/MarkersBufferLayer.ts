@@ -14,6 +14,7 @@ export default class MarkersBufferLayer extends MarkersLayer {
     channelFunc: ChannelFunc
   ) {
     super(map, dataList, options, channelFunc)
+    this.type = 'markerBuffer'
     const defaultBufferOptions: L.CircleMarkerOptions = {
       radius: 1000,
       stroke: false,

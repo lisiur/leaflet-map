@@ -3,6 +3,7 @@ import MarkersLayer from './marker/MarkersLayer'
 import MarkersBufferLayer from './marker/MarkersBufferLayer'
 import Polyline from './polyline/Polyline'
 import PolylinesLayer from './polyline/PolylinesLayer'
+import PolylinesBufferLayer from './polyline/PolylinesBufferLayer'
 import Polygon from './polygon/Polygon'
 import PolygonsLayer from './polygon/PolygonsLayer'
 
@@ -12,6 +13,7 @@ export default {
   MarkersBufferLayer,
   Polyline,
   PolylinesLayer,
+  PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
 }
@@ -21,6 +23,7 @@ export {
   MarkersBufferLayer,
   Polyline,
   PolylinesLayer,
+  PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
 }

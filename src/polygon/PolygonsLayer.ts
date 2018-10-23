@@ -19,6 +19,10 @@ interface PolygonLayerOptions extends L.PolylineOptions {
 }
 export default class PolygonsLayer {
   public type: string
+
+  protected visible: boolean
+  protected layer: L.LayerGroup
+
   private map: L.Map
   private dataList: DataListItem[]
   private options: PolygonLayerOptions
@@ -27,9 +31,8 @@ export default class PolygonsLayer {
   private segmentedMin: number
   private segmentedStep: number
   // private focusedPolygon: Polygon
-  private visible: boolean
-  private layer: L.LayerGroup
   private polygonLayer: L.LayerGroup
+
   constructor(
     map: L.Map,
     dataList: DataListItem[],
@@ -105,6 +108,9 @@ export default class PolygonsLayer {
   public changeColor(color: string) {
     this.options.fillColor = color
     this.redraw()
+  }
+  protected getToolTipContent(data: DataListItem) {
+    return '' + data[this.options.tooltipAttr]
   }
   private initPolygons() {
     this.dataList.forEach((data) => {

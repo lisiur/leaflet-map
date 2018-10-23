@@ -44,7 +44,7 @@ export function heatLayer(
 ): HeatLayer
 /** HeatLayer */
 
-/** LeafletCanvasMarker */
+/** LeafletCanvasMarker START */
 interface CanvasIconLayerEventHandler {
   (event: L.LeafletEvent, data: [{ data: Marker }])
 }
@@ -65,9 +65,9 @@ export interface CanvasIconLayer extends Layer {
 }
 export function canvasIconLayer(params?: MarkerOptions): CanvasIconLayer
 
-/** LeafletCanvasMarker */
+/** LeafletCanvasMarker END*/
 
-/** marker cluster */
+/** marker cluster START*/
 type IconCreateFunction = (cluster: MarkersCluster) => L.DivIcon
 export interface MarkersCluster extends LayerGroup {
   addLayers(markers: Marker[])
@@ -85,7 +85,14 @@ export interface MarkersClusterOptions {
 export function markerClusterGroup(
   params?: MarkersClusterOptions
 ): MarkerCluster
-/** marker cluster */
+/** marker cluster END */
+
+/** corridor START */
+interface CorridorOptions extends L.PolylineOptions {
+  corridor: number
+}
+export function corridor(latLngs: LatLng[], options: CorridorOptions): L.Layer
+/** corridor END */
 
 export class Class {
   static extend(props: any): { new (...args: any[]): any } & typeof Class

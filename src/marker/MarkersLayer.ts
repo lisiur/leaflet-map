@@ -70,7 +70,7 @@ export default class MarkersLayer {
   protected markerLayer: L.CanvasIconLayer
 
   protected visible: boolean
-  private layer:
+  protected layer:
     | L.CanvasIconLayer
     | L.HeatLayer
     | L.MarkersCluster
@@ -244,6 +244,9 @@ export default class MarkersLayer {
 
     this.markerLayer = canvasIconLayer
     return this.markerLayer
+  }
+  protected getToolTipContent(data: DataListItem) {
+    return '' + data[this.options.tooltipAttr]
   }
   private initMarkers() {
     this.dataList.forEach((data) => {

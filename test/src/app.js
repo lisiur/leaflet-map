@@ -1,5 +1,6 @@
 // @ts-ignore
 import leafletMap from '../../../leaflet-layer'
+import { red } from 'ansi-colors'
 
 // @ts-ignore
 const L = window.L
@@ -22,67 +23,22 @@ L.tileLayer
 var dataList = [
   {
     geometry: {
-      type: 'Point',
-      coordinates: [32.0304, 118.7968],
-    },
-    price: 1,
-  },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [32.0404, 118.7968],
+      type: 'LineString',
+      coordinates: [[32.0404, 118.7968], [32.0404, 118.7868]],
     },
     price: 2,
   },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [32.0404, 118.7868],
-    },
-    price: 3,
-  },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [32.0304, 118.7868],
-    },
-    price: 4,
-  },
 ]
 
-const layer = new leafletMap.MarkersLayer(
+const layer = new leafletMap.PolylinesBufferLayer(
   map,
   dataList,
-  {
-    // renderType: 'point',
-    // renderPointColorType: 'segmented',
-    // iconType: 'unicode',
-
-    // // iconImageUrl: 'img/marker.png',
-    // iconSize: [20, 20],
-    iconUnicode: '&#xe655;',
-    // iconAnchor: [10, 10],
-    // iconColor: 'red',
-    // iconClass: 'iconfont',
-
-    // /** popup 展示字段 */
-    // popupAttr: 'price',
-    // /** tooltip 展示字段 */
-    // tooltipAttr: 'price',
-
-    // /** 分段渲染统计字段 */
-    // segmentedAttr: 'price',
-    // segmentedColors: ['red', 'green', 'blue', 'pink'],
-
-    // heatOptions: {},
-    // iconRenderer(data, params) {
-    //   return `<i style="font-size: 20px; color: red;">X</i>`
-    // },
-  },
+  { tooltipAttr: 'price' },
   function(eventName) {
     console.log(eventName)
   }
 )
 
 layer.draw()
+
 window.layer = layer

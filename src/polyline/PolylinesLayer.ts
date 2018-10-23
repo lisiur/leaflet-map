@@ -19,17 +19,19 @@ interface PolylineLayerOptions extends L.PolylineOptions {
 }
 export default class PolylinesLayer {
   public type: string
-  private map: L.Map
-  private dataList: DataListItem[]
-  private options: PolylineLayerOptions
-  private channelFunc: ChannelFunc
-  private polylines: Polyline[]
-  private segmentedMin: number
-  private segmentedStep: number
+
+  protected visible: boolean
+  protected layer: L.LayerGroup
+
+  protected map: L.Map
+  protected dataList: DataListItem[]
+  protected options: PolylineLayerOptions
+  protected channelFunc: ChannelFunc
+  protected polylines: Polyline[]
+  protected segmentedMin: number
+  protected segmentedStep: number
   // private focusedPolyline: Polyline
-  private visible: boolean
-  private layer: L.LayerGroup
-  private polylineLayer: L.LayerGroup
+  protected polylineLayer: L.LayerGroup
   constructor(
     map: L.Map,
     dataList: DataListItem[],
@@ -106,7 +108,7 @@ export default class PolylinesLayer {
     this.options.fillColor = color
     this.redraw()
   }
-  private initPolylines() {
+  protected initPolylines() {
     this.dataList.forEach((data) => {
       this.cacheSegmentParams()
 
@@ -126,6 +128,20 @@ export default class PolylinesLayer {
       this.polylines.push(polyline)
     })
   }
+  protected getSegmentedPolylineColor(data: DataListItem): string {
+    const val = data[this.options.segmentedAttr]
+    const color = this.options.segmentedColors[
+      (val - this.segmentedMin) / this.segmentedStep
+    ]
+    return color
+  }
+  protected polylineClickHandler(polyline: Polyline) {
+    // this.focusedPolyline = polyline
+    this.channelFunc('on-click-polyline', polyline)
+  }
+  protected getToolTipContent(data: DataListItem) {
+    return '' + data[this.options.tooltipAttr]
+  }
   private configPolylineLayer() {
     this.polylineLayer = L.layerGroup()
     this.polylines.forEach((polyline) => {
@@ -143,10 +159,6 @@ export default class PolylinesLayer {
     })
     return this.polylineLayer
   }
-  private polylineClickHandler(polyline: Polyline) {
-    // this.focusedPolyline = polyline
-    this.channelFunc('on-click-polyline', polyline)
-  }
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
     let maxVal = -Infinity
@@ -159,12 +171,5 @@ export default class PolylinesLayer {
     const step = (maxVal - minVal + 1) / segmentedLength
     this.segmentedMin = minVal
     this.segmentedStep = step
-  }
-  private getSegmentedPolylineColor(data: DataListItem): string {
-    const val = data[this.options.segmentedAttr]
-    const color = this.options.segmentedColors[
-      (val - this.segmentedMin) / this.segmentedStep
-    ]
-    return color
   }
 }
