@@ -37,7 +37,7 @@ export interface MarkersLayerOptions {
   isCluster?: boolean
 
   /** popup 展示字段 */
-  popupAttr?: string
+  popupAttr?: string | { label: string; value: any }
   /** tooltip 展示字段 */
   tooltipAttr?: string
 
@@ -309,6 +309,9 @@ export default class MarkersLayer {
 
       // 将相关值绑定到 marker上
       marker.setData(data)
+      marker.on('click', () => {
+        this.markerClickHandler(marker)
+      })
 
       this.markers.push(marker)
     })
@@ -349,7 +352,7 @@ export default class MarkersLayer {
         })
         marker.setData(m.getData())
         marker.bindTooltip('' + marker.getData()[this.options.tooltipAttr])
-        marker.bindPopup('' + marker.getData()[this.options.popupAttr])
+        marker.bindPopup(this.getPopupContent(marker.getData()))
         marker.on('click', () => {
           this.markerClickHandler(marker)
         })
@@ -559,6 +562,13 @@ export default class MarkersLayer {
     if (!this.options.popupAttr) {
       return ''
     }
-    return `${this.options.popupAttr}: ${data[this.options.popupAttr]}`
+    if (typeof this.options.popupAttr === 'string') {
+      return `${this.options.popupAttr}: ${data[this.options.popupAttr]}`
+    }
+    if (typeof this.options.popupAttr === 'object') {
+      return `${this.options.popupAttr.label}: ${
+        data[this.options.popupAttr.value]
+      }`
+    }
   }
 }

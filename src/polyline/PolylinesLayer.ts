@@ -7,7 +7,7 @@ interface PolylineLayerOptions extends L.PolylineOptions {
   renderPolylineColorType: PolylineLayerRenderColorType
 
   /** popup 展示字段 */
-  popupAttr?: string
+  popupAttr?: string | { label: string; value: any }
   /** tooltip 展示字段 */
   tooltipAttr?: string
 
@@ -148,7 +148,17 @@ export default class PolylinesLayer {
     return '' + data[this.options.tooltipAttr]
   }
   protected getPopupContent(data: DataListItem) {
-    return '' + data[this.options.popupAttr]
+    if (!this.options.popupAttr) {
+      return ''
+    }
+    if (typeof this.options.popupAttr === 'string') {
+      return `${this.options.popupAttr}: ${data[this.options.popupAttr]}`
+    }
+    if (typeof this.options.popupAttr === 'object') {
+      return `${this.options.popupAttr.label}: ${
+        data[this.options.popupAttr.value]
+      }`
+    }
   }
   private configPolylineLayer() {
     this.polylineLayer = L.layerGroup()

@@ -29,6 +29,7 @@ export default class MarkersBufferLayer extends MarkersLayer {
 
   public draw(options?: MarkersBufferLayerOptions) {
     this.options = Object.assign(this.options, options)
+    this.options.bufferOptions.color = this.options.iconColor
     this.initMarkers()
     return this.redraw()
   }
@@ -76,6 +77,20 @@ export default class MarkersBufferLayer extends MarkersLayer {
         circleLayer.bindTooltip(
           '' + marker.getData()[this.options.bufferTooltipAttr]
         )
+      } else {
+        switch (typeof this.options.popupAttr) {
+          case 'string':
+            circleLayer.bindTooltip(
+              '' + marker.getData()[this.options.popupAttr]
+            )
+            break
+          case 'object':
+            circleLayer.bindTooltip(
+              '' + marker.getData()[this.options.popupAttr.value]
+            )
+          default:
+            break
+        }
       }
       groupLayer.addLayer(circleLayer)
     })

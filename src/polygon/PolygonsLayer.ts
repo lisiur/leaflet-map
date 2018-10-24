@@ -7,7 +7,7 @@ export interface PolygonLayerOptions extends L.PolylineOptions {
   renderPolygonColorType: PolygonLayerRenderColorType
 
   /** popup 展示字段 */
-  popupAttr?: string
+  popupAttr?: string | { label: string; value: any }
   /** tooltip 展示字段 */
   tooltipAttr?: string
 
@@ -42,6 +42,7 @@ export default class PolygonsLayer {
     const defaultOptions: PolygonLayerOptions = {
       color: '#3388FF',
       fillColor: '#3388FF',
+      opacity: 0.3,
       renderPolygonColorType: 'single',
       segmentedColors: ['#3388FF'],
     }
@@ -119,7 +120,17 @@ export default class PolygonsLayer {
     return '' + data[this.options.tooltipAttr]
   }
   protected getPopupContent(data: DataListItem) {
-    return '' + data[this.options.popupAttr]
+    if (!this.options.popupAttr) {
+      return ''
+    }
+    if (typeof this.options.popupAttr === 'string') {
+      return `${this.options.popupAttr}: ${data[this.options.popupAttr]}`
+    }
+    if (typeof this.options.popupAttr === 'object') {
+      return `${this.options.popupAttr.label}: ${
+        data[this.options.popupAttr.value]
+      }`
+    }
   }
   protected cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
@@ -155,6 +166,9 @@ export default class PolygonsLayer {
 
       // 将相关值绑定到 marker上
       polygon.setData(data)
+      polygon.on('click', () => {
+        this.polygonClickHandler(polygon)
+      })
 
       this.polygons.push(polygon)
     })
@@ -163,11 +177,14 @@ export default class PolygonsLayer {
     this.polygonLayer = L.layerGroup()
     this.polygons.forEach((polygon) => {
       let color = this.options.color
+      let fillColor = this.options.fillColor
       if (this.options.renderPolygonColorType === 'segmented') {
         color = this.getSegmentedPolygonColor(polygon.getData())
+        fillColor = color
       }
       const options: L.PolylineOptions = Object.assign({}, this.options, {
         color,
+        fillColor,
       })
       // 重新应用 options
       const newPolygon = new Polygon(polygon.getLatLngs(), options)
