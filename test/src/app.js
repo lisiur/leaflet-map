@@ -1,6 +1,5 @@
 // @ts-ignore
 import leafletMap from '../../../leaflet-layer'
-import { red } from 'ansi-colors'
 
 // @ts-ignore
 const L = window.L
@@ -12,6 +11,53 @@ L.tileLayer
   .chinaProvider('GaoDe.Normal.Map', { maxZoom: 18, minZoom: 3 })
   .addTo(map)
 
+var dataList = [
+  [
+    {
+      geometry: {
+        type: 'Point',
+        coordinates: [116.401216, 39.90778],
+      },
+      price: 1,
+    },
+  ],
+  [
+    {
+      geometry: {
+        type: 'Point',
+        coordinates: [116.391216, 39.90778],
+      },
+      price: 1,
+    },
+  ],
+  [
+    {
+      geometry: {
+        type: 'Point',
+        coordinates: [116.391216, 39.91778],
+      },
+      price: 1,
+    },
+  ],
+  [
+    {
+      geometry: {
+        type: 'Point',
+        coordinates: [116.401216, 39.91778],
+      },
+      price: 1,
+    },
+  ],
+]
+const layer = new leafletMap.DynamicHeatLayer(
+  map,
+  dataList,
+  { loop: true, auto: true },
+  console.log
+)
+  .draw()
+  .start()
+
 // L.marker([32.0304, 118.7968], {
 //   icon: L.divIcon({
 //     html: '<i class="iconfont" style="font-size: 40px;">&#xe655;</i>',
@@ -20,53 +66,53 @@ L.tileLayer
 //   }),
 // }).addTo(map)
 // L.marker([32.0304, 118.7968]).addTo(map)
-var dataList = [
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [116.401216, 39.90778],
-    },
-    price: 2,
-  },
-]
+// var dataList = [
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.90778],
+//     },
+//     price: 2,
+//   },
+// ]
 
-const layer = new leafletMap.MarkersLayer(
-  map,
-  dataList,
-  {
-    iconUnicode: '&#xe655;',
-    iconSize: [20, 20],
-    iconAnchor: [10, 20],
-    popupAttr: 'price',
-    tooltipAttr: 'price',
-  },
-  function(eventName) {
-    console.log(eventName)
-  }
-)
+// const layer = new leafletMap.MarkersLayer(
+//   map,
+//   dataList,
+//   {
+//     iconUnicode: '&#xe655;',
+//     iconSize: [20, 20],
+//     iconAnchor: [10, 20],
+//     popupAttr: 'price',
+//     tooltipAttr: 'price',
+//   },
+//   function(eventName) {
+//     console.log(eventName)
+//   }
+// )
 
-layer.draw()
+// layer.draw()
 
-L.marker(L.latLng(39.90778, 116.401216))
-  .addTo(map)
-  .bindTooltip('adf')
+// // L.marker(L.latLng(39.90778, 116.401216))
+// //   .addTo(map)
+// //   .bindTooltip('adf')
 
-L.marker(L.latLng(39.90778, 116.401216), {
-  opacity: 0.2,
-  icon: L.divIcon({
-    iconAnchor: [10, 20],
-    iconSize: [20, 20],
-    html: `
-    <i
-      class="iconfont"
-      style="
-        color: red;
-        font-size: 20px;
-      "
-      >
-      &#xe655;
-    </i>
-  `,
-  }),
-}).addTo(map)
-window.layer = layer
+// L.marker(L.latLng(39.90778, 116.401216), {
+//   opacity: 0.2,
+//   icon: L.divIcon({
+//     iconAnchor: [10, 20],
+//     iconSize: [20, 20],
+//     html: `
+//     <i
+//       class="iconfont"
+//       style="
+//         color: red;
+//         font-size: 20px;
+//       "
+//       >
+//       &#xe655;
+//     </i>
+//   `,
+//   }),
+// }).addTo(map)
+// window.layer = layer

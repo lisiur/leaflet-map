@@ -3,7 +3,7 @@ import Polygon from './Polygon'
 
 /** 渲染颜色样式 单色|分段 */
 type PolygonLayerRenderColorType = 'single' | 'segmented'
-interface PolygonLayerOptions extends L.PolylineOptions {
+export interface PolygonLayerOptions extends L.PolylineOptions {
   renderPolygonColorType: PolygonLayerRenderColorType
 
   /** popup 展示字段 */
@@ -23,15 +23,15 @@ export default class PolygonsLayer {
   protected visible: boolean
   protected layer: L.LayerGroup
 
-  private map: L.Map
-  private dataList: DataListItem[]
-  private options: PolygonLayerOptions
-  private channelFunc: ChannelFunc
-  private polygons: Polygon[]
-  private segmentedMin: number
-  private segmentedStep: number
+  protected map: L.Map
+  protected dataList: DataListItem[]
+  protected options: PolygonLayerOptions
+  protected channelFunc: ChannelFunc
+  protected segmentedMin: number
+  protected segmentedStep: number
+  protected polygons: Polygon[]
   // private focusedPolygon: Polygon
-  private polygonLayer: L.LayerGroup
+  protected polygonLayer: L.LayerGroup
 
   constructor(
     map: L.Map,
@@ -58,11 +58,10 @@ export default class PolygonsLayer {
     // this.focusedPolygon = null
 
     this.options = Object.assign({}, defaultOptions, options)
-
-    this.initPolygons()
   }
   public draw(options?: PolygonLayerOptions) {
     this.options = Object.assign(this.options, options)
+    this.initPolygons()
     return this.redraw()
   }
   public redraw() {
@@ -90,7 +89,7 @@ export default class PolygonsLayer {
   }
   public destroy() {
     if (this.layer) {
-      this.layer.remove()
+      this.map.removeLayer(this.layer)
     }
   }
   public toggleVisible(visible: boolean) {
@@ -119,7 +118,34 @@ export default class PolygonsLayer {
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
-  private initPolygons() {
+  protected getPopupContent(data: DataListItem) {
+    return '' + data[this.options.popupAttr]
+  }
+  protected cacheSegmentParams() {
+    const segmentedLength = this.options.segmentedColors.length
+    let maxVal = -Infinity
+    let minVal = Infinity
+    for (const data of this.dataList) {
+      const val = data[this.options.segmentedAttr]
+      maxVal = Math.max(maxVal, val)
+      minVal = Math.min(minVal, val)
+    }
+    const step = (maxVal - minVal + 1) / segmentedLength
+    this.segmentedMin = minVal
+    this.segmentedStep = step
+  }
+  protected getSegmentedPolygonColor(data: DataListItem): string {
+    const val = data[this.options.segmentedAttr]
+    const color = this.options.segmentedColors[
+      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
+    ]
+    return color
+  }
+  protected polygonClickHandler(polygon: Polygon) {
+    // this.focusedPolygon = polygon
+    this.channelFunc('on-click-polygon', polygon)
+  }
+  protected initPolygons() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
     this.polygons = []
@@ -152,33 +178,12 @@ export default class PolygonsLayer {
       if (this.options.tooltipAttr) {
         newPolygon.bindTooltip(this.getToolTipContent(newPolygon.getData()))
       }
+      if (this.options.popupAttr) {
+        newPolygon.bindPopup(this.getPopupContent(newPolygon.getData()))
+      }
 
       this.polygonLayer.addLayer(newPolygon)
     })
     return this.polygonLayer
-  }
-  private polygonClickHandler(polygon: Polygon) {
-    // this.focusedPolygon = polygon
-    this.channelFunc('on-click-polygon', polygon)
-  }
-  private cacheSegmentParams() {
-    const segmentedLength = this.options.segmentedColors.length
-    let maxVal = -Infinity
-    let minVal = Infinity
-    for (const data of this.dataList) {
-      const val = data[this.options.segmentedAttr]
-      maxVal = Math.max(maxVal, val)
-      minVal = Math.min(minVal, val)
-    }
-    const step = (maxVal - minVal + 1) / segmentedLength
-    this.segmentedMin = minVal
-    this.segmentedStep = step
-  }
-  private getSegmentedPolygonColor(data: DataListItem): string {
-    const val = data[this.options.segmentedAttr]
-    const color = this.options.segmentedColors[
-      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
-    ]
-    return color
   }
 }

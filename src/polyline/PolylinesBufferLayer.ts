@@ -47,10 +47,10 @@ export default class PolylinesBufferLayer extends PolylinesLayer {
     // this.focusedPolyline = null
 
     this.options = Object.assign({}, defaultOptions, options)
-    this.initPolylines()
   }
   public draw(options?: PolylineBufferLayerOptions) {
     this.options = Object.assign(this.options, options)
+    this.initPolylines()
     return this.redraw()
   }
   public redraw() {

@@ -56,11 +56,10 @@ export default class PolylinesLayer {
     // this.focusedPolyline = null
 
     this.options = Object.assign({}, defaultOptions, options)
-
-    this.initPolylines()
   }
   public draw(options?: PolylineLayerOptions) {
     this.options = Object.assign(this.options, options)
+    this.initPolylines()
     return this.redraw()
   }
   public redraw() {
@@ -88,7 +87,7 @@ export default class PolylinesLayer {
   }
   public destroy() {
     if (this.layer) {
-      this.layer.remove()
+      this.map.removeLayer(this.layer)
     }
   }
   public toggleVisible(visible: boolean) {
@@ -118,22 +117,20 @@ export default class PolylinesLayer {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
 
-    this.polylines = []
-    this.dataList.forEach((data) => {
+    this.polylines = this.dataList.map((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
-      let fillColor = this.options.fillColor
-      if (this.options.renderPolylineColorType === 'segmented') {
-        fillColor = this.getSegmentedPolylineColor(data)
-      }
+      // let color = this.options.color
+      // if (this.options.renderPolylineColorType === 'segmented') {
+      //   color = this.getSegmentedPolylineColor(data)
+      // }
       const polyline = new Polyline(
-        (layer as L.Polyline).getLatLngs() as PolylineOptions,
-        Object.assign({}, this.options, { fillColor })
+        (layer as L.Polyline).getLatLngs() as PolylineOptions
       )
 
       // 将相关值绑定到 marker上
       polyline.setData(data)
 
-      this.polylines.push(polyline)
+      return polyline
     })
   }
   protected getSegmentedPolylineColor(data: DataListItem): string {
@@ -150,11 +147,18 @@ export default class PolylinesLayer {
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
+  protected getPopupContent(data: DataListItem) {
+    return '' + data[this.options.popupAttr]
+  }
   private configPolylineLayer() {
     this.polylineLayer = L.layerGroup()
     this.polylines.forEach((polyline) => {
+      let color = this.options.color
+      if (this.options.renderPolylineColorType === 'segmented') {
+        color = this.getSegmentedPolylineColor(polyline.getData())
+      }
       const options: L.PolylineOptions = Object.assign({}, this.options, {
-        color: this.getSegmentedPolylineColor(polyline.getData()),
+        color,
       })
       const newPolyline = new Polyline(
         polyline.getLatLngs() as PolylineOptions,
@@ -166,6 +170,9 @@ export default class PolylinesLayer {
       newPolyline.setData(polyline.getData())
       if (this.options.tooltipAttr) {
         newPolyline.bindTooltip(this.getToolTipContent(newPolyline.getData()))
+      }
+      if (this.options.popupAttr) {
+        newPolyline.bindPopup(this.getPopupContent(newPolyline.getData()))
       }
       this.polylineLayer.addLayer(newPolyline)
     })

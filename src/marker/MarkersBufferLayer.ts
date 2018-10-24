@@ -29,6 +29,7 @@ export default class MarkersBufferLayer extends MarkersLayer {
 
   public draw(options?: MarkersBufferLayerOptions) {
     this.options = Object.assign(this.options, options)
+    this.initMarkers()
     return this.redraw()
   }
 
@@ -44,9 +45,24 @@ export default class MarkersBufferLayer extends MarkersLayer {
     }
     this.markerLayer = this.configMarkerLayer()
     this.bufferLayer = this.configBufferLayer()
-    this.map.addLayer(this.markerLayer)
-    this.map.addLayer(this.bufferLayer)
+
+    this.layer = L.layerGroup()
+    this.layer.addLayer(this.markerLayer)
+    this.layer.addLayer(this.bufferLayer)
+
+    this.map.addLayer(this.layer)
     return this
+  }
+
+  public getBounds(): L.LatLngBoundsExpression {
+    if (this.markers.length <= 0) {
+      return this.map.getBounds()
+    }
+    return this.markers.reduce((prev, curr) => {
+      return prev.extend(
+        curr.getLatLng().toBounds(this.options.bufferOptions.radius)
+      )
+    }, this.markers[0].getLatLng().toBounds(this.options.bufferOptions.radius))
   }
 
   private configBufferLayer() {

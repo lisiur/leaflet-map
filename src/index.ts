@@ -6,6 +6,7 @@ import PolylinesLayer from './polyline/PolylinesLayer'
 import PolylinesBufferLayer from './polyline/PolylinesBufferLayer'
 import Polygon from './polygon/Polygon'
 import PolygonsLayer from './polygon/PolygonsLayer'
+import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
 
 export default {
   Marker,
@@ -16,6 +17,7 @@ export default {
   PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
+  DynamicHeatLayer,
 }
 export {
   Marker,
@@ -26,4 +28,5 @@ export {
   PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
+  DynamicHeatLayer,
 }

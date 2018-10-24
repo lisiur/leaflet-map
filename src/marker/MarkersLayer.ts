@@ -21,8 +21,8 @@ type IconRenderFunc = (
 
 export interface MarkersLayerOptions {
   renderType: MarkersLayerRenderType
-  renderPointColorType: MarkersLayerRenderPointColorType
-  iconType: MarkersLayerIconType
+  renderPointColorType?: MarkersLayerRenderPointColorType
+  iconType?: MarkersLayerIconType
 
   iconImageUrl?: string
   iconSize?: [number, number]
@@ -33,6 +33,7 @@ export interface MarkersLayerOptions {
   iconAnchor?: [number, number]
   iconRenderer?: IconRenderFunc
 
+  // 是否聚合，优先级高于 renderType == point
   isCluster?: boolean
 
   /** popup 展示字段 */
@@ -51,7 +52,7 @@ export interface MarkersLayerOptions {
 }
 
 /** 转化为热力图的 options */
-interface MarkersHeatLayerOptions extends L.HeatLayerOptions {
+export interface MarkersHeatLayerOptions extends L.HeatLayerOptions {
   dimensionAttr?: string
 }
 
@@ -77,6 +78,8 @@ export default class MarkersLayer {
     | L.HeatLayer
     | L.MarkersCluster
     | L.LayerGroup
+  protected zoomStartCb: () => void
+  protected zoomEndCb: () => void
   private heatLayer: L.HeatLayer
   private clusterLayer: L.MarkersCluster
 
@@ -121,11 +124,14 @@ export default class MarkersLayer {
 
     this.segmentedMin = Infinity
     this.segmentedStep = 1
+
+    this.zoomStartCb = this._zoomStartCb.bind(this)
+    this.zoomEndCb = this._zoomEndCb.bind(this)
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
-    this.initMarkers()
     this.options = Object.assign(this.options, options)
+    this.initMarkers()
     return this.redraw()
   }
   public redraw() {
@@ -161,6 +167,9 @@ export default class MarkersLayer {
     this.map.addLayer(this.layer)
     return this
   }
+  public setData(data: DataListItem[]) {
+    this.dataList = data
+  }
   public setOptions(options: MarkersLayerOptions, redraw = false) {
     this.options = Object.assign(this.options, options)
     if (redraw) {
@@ -180,10 +189,11 @@ export default class MarkersLayer {
     )
   }
   public destroy() {
-    // TODO: 将事件移除
     if (this.layer) {
-      this.layer.remove()
+      this.map.removeLayer(this.layer)
     }
+    this.map.off('zoomstart', this.zoomStartCb)
+    this.map.off('zoomend', this.zoomEndCb)
   }
   public toggleVisible(visible: boolean) {
     this.visible = visible
@@ -211,6 +221,30 @@ export default class MarkersLayer {
         return
       }
     })
+  }
+  protected _zoomStartCb() {
+    if (!this.visible) {
+      return
+    }
+    if (this.type === 'marker') {
+      if (this.options.renderType === 'point' && !this.options.isCluster) {
+        this.map.removeLayer(this.markerLayer)
+      }
+    } else {
+      this.map.removeLayer(this.markerLayer)
+    }
+  }
+  protected _zoomEndCb() {
+    if (!this.visible) {
+      return
+    }
+    if (this.type === 'marker') {
+      if (this.options.renderType === 'point' && !this.options.isCluster) {
+        this.map.addLayer(this.markerLayer)
+      }
+    } else {
+      this.map.addLayer(this.markerLayer)
+    }
   }
   /** 渲染为散点图 */
   protected configMarkerLayer() {
@@ -244,35 +278,11 @@ export default class MarkersLayer {
     })
     canvasIconLayer.addMarkers(this.markers)
 
-    this.map.on('zoomstart', () => {
-      if (!this.visible) {
-        return
-      }
-      if (this.type === 'marker') {
-        if (this.options.renderType === 'point' && !this.options.isCluster) {
-          this.map.removeLayer(this.markerLayer)
-        }
-      } else {
-        this.map.removeLayer(this.markerLayer)
-      }
-    })
-    this.map.on('zoomend', () => {
-      if (!this.visible) {
-        return
-      }
-      if (this.type === 'marker') {
-        if (this.options.renderType === 'point' && !this.options.isCluster) {
-          this.map.addLayer(this.markerLayer)
-        }
-      } else {
-        this.map.addLayer(this.markerLayer)
-      }
-    })
+    this.map.on('zoomstart', this.zoomStartCb)
+    this.map.on('zoomend', this.zoomEndCb)
 
     // 解决初次渲染不出图标问题
-    setTimeout(() => {
-      this.map.panTo(this.map.getCenter())
-    })
+    this.map.panTo(this.map.getCenter())
 
     this.markerLayer = canvasIconLayer
     return this.markerLayer
@@ -280,7 +290,7 @@ export default class MarkersLayer {
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
-  private initMarkers() {
+  protected initMarkers() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
     this.markers = []
@@ -339,6 +349,7 @@ export default class MarkersLayer {
         })
         marker.setData(m.getData())
         marker.bindTooltip('' + marker.getData()[this.options.tooltipAttr])
+        marker.bindPopup('' + marker.getData()[this.options.popupAttr])
         marker.on('click', () => {
           this.markerClickHandler(marker)
         })
@@ -418,10 +429,16 @@ export default class MarkersLayer {
           className: isLarger ? 'large-div-icon-marker' : '',
           iconSize: isLarger ? largerIconSize : iconSize,
           iconAnchor: isLarger ? largerIconAnchor : iconAnchor,
+          tooltipAnchor: isLarger
+            ? [0, -largerIconAnchor[1] / 2]
+            : [0, -iconAnchor[1] / 2],
+          popupAnchor: isLarger
+            ? [0, -largerIconAnchor[1] / 2]
+            : [0, -iconAnchor[1] / 2],
         })
       }
       default: {
-        throw new Error(`图标类型不支持"${this.options.iconType}"`)
+        throw new Error(`renderType 不能为 ${this.options.iconType}`)
       }
     }
   }
