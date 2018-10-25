@@ -1,3 +1,4 @@
+import { lighten } from '../utils/index'
 import { DataListItem, ChannelFunc } from '../definitions'
 import Marker from './Marker'
 
@@ -85,13 +86,14 @@ export default class MarkersLayer {
 
   private segmentedMin: number
   private segmentedStep: number
+  private defaultOptions: MarkersLayerOptions
   constructor(
     map: L.Map,
     dataList: DataListItem[],
     options: MarkersLayerOptions,
     channelFunc: ChannelFunc
   ) {
-    const defaultOptions: MarkersLayerOptions = {
+    this.defaultOptions = {
       renderType: 'point',
       renderPointColorType: 'single',
       iconType: 'unicode',
@@ -99,6 +101,8 @@ export default class MarkersLayer {
       iconClass: 'iconfont',
       iconColor: '#3388FF',
       iconAnchor: [10, 20],
+      popupAttr: { label: '名称', value: 'name' },
+      tooltipAttr: 'name',
       segmentedColors: ['#3388FF'],
       isCluster: false,
       heatOptions: {
@@ -109,7 +113,7 @@ export default class MarkersLayer {
     this.type = 'marker'
     this.map = map
     this.dataList = dataList
-    this.options = Object.assign({}, defaultOptions, options)
+    this.options = options
     this.channelFunc = channelFunc
 
     this.visible = true
@@ -130,8 +134,9 @@ export default class MarkersLayer {
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
-    this.options = Object.assign(this.options, options)
+    this.initOptions(options)
     this.initMarkers()
+    this.initEvents()
     return this.redraw()
   }
   public redraw() {
@@ -192,6 +197,9 @@ export default class MarkersLayer {
     if (this.layer) {
       this.map.removeLayer(this.layer)
     }
+    if (this.focusedDisplayMarker) {
+      this.map.removeLayer(this.focusedDisplayMarker)
+    }
     this.map.off('zoomstart', this.zoomStartCb)
     this.map.off('zoomend', this.zoomEndCb)
   }
@@ -217,7 +225,7 @@ export default class MarkersLayer {
   public pitch(id: string) {
     this.markers.forEach((marker) => {
       if (marker.getData().id === id) {
-        marker.fire('click')
+        this.markerClickHandler(marker)
         return
       }
     })
@@ -278,9 +286,6 @@ export default class MarkersLayer {
     })
     canvasIconLayer.addMarkers(this.markers)
 
-    this.map.on('zoomstart', this.zoomStartCb)
-    this.map.on('zoomend', this.zoomEndCb)
-
     // 解决初次渲染不出图标问题
     this.map.panTo(this.map.getCenter())
 
@@ -289,6 +294,9 @@ export default class MarkersLayer {
   }
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
+  }
+  protected initOptions(options: MarkersLayerOptions) {
+    this.options = Object.assign({}, this.defaultOptions, this.options, options)
   }
   protected initMarkers() {
     // 缓存 segment 相关数据
@@ -309,12 +317,13 @@ export default class MarkersLayer {
 
       // 将相关值绑定到 marker上
       marker.setData(data)
-      marker.on('click', () => {
-        this.markerClickHandler(marker)
-      })
-
       this.markers.push(marker)
     })
+  }
+  protected initEvents() {
+    this.map.on('zoomstart', this.zoomStartCb)
+    this.map.on('zoomend', this.zoomEndCb)
+    this.map.on('contextmenu', console.log)
   }
   // 处理 marker 点击事件
   private markerClickHandler(marker: Marker) {
@@ -335,6 +344,7 @@ export default class MarkersLayer {
     this.focusedDisplayMarker.on('popupclose', () => {
       this.focusedDisplayMarker.remove()
     })
+    marker.closeTooltip()
 
     this.map.panTo(this.focusedMarker.getLatLng())
     this.channelFunc('on-click-marker', marker)
@@ -344,7 +354,9 @@ export default class MarkersLayer {
     if (this.clusterLayer) {
       this.clusterLayer.remove()
     }
-    this.clusterLayer = L.markerClusterGroup()
+    this.clusterLayer = L.markerClusterGroup({
+      iconCreateFunction: this.iconCreateFunction.bind(this),
+    })
     this.clusterLayer.addLayers(
       this.markers.map((m) => {
         const marker = new Marker(m.getLatLng(), {
@@ -570,5 +582,35 @@ export default class MarkersLayer {
         data[this.options.popupAttr.value]
       }`
     }
+  }
+  private iconCreateFunction(cluster: L.MarkersCluster) {
+    return L.divIcon({
+      html: `
+        <div
+          style="
+            border-radius: 50%;
+            background: ${lighten(this.options.iconColor)};
+            width: 50px;
+            height: 50px;
+            opacity: 0.8;
+            ">
+          <div
+            style="
+              text-align: center;
+              line-height: 30px;
+              border-radius: 50%;
+              background: ${this.options.iconColor};
+              width: 32px;
+              height: 32px;
+              margin: 9px;
+              color: white;
+              font-size: 14px;
+            ">
+            ${cluster.getChildCount()}
+          </div>
+        </div>
+      `,
+      iconSize: [40, 40],
+    })
   }
 }

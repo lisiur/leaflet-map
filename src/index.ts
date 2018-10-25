@@ -6,6 +6,7 @@ import PolylinesLayer from './polyline/PolylinesLayer'
 import PolylinesBufferLayer from './polyline/PolylinesBufferLayer'
 import Polygon from './polygon/Polygon'
 import PolygonsLayer from './polygon/PolygonsLayer'
+import GridsLayer from './polygon/GridsLayer'
 import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
 
 export default {
@@ -17,6 +18,7 @@ export default {
   PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
+  GridsLayer,
   DynamicHeatLayer,
 }
 export {
@@ -28,5 +30,6 @@ export {
   PolylinesBufferLayer,
   Polygon,
   PolygonsLayer,
+  GridsLayer,
   DynamicHeatLayer,
 }

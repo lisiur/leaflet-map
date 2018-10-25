@@ -1,8 +1,10 @@
 import { DataListItem, ChannelFunc } from '../definitions'
-import Polyline, { PolylineOptions } from './Polyline'
+import Polyline, { PolylineLatLngExpression } from './Polyline'
+import { darken, lighten } from '../utils/index'
 
 /** 渲染颜色样式 单色|分段 */
 type PolylineLayerRenderColorType = 'single' | 'segmented'
+type ColorMode = 'darken' | 'lighten' | 'normal'
 interface PolylineLayerOptions extends L.PolylineOptions {
   renderPolylineColorType: PolylineLayerRenderColorType
 
@@ -30,7 +32,8 @@ export default class PolylinesLayer {
   protected polylines: Polyline[]
   protected segmentedMin: number
   protected segmentedStep: number
-  // private focusedPolyline: Polyline
+  protected focusedPolyline: Polyline
+  protected focusedDisplayPolyline: Polyline
   protected polylineLayer: L.LayerGroup
   constructor(
     map: L.Map,
@@ -42,20 +45,21 @@ export default class PolylinesLayer {
       color: '#3388FF',
       renderPolylineColorType: 'single',
       segmentedColors: ['#3388FF'],
+      popupAttr: { label: '名称', value: 'name' },
+      tooltipAttr: 'name',
     }
     this.type = 'polyline'
     this.map = map
     this.dataList = dataList
-    this.options = options
+    this.options = Object.assign({}, defaultOptions, options)
     this.channelFunc = channelFunc
 
     this.visible = true
     this.polylines = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
-    // this.focusedPolyline = null
-
-    this.options = Object.assign({}, defaultOptions, options)
+    this.focusedPolyline = null
+    this.focusedDisplayPolyline = null
   }
   public draw(options?: PolylineLayerOptions) {
     this.options = Object.assign(this.options, options)
@@ -108,7 +112,7 @@ export default class PolylinesLayer {
   public pitch(id: string) {
     this.polylines.forEach((polyline) => {
       if (polyline.getData().id === id) {
-        polyline.fire('click')
+        this.polylineClickHandler(polyline)
         return
       }
     })
@@ -124,7 +128,7 @@ export default class PolylinesLayer {
       //   color = this.getSegmentedPolylineColor(data)
       // }
       const polyline = new Polyline(
-        (layer as L.Polyline).getLatLngs() as PolylineOptions
+        (layer as L.Polyline).getLatLngs() as PolylineLatLngExpression
       )
 
       // 将相关值绑定到 marker上
@@ -141,7 +145,32 @@ export default class PolylinesLayer {
     return color
   }
   protected polylineClickHandler(polyline: Polyline) {
-    // this.focusedPolyline = polyline
+    this.focusedPolyline = polyline
+    // 删除前一个 focus
+    if (this.focusedDisplayPolyline) {
+      this.focusedDisplayPolyline.remove()
+    }
+    // 生成当前 focus
+    this.focusedDisplayPolyline = new Polyline(
+      polyline.getLatLngs() as PolylineLatLngExpression,
+      {
+        color: this.getColor(polyline.getData()),
+        fillColor: this.getColor(polyline.getData(), 'normal'),
+      }
+    )
+    this.focusedDisplayPolyline.addTo(this.map)
+
+    this.focusedDisplayPolyline
+      .bindPopup(this.getPopupContent(polyline.getData()))
+      .openPopup()
+
+    this.focusedDisplayPolyline.on('popupclose', () => {
+      this.focusedDisplayPolyline.remove()
+    })
+
+    polyline.closeTooltip()
+
+    this.map.panTo(this.focusedDisplayPolyline.getCenter())
     this.channelFunc('on-click-polyline', polyline)
   }
   protected getToolTipContent(data: DataListItem) {
@@ -171,7 +200,7 @@ export default class PolylinesLayer {
         color,
       })
       const newPolyline = new Polyline(
-        polyline.getLatLngs() as PolylineOptions,
+        polyline.getLatLngs() as PolylineLatLngExpression,
         options
       )
       newPolyline.on('click', () => {
@@ -180,9 +209,6 @@ export default class PolylinesLayer {
       newPolyline.setData(polyline.getData())
       if (this.options.tooltipAttr) {
         newPolyline.bindTooltip(this.getToolTipContent(newPolyline.getData()))
-      }
-      if (this.options.popupAttr) {
-        newPolyline.bindPopup(this.getPopupContent(newPolyline.getData()))
       }
       this.polylineLayer.addLayer(newPolyline)
     })
@@ -200,5 +226,19 @@ export default class PolylinesLayer {
     const step = (maxVal - minVal + 1) / segmentedLength
     this.segmentedMin = minVal
     this.segmentedStep = step
+  }
+  private getColor(data: DataListItem, mode?: ColorMode) {
+    let color = this.options.color
+    if (this.options.renderPolylineColorType === 'segmented') {
+      color = this.getSegmentedPolylineColor(data)
+    }
+    switch (mode) {
+      case 'darken':
+        return darken(color)
+      case 'lighten':
+        return lighten(color)
+      default:
+        return color
+    }
   }
 }

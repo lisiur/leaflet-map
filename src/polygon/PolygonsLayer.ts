@@ -1,8 +1,10 @@
+import { lighten, darken } from '../utils/index'
 import { DataListItem, ChannelFunc } from '../definitions'
 import Polygon from './Polygon'
 
 /** 渲染颜色样式 单色|分段 */
 type PolygonLayerRenderColorType = 'single' | 'segmented'
+type ColorMode = 'darken' | 'lighten' | 'normal'
 export interface PolygonLayerOptions extends L.PolylineOptions {
   renderPolygonColorType: PolygonLayerRenderColorType
 
@@ -30,7 +32,8 @@ export default class PolygonsLayer {
   protected segmentedMin: number
   protected segmentedStep: number
   protected polygons: Polygon[]
-  // private focusedPolygon: Polygon
+  protected focusedPolygon: Polygon
+  protected focusedDisplayPolygon: Polygon
   protected polygonLayer: L.LayerGroup
 
   constructor(
@@ -40,29 +43,34 @@ export default class PolygonsLayer {
     channelFunc: ChannelFunc
   ) {
     const defaultOptions: PolygonLayerOptions = {
+      popupAttr: { label: '名称', value: 'name' },
+      tooltipAttr: 'name',
       color: '#3388FF',
+      fill: true,
       fillColor: '#3388FF',
-      opacity: 0.3,
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.5,
       renderPolygonColorType: 'single',
       segmentedColors: ['#3388FF'],
     }
     this.type = 'polygon'
     this.map = map
     this.dataList = dataList
-    this.options = options
+    this.options = Object.assign({}, defaultOptions, options)
     this.channelFunc = channelFunc
 
     this.visible = true
     this.polygons = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
-    // this.focusedPolygon = null
-
-    this.options = Object.assign({}, defaultOptions, options)
+    this.focusedPolygon = null
+    this.focusedDisplayPolygon = null
   }
   public draw(options?: PolygonLayerOptions) {
-    this.options = Object.assign(this.options, options)
+    this.initOptions(options)
     this.initPolygons()
+    this.initEvent()
     return this.redraw()
   }
   public redraw() {
@@ -92,6 +100,9 @@ export default class PolygonsLayer {
     if (this.layer) {
       this.map.removeLayer(this.layer)
     }
+    if (this.focusedDisplayPolygon) {
+      this.map.removeLayer(this.focusedDisplayPolygon)
+    }
   }
   public toggleVisible(visible: boolean) {
     this.visible = visible
@@ -111,11 +122,12 @@ export default class PolygonsLayer {
   public pitch(id: string) {
     this.polygons.forEach((polygon) => {
       if (polygon.getData().id === id) {
-        polygon.fire('click')
+        this.polygonClickHandler(polygon)
         return
       }
     })
   }
+  protected initEvent() {}
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
@@ -153,8 +165,32 @@ export default class PolygonsLayer {
     return color
   }
   protected polygonClickHandler(polygon: Polygon) {
-    // this.focusedPolygon = polygon
+    this.focusedPolygon = polygon
+    // 删除前一个 focus
+    if (this.focusedDisplayPolygon) {
+      this.focusedDisplayPolygon.remove()
+    }
+    // 生成当前 focus
+    this.focusedDisplayPolygon = new Polygon(polygon.getLatLngs(), {
+      color: '#3388FF',
+      fillColor: this.getColor(polygon.getData()),
+    })
+    this.focusedDisplayPolygon.addTo(this.map)
+
+    this.focusedDisplayPolygon
+      .bindPopup(this.getPopupContent(polygon.getData()))
+      .openPopup()
+
+    this.focusedDisplayPolygon.on('popupclose', () => {
+      this.focusedDisplayPolygon.remove()
+    })
+    polygon.closeTooltip()
+
+    this.map.panTo(this.focusedDisplayPolygon.getCenter())
     this.channelFunc('on-click-polygon', polygon)
+  }
+  protected initOptions(options: PolygonLayerOptions) {
+    this.options = Object.assign(this.options, options)
   }
   protected initPolygons() {
     // 缓存 segment 相关数据
@@ -164,43 +200,45 @@ export default class PolygonsLayer {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
       const polygon = new Polygon((layer as L.Polygon).getLatLngs())
 
-      // 将相关值绑定到 marker上
       polygon.setData(data)
-      polygon.on('click', () => {
-        this.polygonClickHandler(polygon)
-      })
-
       this.polygons.push(polygon)
     })
   }
   private configPolygonLayer() {
     this.polygonLayer = L.layerGroup()
-    this.polygons.forEach((polygon) => {
-      let color = this.options.color
-      let fillColor = this.options.fillColor
-      if (this.options.renderPolygonColorType === 'segmented') {
-        color = this.getSegmentedPolygonColor(polygon.getData())
-        fillColor = color
-      }
+    this.polygons = this.polygons.map((polygon) => {
       const options: L.PolylineOptions = Object.assign({}, this.options, {
-        color,
-        fillColor,
+        color: '#3388FF',
+        fillColor: this.getColor(polygon.getData()),
       })
       // 重新应用 options
       const newPolygon = new Polygon(polygon.getLatLngs(), options)
       newPolygon.setData(polygon.getData())
-      newPolygon.on('click', () => {
-        this.polygonClickHandler(polygon)
-      })
       if (this.options.tooltipAttr) {
         newPolygon.bindTooltip(this.getToolTipContent(newPolygon.getData()))
       }
-      if (this.options.popupAttr) {
-        newPolygon.bindPopup(this.getPopupContent(newPolygon.getData()))
-      }
-
-      this.polygonLayer.addLayer(newPolygon)
+      newPolygon.on('click', () => {
+        this.polygonClickHandler(polygon)
+      })
+      return newPolygon
+    })
+    this.polygons.forEach((polygon) => {
+      this.polygonLayer.addLayer(polygon)
     })
     return this.polygonLayer
+  }
+  private getColor(data: DataListItem, mode?: ColorMode) {
+    let color = this.options.color
+    if (this.options.renderPolygonColorType === 'segmented') {
+      color = this.getSegmentedPolygonColor(data)
+    }
+    switch (mode) {
+      case 'darken':
+        return darken(color)
+      case 'lighten':
+        return lighten(color)
+      default:
+        return color
+    }
   }
 }

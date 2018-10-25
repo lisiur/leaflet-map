@@ -73,14 +73,15 @@ export interface MarkersCluster extends LayerGroup {
   addLayers(markers: Marker[])
   refreshClusters()
   getVisibleParent()
+  getChildCount(): number
 }
 export interface MarkersClusterOptions {
-  showCoverageOnHover: boolean
-  zoomToBoundsOnClick: boolean
-  spiderfyOnMaxZoom: boolean
-  removeOutsideVisibleBounds: boolean
-  animate: boolean
-  iconCreateFunction: IconCreateFunction
+  showCoverageOnHover?: boolean
+  zoomToBoundsOnClick?: boolean
+  spiderfyOnMaxZoom?: boolean
+  removeOutsideVisibleBounds?: boolean
+  animate?: boolean
+  iconCreateFunction?: IconCreateFunction
 }
 export function markerClusterGroup(
   params?: MarkersClusterOptions

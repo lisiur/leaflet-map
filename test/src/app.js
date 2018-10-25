@@ -12,51 +12,133 @@ L.tileLayer
   .addTo(map)
 
 var dataList = [
-  [
-    {
-      geometry: {
-        type: 'Point',
-        coordinates: [116.401216, 39.90778],
-      },
-      price: 1,
+  {
+    geometry: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [116.401216, 39.90778],
+          [116.391216, 39.90778],
+          [116.391216, 39.91778],
+          [116.401216, 39.91778],
+        ],
+      ],
     },
-  ],
-  [
-    {
-      geometry: {
-        type: 'Point',
-        coordinates: [116.391216, 39.90778],
-      },
-      price: 1,
-    },
-  ],
-  [
-    {
-      geometry: {
-        type: 'Point',
-        coordinates: [116.391216, 39.91778],
-      },
-      price: 1,
-    },
-  ],
-  [
-    {
-      geometry: {
-        type: 'Point',
-        coordinates: [116.401216, 39.91778],
-      },
-      price: 1,
-    },
-  ],
+    price: 1,
+  },
 ]
-const layer = new leafletMap.DynamicHeatLayer(
+
+var layer = new leafletMap.GridsLayer(
   map,
   dataList,
-  { loop: true, auto: true },
+  { tooltipAttr: 'price', popupAttr: { label: 'p', value: 'price' } },
   console.log
 )
-  .draw()
-  .start()
+layer.toggleTooltip(true)
+layer.draw()
+
+// var dataList = [
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.90778],
+//     },
+//     price: 1,
+//     name: '5',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.391216, 39.90778],
+//     },
+//     price: 1,
+//     name: '2',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.391216, 39.91778],
+//     },
+//     price: 1,
+//     name: '1',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.91778],
+//     },
+//     price: 1,
+//     name: '2'
+//   },
+// ]
+
+// var layer = new leafletMap.MarkersLayer(
+//   map,
+//   dataList,
+//   { renderType: 'cluster', iconUnicode: '&#xe655;', popupAttr: 'name', tooltipAttr: 'name' },
+//   console.log
+// )
+// layer.draw()
+
+// var dataList = [
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.90778],
+//     },
+//     price: 1,
+//   },
+// ]
+
+// var layer = new leafletMap.MakersLayer(map, dataList, {}, console.log)
+// layer.draw()
+
+// var dataList = [
+//   [
+//     {
+//       geometry: {
+//         type: 'Point',
+//         coordinates: [116.401216, 39.90778],
+//       },
+//       price: 1,
+//     },
+//   ],
+//   [
+//     {
+//       geometry: {
+//         type: 'Point',
+//         coordinates: [116.391216, 39.90778],
+//       },
+//       price: 1,
+//     },
+//   ],
+//   [
+//     {
+//       geometry: {
+//         type: 'Point',
+//         coordinates: [116.391216, 39.91778],
+//       },
+//       price: 1,
+//     },
+//   ],
+//   [
+//     {
+//       geometry: {
+//         type: 'Point',
+//         coordinates: [116.401216, 39.91778],
+//       },
+//       price: 1,
+//     },
+//   ],
+// ]
+// const layer = new leafletMap.DynamicHeatLayer(
+//   map,
+//   dataList,
+//   { loop: true, auto: true },
+//   console.log
+// )
+//   .draw()
+//   .start()
 
 // L.marker([32.0304, 118.7968], {
 //   icon: L.divIcon({
