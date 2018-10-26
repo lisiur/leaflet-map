@@ -107,7 +107,7 @@ export default class MarkersLayer {
       isCluster: false,
       heatOptions: {
         max: 1,
-        minOpacity: 1,
+        minOpacity: 0.5,
       },
     }
     this.type = 'marker'
@@ -383,6 +383,7 @@ export default class MarkersLayer {
     if (this.heatLayer) {
       this.heatLayer.remove()
     }
+    const alts: number[] = []
     this.markers.forEach((marker) => {
       const latLng = marker.getLatLng()
       const dimensionAttr =
@@ -393,12 +394,17 @@ export default class MarkersLayer {
       if (typeof alt !== 'number') {
         alt = this.options.heatOptions.max
       }
+      alts.push(alt)
       marker.setLatLng(L.latLng(latLng.lat, latLng.lng, alt))
     })
     this.heatLayer = L.heatLayer(
-      this.markers.map((it) => it.getLatLng()),
+      this.markers.map((it, index) => [
+        it.getLatLng().lat,
+        it.getLatLng().lng,
+        alts[index],
+      ]),
       // TODO: 使用 mergeConfig 简化
-      Object.assign({}, this.options.heatOptions, { minOpacity: 1 })
+      Object.assign({}, { minOpacity: 0.5 }, this.options.heatOptions)
     )
     return this.heatLayer
   }
@@ -635,7 +641,6 @@ export default class MarkersLayer {
           ${cluster.getChildCount()}
         </div>
        </div>
-        
       `,
       iconSize: [40, 40],
     })

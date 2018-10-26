@@ -11,74 +11,83 @@ L.tileLayer
   .chinaProvider('GaoDe.Normal.Map', { maxZoom: 18, minZoom: 3 })
   .addTo(map)
 
-var dataList = [
-  {
-    geometry: {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [116.401216, 39.90778],
-          [116.391216, 39.90778],
-          [116.391216, 39.91778],
-          [116.401216, 39.91778],
-        ],
-      ],
-    },
-    price: 109090909090,
-  },
-]
-
-var layer = new leafletMap.GridsLayer(
-  map,
-  dataList,
-  { tooltipAttr: 'price', popupAttr: { label: 'p', value: 'price' } },
-  console.log
-)
-layer.toggleTooltip(true)
-layer.draw()
-
 // var dataList = [
 //   {
 //     geometry: {
-//       type: 'Point',
-//       coordinates: [116.401216, 39.90778],
+//       type: 'Polygon',
+//       coordinates: [
+//         [
+//           [116.401216, 39.90778],
+//           [116.391216, 39.90778],
+//           [116.391216, 39.91778],
+//           [116.401216, 39.91778],
+//         ],
+//       ],
 //     },
-//     price: 1,
-//     name: '5',
-//   },
-//   {
-//     geometry: {
-//       type: 'Point',
-//       coordinates: [116.391216, 39.90778],
-//     },
-//     price: 1,
-//     name: '2',
-//   },
-//   {
-//     geometry: {
-//       type: 'Point',
-//       coordinates: [116.391216, 39.91778],
-//     },
-//     price: 1,
-//     name: '1',
-//   },
-//   {
-//     geometry: {
-//       type: 'Point',
-//       coordinates: [116.401216, 39.91778],
-//     },
-//     price: 1,
-//     name: '2'
+//     price: 109090909090,
 //   },
 // ]
 
-// var layer = new leafletMap.MarkersLayer(
+// var layer = new leafletMap.GridsLayer(
 //   map,
 //   dataList,
-//   { renderType: 'cluster', iconUnicode: '&#xe655;', popupAttr: 'name', tooltipAttr: 'name' },
+//   { tooltipAttr: 'price', popupAttr: { label: 'p', value: 'price' } },
 //   console.log
 // )
+// layer.toggleTooltip(true)
 // layer.draw()
+
+var dataList = [
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.401216, 39.90778],
+    },
+    price: 0.1,
+    name: '5',
+  },
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.391216, 39.90778],
+    },
+    price: 0.1,
+    name: '2',
+  },
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.391216, 39.91778],
+    },
+    price: 0.1,
+    name: '1',
+  },
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.401216, 39.91778],
+    },
+    price: 100,
+    name: '2',
+  },
+]
+
+var layer = new leafletMap.MarkersLayer(
+  map,
+  dataList,
+  {
+    renderType: 'heat',
+    heatOptions: {
+      dimensionAttr: 'price',
+      radius: 30,
+      minOpacity: 0.7,
+      blur: 60,
+      // max: 1,
+    },
+  },
+  console.log
+)
+layer.draw()
 
 // var dataList = [
 //   {

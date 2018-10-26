@@ -92,6 +92,9 @@ export default class DynamicHeatLayer {
     this.layer.draw()
     return this
   }
+  public fitBounds() {
+    this.layer.fitBounds()
+  }
   private initOptions(options?: DynamicHeatLayerOptions) {
     this.options = Object.assign(
       {

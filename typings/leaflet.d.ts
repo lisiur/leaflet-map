@@ -39,7 +39,7 @@ export interface HeatLayerOptions {
   gradient?: any
 }
 export function heatLayer(
-  latlngs: LatLngExpression[],
+  latlngs: LatLngExpression[] | Number[][],
   options?: HeatLayerOptions
 ): HeatLayer
 /** HeatLayer */
