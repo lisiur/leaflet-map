@@ -182,7 +182,7 @@ export default class MarkersLayer {
     }
   }
   public fitBounds() {
-    this.map.fitBounds(this.getBounds())
+    this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
   public getBounds(): L.LatLngBoundsExpression {
     if (this.markers.length <= 0) {
@@ -211,6 +211,7 @@ export default class MarkersLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
+      this.focusedDisplayMarker.remove()
       this.map.removeLayer(this.layer)
     }
   }
@@ -225,7 +226,7 @@ export default class MarkersLayer {
   public pitch(id: string) {
     this.markers.forEach((marker) => {
       if (marker.getData().id === id) {
-        this.markerClickHandler(marker)
+        this.markerClickHandler(marker, true)
         return
       }
     })
@@ -326,7 +327,7 @@ export default class MarkersLayer {
     this.map.on('contextmenu', console.log)
   }
   // 处理 marker 点击事件
-  private markerClickHandler(marker: Marker) {
+  private markerClickHandler(marker: Marker, fitBounds?: boolean) {
     this.focusedMarker = marker
     // 删除前一个放大图标
     if (this.focusedDisplayMarker) {
@@ -347,6 +348,9 @@ export default class MarkersLayer {
     marker.closeTooltip()
 
     this.map.panTo(this.focusedMarker.getLatLng())
+    if (fitBounds) {
+      this.map.fitBounds(marker.getLatLng().toBounds(10))
+    }
     this.channelFunc('on-click-marker', marker)
   }
   private configClusterLayer() {
@@ -586,29 +590,52 @@ export default class MarkersLayer {
   private iconCreateFunction(cluster: L.MarkersCluster) {
     return L.divIcon({
       html: `
+       <div
+        style="
+          border-radius: 50%;
+          position: relative;
+          width: 50px;
+          height: 50px;
+        "
+        >
         <div
           style="
             border-radius: 50%;
             background: ${lighten(this.options.iconColor)};
             width: 50px;
             height: 50px;
-            opacity: 0.8;
+            opacity: 0.7;
+            position: absolute;
+            top: 0;
+            left: 0;
             ">
           <div
             style="
-              text-align: center;
-              line-height: 30px;
               border-radius: 50%;
               background: ${this.options.iconColor};
               width: 32px;
               height: 32px;
               margin: 9px;
-              color: white;
-              font-size: 14px;
             ">
-            ${cluster.getChildCount()}
           </div>
         </div>
+        <div
+          style="
+            text-align: center;
+            line-height: 30px;
+            position: absolute;
+            top: 9px;
+            left: 9px;
+            width: 32px;
+            height: 32px;
+            color: white;
+            font-size: 14px;
+          "
+          >
+          ${cluster.getChildCount()}
+        </div>
+       </div>
+        
       `,
       iconSize: [40, 40],
     })

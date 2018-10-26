@@ -24,7 +24,7 @@ var dataList = [
         ],
       ],
     },
-    price: 1,
+    price: 109090909090,
   },
 ]
 

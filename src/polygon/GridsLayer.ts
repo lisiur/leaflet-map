@@ -24,6 +24,9 @@ export default class GridsLayer extends PolygonsLayer {
     this.map.addLayer(this.layer)
     // tooltip 有可能需要直接展示，需要在 polygon 添加到地图上之后才可以，所以需要延迟设置
     this.configTooltip()
+    setTimeout(() => {
+      this.zoomHandler()
+    }, 200)
     return this
   }
   public toggleTooltip(visible: boolean) {
@@ -93,7 +96,10 @@ export default class GridsLayer extends PolygonsLayer {
     return textLength * 12 + 14
   }
   private getPropMaxLength() {
-    const prop = this.options.tooltipAttr
+    const prop =
+      typeof this.options.popupAttr === 'string'
+        ? this.options.popupAttr
+        : this.options.popupAttr.value
     return this.polygons
       .map((polygon) => `${polygon.getData()[prop]}`.length)
       .reduce((prev, curr) => {

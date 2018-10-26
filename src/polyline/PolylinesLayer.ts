@@ -78,7 +78,7 @@ export default class PolylinesLayer {
     return this
   }
   public fitBounds() {
-    this.map.fitBounds(this.getBounds())
+    this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
   public getBounds(): L.LatLngBoundsExpression {
     if (this.polylines.length <= 0) {
@@ -102,6 +102,7 @@ export default class PolylinesLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
+      this.focusedDisplayPolyline.remove()
       this.map.removeLayer(this.layer)
     }
   }
@@ -112,7 +113,7 @@ export default class PolylinesLayer {
   public pitch(id: string) {
     this.polylines.forEach((polyline) => {
       if (polyline.getData().id === id) {
-        this.polylineClickHandler(polyline)
+        this.polylineClickHandler(polyline, true)
         return
       }
     })
@@ -144,7 +145,7 @@ export default class PolylinesLayer {
     ]
     return color
   }
-  protected polylineClickHandler(polyline: Polyline) {
+  protected polylineClickHandler(polyline: Polyline, fitBounds?: boolean) {
     this.focusedPolyline = polyline
     // 删除前一个 focus
     if (this.focusedDisplayPolyline) {
@@ -171,6 +172,9 @@ export default class PolylinesLayer {
     polyline.closeTooltip()
 
     this.map.panTo(this.focusedDisplayPolyline.getCenter())
+    if (fitBounds) {
+      this.map.fitBounds(polyline.getBounds())
+    }
     this.channelFunc('on-click-polyline', polyline)
   }
   protected getToolTipContent(data: DataListItem) {

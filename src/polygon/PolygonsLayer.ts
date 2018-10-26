@@ -85,7 +85,7 @@ export default class PolygonsLayer {
     return this
   }
   public fitBounds() {
-    this.map.fitBounds(this.getBounds())
+    this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
   public getBounds(): L.LatLngBoundsExpression {
     if (this.polygons.length <= 0) {
@@ -112,6 +112,7 @@ export default class PolygonsLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
+      this.focusedDisplayPolygon.remove()
       this.map.removeLayer(this.layer)
     }
   }
@@ -122,7 +123,7 @@ export default class PolygonsLayer {
   public pitch(id: string) {
     this.polygons.forEach((polygon) => {
       if (polygon.getData().id === id) {
-        this.polygonClickHandler(polygon)
+        this.polygonClickHandler(polygon, true)
         return
       }
     })
@@ -164,7 +165,7 @@ export default class PolygonsLayer {
     ]
     return color
   }
-  protected polygonClickHandler(polygon: Polygon) {
+  protected polygonClickHandler(polygon: Polygon, fitBounds?: boolean) {
     this.focusedPolygon = polygon
     // 删除前一个 focus
     if (this.focusedDisplayPolygon) {
@@ -187,6 +188,9 @@ export default class PolygonsLayer {
     polygon.closeTooltip()
 
     this.map.panTo(this.focusedDisplayPolygon.getCenter())
+    if (fitBounds) {
+      this.map.fitBounds(polygon.getBounds())
+    }
     this.channelFunc('on-click-polygon', polygon)
   }
   protected initOptions(options: PolygonLayerOptions) {
