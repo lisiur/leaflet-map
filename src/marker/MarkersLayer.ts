@@ -11,6 +11,8 @@ type MarkersLayerRenderPointColorType = 'single' | 'segmented'
 /** 散点图标类型 iconfont|svg|image */
 type MarkersLayerIconType = 'font_class' | 'unicode' | 'symbol' | 'image'
 
+type MarkersLayerRenderClusterColorType = 'single' | 'smart'
+
 interface IconRenderFuncOption {
   iconSize: [number, number]
   iconColor: string
@@ -36,6 +38,7 @@ export interface MarkersLayerOptions {
 
   // 是否聚合，优先级高于 renderType == point
   isCluster?: boolean
+  renderClusterColorType?: MarkersLayerRenderClusterColorType
 
   /** 是否展示 popup */
   popup?: boolean
@@ -109,6 +112,7 @@ export default class MarkersLayer {
       tooltipAttr: 'name',
       segmentedColors: ['#3388FF'],
       isCluster: false,
+      renderClusterColorType: 'smart',
       heatOptions: {
         max: 1,
         minOpacity: 0.5,
@@ -351,7 +355,7 @@ export default class MarkersLayer {
         icon: this.getLargerMarkerIcon(marker.getData()),
       })
       this.focusedDisplayMarker.addTo(this.map)
-      // 添加放大图标的
+      // 添加放大图标的 popup
       this.focusedDisplayMarker
         .bindPopup(this.getPopupContent(marker.getData()))
         .openPopup()
@@ -608,6 +612,18 @@ export default class MarkersLayer {
     }
   }
   private iconCreateFunction(cluster: L.MarkersCluster) {
+    const colors = ['#757472', '#5093E2', '#CB7987', '#FC763B']
+    const length = this.dataList.length
+    const step = length / colors.length
+    const scaleStep = (1 - 0.75) / colors.length
+    let color = this.options.iconColor
+    let scale = 1
+    if (this.options.renderClusterColorType === 'smart') {
+      color = colors[Math.floor((cluster.getChildCount() - 1) / step)]
+      scale =
+        (Math.floor((cluster.getChildCount() - 1) / step) + 1) * scaleStep +
+        0.75
+    }
     return L.divIcon({
       html: `
        <div
@@ -616,12 +632,13 @@ export default class MarkersLayer {
           position: relative;
           width: 50px;
           height: 50px;
+          transform: scale3d(${scale}, ${scale}, 1)
         "
         >
         <div
           style="
             border-radius: 50%;
-            background: ${lighten(this.options.iconColor)};
+            background: ${lighten(color)};
             width: 50px;
             height: 50px;
             opacity: 0.7;
@@ -629,20 +646,21 @@ export default class MarkersLayer {
             top: 0;
             left: 0;
             ">
-          <div
-            style="
-              border-radius: 50%;
-              background: ${this.options.iconColor};
-              width: 32px;
-              height: 32px;
-              margin: 9px;
-            ">
-          </div>
+        </div>
+        <div
+          style="
+            border-radius: 50%;
+            background: ${color};
+            opacity: 0.8;
+            width: 32px;
+            height: 32px;
+            margin: 9px;
+          ">
         </div>
         <div
           style="
             text-align: center;
-            line-height: 30px;
+            line-height: 32px;
             position: absolute;
             top: 9px;
             left: 9px;
