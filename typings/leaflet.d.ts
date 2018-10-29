@@ -60,6 +60,8 @@ export interface CanvasIconLayer extends Layer {
   redraw()
   /** Adds common click listener for all markers */
   addOnClickListener(eventHandler: CanvasIconLayerEventHandler)
+  /** Adds a right click listener for all markers */
+  addOnContextmenuListener(eventHandler: CanvasIconLayerEventHandler)
   /** Adds a hover over listener for all markers */
   addOnHoverListener(eventHandler: CanvasIconLayerEventHandler)
 }

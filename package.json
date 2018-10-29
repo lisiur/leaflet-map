@@ -8,7 +8,7 @@
     "build:prod": "npx webpack --mode production",
     "build:dev": "npx webpack --mode development",
     "build": "npm run build:prod; npm run build:dev",
-    "test": "npx webpack --config test/webpack.config.js --mode development",
+    "test": "npm run build:dev && npx webpack --watch --config test/webpack.config.js --mode development",
     "start": "npx webpack-dev-server --config test/webpack.config.js --open"
   },
   "keywords": [],

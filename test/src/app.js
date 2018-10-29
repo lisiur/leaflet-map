@@ -4,6 +4,58 @@ import leafletMap from '../../../leaflet-layer'
 // @ts-ignore
 const L = window.L
 
+function isPointInViewport(x, y) {
+  return (
+    x >= 0 &&
+    y >= 0 &&
+    x <= (window.innerWidth || document.documentElement.clientWidth) &&
+    y <= (window.innerHeight || document.documentElement.clientHeight)
+  )
+}
+
+function isElementInViewport(el) {
+  var rect = el.getBoundingClientRect()
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  )
+}
+
+function calcOffset(x, y, w, h) {
+  const BOTTOM_RIGHT = 0
+  const BOTTOM_LEFT = 1
+  const TOP_RIGHT = 2
+  const TOP_LEFT = 3
+  const bounds = [
+    [x + w, y + h],
+    [x - w, y + h],
+    [x + w, y - h],
+    [x - w, y - h],
+  ]
+
+  let i = 0
+  for (; i < bounds.length; i++) {
+    if (isPointInViewport(...bounds[i])) {
+      break
+    }
+  }
+  switch (i) {
+    case BOTTOM_RIGHT:
+      return [x, y]
+    case BOTTOM_LEFT:
+      return [x - w, y]
+    case TOP_RIGHT:
+      return [x, y - h]
+    case TOP_LEFT:
+      return [x - w, y - h]
+    default:
+      return [x, y]
+  }
+}
+
 var position = new L.LatLng(39.90778, 116.401216)
 var map = L.map('map').setView(position, 13)
 
@@ -37,38 +89,65 @@ L.tileLayer
 // layer.toggleTooltip(true)
 // layer.draw()
 
+// var dataList = [
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.90778],
+//     },
+//     price: 0.1,
+//     name: '5',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.391216, 39.90778],
+//     },
+//     price: 0.1,
+//     name: '2',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.391216, 39.91778],
+//     },
+//     price: 0.1,
+//     name: '1',
+//   },
+//   {
+//     geometry: {
+//       type: 'Point',
+//       coordinates: [116.401216, 39.91778],
+//     },
+//     price: 100,
+//     name: '2',
+//   },
+// ]
+
+// var layer = new leafletMap.MarkersLayer(
+//   map,
+//   dataList,
+//   {
+//     renderType: 'heat',
+//     heatOptions: {
+//       dimensionAttr: 'price',
+//       radius: 30,
+//       minOpacity: 0.7,
+//       blur: 60,
+//       // max: 1,
+//     },
+//   },
+//   console.log
+// )
+// layer.draw()
+
 var dataList = [
   {
     geometry: {
       type: 'Point',
       coordinates: [116.401216, 39.90778],
     },
-    price: 0.1,
-    name: '5',
-  },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [116.391216, 39.90778],
-    },
-    price: 0.1,
-    name: '2',
-  },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [116.391216, 39.91778],
-    },
-    price: 0.1,
-    name: '1',
-  },
-  {
-    geometry: {
-      type: 'Point',
-      coordinates: [116.401216, 39.91778],
-    },
-    price: 100,
-    name: '2',
+    price: 1,
   },
 ]
 
@@ -76,31 +155,18 @@ var layer = new leafletMap.MarkersLayer(
   map,
   dataList,
   {
-    renderType: 'heat',
-    heatOptions: {
-      dimensionAttr: 'price',
-      radius: 30,
-      minOpacity: 0.7,
-      blur: 60,
-      // max: 1,
-    },
+    iconUnicode: '&#xe655;',
+    tooltip: false,
+    popup: false,
   },
-  console.log
+  function(eventName, { event, marker }) {
+    const w = 100
+    const h = 200
+    const { x, y } = event.containerPoint
+    calcOffset(x, y, w, h)
+  }
 )
 layer.draw()
-
-// var dataList = [
-//   {
-//     geometry: {
-//       type: 'Point',
-//       coordinates: [116.401216, 39.90778],
-//     },
-//     price: 1,
-//   },
-// ]
-
-// var layer = new leafletMap.MakersLayer(map, dataList, {}, console.log)
-// layer.draw()
 
 // var dataList = [
 //   [

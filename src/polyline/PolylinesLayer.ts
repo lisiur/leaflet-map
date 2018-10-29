@@ -102,7 +102,9 @@ export default class PolylinesLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
-      this.focusedDisplayPolyline.remove()
+      if (this.focusedDisplayPolyline) {
+        this.focusedDisplayPolyline.remove()
+      }
       this.map.removeLayer(this.layer)
     }
   }

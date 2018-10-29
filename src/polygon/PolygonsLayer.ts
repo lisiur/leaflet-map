@@ -5,6 +5,8 @@ import Polygon from './Polygon'
 /** 渲染颜色样式 单色|分段 */
 type PolygonLayerRenderColorType = 'single' | 'segmented'
 type ColorMode = 'darken' | 'lighten' | 'normal'
+
+const DEFAULT_COLOR = '#72AFDF'
 export interface PolygonLayerOptions extends L.PolylineOptions {
   renderPolygonColorType: PolygonLayerRenderColorType
 
@@ -45,14 +47,14 @@ export default class PolygonsLayer {
     const defaultOptions: PolygonLayerOptions = {
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
-      color: '#3388FF',
+      color: DEFAULT_COLOR,
       fill: true,
-      fillColor: '#3388FF',
+      fillColor: DEFAULT_COLOR,
       weight: 1,
       opacity: 1,
-      fillOpacity: 0.5,
+      fillOpacity: 0.4,
       renderPolygonColorType: 'single',
-      segmentedColors: ['#3388FF'],
+      segmentedColors: [DEFAULT_COLOR],
     }
     this.type = 'polygon'
     this.map = map
@@ -112,7 +114,9 @@ export default class PolygonsLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
-      this.focusedDisplayPolygon.remove()
+      if (this.focusedDisplayPolygon) {
+        this.focusedDisplayPolygon.remove()
+      }
       this.map.removeLayer(this.layer)
     }
   }
@@ -128,6 +132,7 @@ export default class PolygonsLayer {
       }
     })
   }
+  // tslint:disable-next-line:no-empty
   protected initEvent() {}
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
@@ -173,7 +178,7 @@ export default class PolygonsLayer {
     }
     // 生成当前 focus
     this.focusedDisplayPolygon = new Polygon(polygon.getLatLngs(), {
-      color: '#3388FF',
+      color: DEFAULT_COLOR,
       fillColor: this.getColor(polygon.getData()),
     })
     this.focusedDisplayPolygon.addTo(this.map)
@@ -212,7 +217,7 @@ export default class PolygonsLayer {
     this.polygonLayer = L.layerGroup()
     this.polygons = this.polygons.map((polygon) => {
       const options: L.PolylineOptions = Object.assign({}, this.options, {
-        color: '#3388FF',
+        color: DEFAULT_COLOR,
         fillColor: this.getColor(polygon.getData()),
       })
       // 重新应用 options

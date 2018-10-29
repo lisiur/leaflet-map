@@ -37,6 +37,10 @@ export interface MarkersLayerOptions {
   // 是否聚合，优先级高于 renderType == point
   isCluster?: boolean
 
+  /** 是否展示 popup */
+  popup?: boolean
+  /** 是否展示 tooltip */
+  tooltip?: boolean
   /** popup 展示字段 */
   popupAttr?: string | { label: string; value: any }
   /** tooltip 展示字段 */
@@ -79,8 +83,6 @@ export default class MarkersLayer {
     | L.HeatLayer
     | L.MarkersCluster
     | L.LayerGroup
-  protected zoomStartCb: () => void
-  protected zoomEndCb: () => void
   private heatLayer: L.HeatLayer
   private clusterLayer: L.MarkersCluster
 
@@ -101,6 +103,8 @@ export default class MarkersLayer {
       iconClass: 'iconfont',
       iconColor: '#3388FF',
       iconAnchor: [10, 20],
+      popup: true,
+      tooltip: true,
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
       segmentedColors: ['#3388FF'],
@@ -128,9 +132,6 @@ export default class MarkersLayer {
 
     this.segmentedMin = Infinity
     this.segmentedStep = 1
-
-    this.zoomStartCb = this._zoomStartCb.bind(this)
-    this.zoomEndCb = this._zoomEndCb.bind(this)
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
@@ -181,6 +182,10 @@ export default class MarkersLayer {
       this.redraw()
     }
   }
+  /** 获取当前 options */
+  public getOptions() {
+    return this.options
+  }
   public fitBounds() {
     this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
@@ -200,8 +205,8 @@ export default class MarkersLayer {
     if (this.focusedDisplayMarker) {
       this.map.removeLayer(this.focusedDisplayMarker)
     }
-    this.map.off('zoomstart', this.zoomStartCb)
-    this.map.off('zoomend', this.zoomEndCb)
+    this.map.off('zoomstart', this._zoomStartCb, this)
+    this.map.off('zoomend', this._zoomEndCb, this)
   }
   public toggleVisible(visible: boolean) {
     this.visible = visible
@@ -211,7 +216,9 @@ export default class MarkersLayer {
     if (visible) {
       this.map.addLayer(this.layer)
     } else {
-      this.focusedDisplayMarker.remove()
+      if (this.focusedDisplayMarker) {
+        this.focusedDisplayMarker.remove()
+      }
       this.map.removeLayer(this.layer)
     }
   }
@@ -265,26 +272,35 @@ export default class MarkersLayer {
     canvasIconLayer.addOnClickListener((_, [{ data: marker }]) => {
       this.markerClickHandler(marker as Marker)
     })
-    // 添加 hover 事件
-    canvasIconLayer.addOnHoverListener((_, [{ data: marker }]) => {
-      // 之前有 hover 的关闭 tooltip
-      if (this.hoveredMarker) {
-        this.hoveredMarker.closeTooltip()
-      }
-      this.hoveredMarker = marker as Marker
-
-      if (this.hoveredMarker.getTooltip()) {
-        // 如果已经设置 tooltip 直接展示 tooltip
-        this.hoveredMarker.openTooltip()
-      } else {
-        // 否则绑定 tooltip 并展示
-        if (this.options.tooltipAttr) {
-          this.hoveredMarker.bindTooltip(
-            '' + this.hoveredMarker.getData()[this.options.tooltipAttr]
-          )
-        }
-      }
+    // 添加右键事件
+    canvasIconLayer.addOnContextmenuListener((event, [{ data: marker }]) => {
+      this.channelFunc('contextmenu', {
+        event,
+        marker,
+      })
     })
+    // 添加 hover 事件
+    if (this.options.tooltip) {
+      canvasIconLayer.addOnHoverListener((_, [{ data: marker }]) => {
+        // 之前有 hover 的关闭 tooltip
+        if (this.hoveredMarker) {
+          this.hoveredMarker.closeTooltip()
+        }
+        this.hoveredMarker = marker as Marker
+
+        if (this.hoveredMarker.getTooltip()) {
+          // 如果已经设置 tooltip 直接展示 tooltip
+          this.hoveredMarker.openTooltip()
+        } else {
+          // 否则绑定 tooltip 并展示
+          if (this.options.tooltipAttr) {
+            this.hoveredMarker.bindTooltip(
+              '' + this.hoveredMarker.getData()[this.options.tooltipAttr]
+            )
+          }
+        }
+      })
+    }
     canvasIconLayer.addMarkers(this.markers)
 
     // 解决初次渲染不出图标问题
@@ -304,13 +320,10 @@ export default class MarkersLayer {
     this.cacheSegmentParams()
     this.markers = []
     this.dataList.forEach((data) => {
-      const layer = L.geoJSON(data.geometry).getLayers()[0]
+      const layer = L.geoJSON(data.geometry).getLayers()[0] as L.Marker
 
       const marker = new Marker(
-        [
-          (layer as L.Marker).getLatLng().lat,
-          (layer as L.Marker).getLatLng().lng,
-        ],
+        [layer.getLatLng().lat, layer.getLatLng().lng],
         {
           icon: this.getMarkerIcon(data),
         }
@@ -322,29 +335,30 @@ export default class MarkersLayer {
     })
   }
   protected initEvents() {
-    this.map.on('zoomstart', this.zoomStartCb)
-    this.map.on('zoomend', this.zoomEndCb)
-    this.map.on('contextmenu', console.log)
+    this.map.on('zoomstart', this._zoomStartCb, this)
+    this.map.on('zoomend', this._zoomEndCb, this)
   }
   // 处理 marker 点击事件
   private markerClickHandler(marker: Marker, fitBounds?: boolean) {
     this.focusedMarker = marker
-    // 删除前一个放大图标
-    if (this.focusedDisplayMarker) {
-      this.focusedDisplayMarker.removeFrom(this.map)
+    if (this.options.popup) {
+      // 删除前一个放大图标
+      if (this.focusedDisplayMarker) {
+        this.focusedDisplayMarker.removeFrom(this.map)
+      }
+      // 生成当前放大图标
+      this.focusedDisplayMarker = new Marker(marker.getLatLng(), {
+        icon: this.getLargerMarkerIcon(marker.getData()),
+      })
+      this.focusedDisplayMarker.addTo(this.map)
+      // 添加放大图标的
+      this.focusedDisplayMarker
+        .bindPopup(this.getPopupContent(marker.getData()))
+        .openPopup()
+      this.focusedDisplayMarker.on('popupclose', () => {
+        this.focusedDisplayMarker.remove()
+      })
     }
-    // 生成当前放大图标
-    this.focusedDisplayMarker = new Marker(marker.getLatLng(), {
-      icon: this.getLargerMarkerIcon(marker.getData()),
-    })
-    this.focusedDisplayMarker.addTo(this.map)
-
-    this.focusedDisplayMarker
-      .bindPopup(this.getPopupContent(marker.getData()))
-      .openPopup()
-    this.focusedDisplayMarker.on('popupclose', () => {
-      this.focusedDisplayMarker.remove()
-    })
     marker.closeTooltip()
 
     this.map.panTo(this.focusedMarker.getLatLng())
