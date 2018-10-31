@@ -1,4 +1,4 @@
-# Marker
+# MarkersLayer
 ## Options
 ### MarkerLayerOptions
 | 参数名               | 说明              | 类型                              |
@@ -61,7 +61,7 @@
 | ------ | :---: | ---: |
 |        |       |      |
 
-# Polyline
+# PolylinesLayer
 ## Options
 ### PolylineLayerOptions
 | 参数名                 | 说明             | 类型                          |
@@ -72,8 +72,7 @@
 | segmentedAttr          | 分段渲染统计字段 | string                        |
 | segmentedColors        | 分段渲染颜色区间 | string[]                      |
 
-# Polygon
-
+# PolygonsLayer
 ## Options
 ### PolygonLayerOptions
 | 参数名                 | 说明             | 类型                          |
