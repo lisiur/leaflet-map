@@ -3,7 +3,7 @@ import Polyline, { PolylineLatLngExpression } from './Polyline'
 import { darken, lighten, optionsMerge } from '../utils/index'
 
 /** 渲染颜色样式 单色|分段 */
-type PolylineLayerRenderColorType = 'single' | 'segmented'
+type PolylineLayerRenderColorType = 'single' | 'segmented' | 'classified'
 type ColorMode = 'darken' | 'lighten' | 'normal'
 interface PolylineLayerOptions extends L.PolylineOptions {
   renderPolylineColorType: PolylineLayerRenderColorType
@@ -18,6 +18,10 @@ interface PolylineLayerOptions extends L.PolylineOptions {
   /** 分段渲染统计字段 */
   segmentedAttr?: string
   segmentedColors?: string[]
+
+  /** 分类型渲染统计字段 */
+  classifiedAttr?: string
+  classifiedColors?: string[]
 }
 export default class PolylinesLayer {
   public type: string
@@ -35,6 +39,14 @@ export default class PolylinesLayer {
   protected focusedPolyline: Polyline
   protected focusedDisplayPolyline: Polyline
   protected polylineLayer: L.LayerGroup
+  /** 记录某个 prop 对应的渲染颜色 */
+  private classifyColorMap: { [prop: string]: string }
+  /** 分类渲染颜色参照(提供给调用者使用) */
+  private classifyColorRefs: Array<{
+    attr: string
+    color: string
+    nums: number
+  }>
   private defaultOptions: PolylineLayerOptions
   constructor(
     map: L.Map,
@@ -51,6 +63,7 @@ export default class PolylinesLayer {
       segmentedColors: ['#3388FF'],
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
+      classifiedColors: ['#3388FF'],
     }
     this.type = 'polyline'
     this.map = map
@@ -65,6 +78,7 @@ export default class PolylinesLayer {
     this.polylines = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
+    this.classifyColorMap = {}
     this.focusedPolyline = null
     this.focusedDisplayPolyline = null
   }
@@ -130,6 +144,9 @@ export default class PolylinesLayer {
       }
     })
   }
+  public getClassifyColorRefs() {
+    return this.classifyColorRefs
+  }
   protected initOptions(options: PolylineLayerOptions) {
     this.options = optionsMerge(
       this.defaultOptions,
@@ -140,17 +157,13 @@ export default class PolylinesLayer {
   protected initPolylines() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
+    this.cacheClassifyParams()
 
     this.polylines = this.dataList.map((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
-      // let color = this.options.color
-      // if (this.options.renderPolylineColorType === 'segmented') {
-      //   color = this.getSegmentedPolylineColor(data)
-      // }
       const polyline = new Polyline(
         (layer as L.Polyline).getLatLngs() as PolylineLatLngExpression
       )
-
       // 将相关值绑定到 marker上
       polyline.setData(data)
 
@@ -215,12 +228,8 @@ export default class PolylinesLayer {
   private configPolylineLayer() {
     this.polylineLayer = L.layerGroup()
     this.polylines.forEach((polyline) => {
-      let color = this.options.color
-      if (this.options.renderPolylineColorType === 'segmented') {
-        color = this.getSegmentedPolylineColor(polyline.getData())
-      }
-      const options: L.PolylineOptions = Object.assign({}, this.options, {
-        color,
+      const options: L.PolylineOptions = optionsMerge({}, this.options, {
+        color: this.getColor(polyline.getData()),
       })
       const newPolyline = new Polyline(
         polyline.getLatLngs() as PolylineLatLngExpression,
@@ -236,6 +245,39 @@ export default class PolylinesLayer {
       this.polylineLayer.addLayer(newPolyline)
     })
     return this.polylineLayer
+  }
+  private cacheClassifyParams() {
+    if (!this.options.classifiedAttr) {
+      return
+    }
+
+    const tmp: { [prop: string]: [string, number] } = {}
+    const prop = this.options.classifiedAttr
+    this.dataList.forEach((data) => {
+      if (data[prop] in tmp) {
+        tmp[data[prop]] = [data[prop], tmp[data[prop]][1] + 1]
+      } else {
+        tmp[data[prop]] = [data[prop], 1]
+      }
+    })
+    const values = Object.values(tmp)
+    values.sort((a, b) => b[1] - a[1])
+    this.classifyColorRefs = []
+    values.forEach(([attr, nums], index) => {
+      let color = 'black'
+      if (index < this.options.classifiedColors.length) {
+        color = this.options.classifiedColors[index]
+      }
+      this.classifyColorMap[attr] = color
+      this.classifyColorRefs.push({
+        attr,
+        color,
+        nums,
+      })
+    })
+  }
+  private getClassifyPolylineColor(data: DataListItem): string {
+    return this.classifyColorMap[data[this.options.classifiedAttr]]
   }
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
@@ -254,6 +296,9 @@ export default class PolylinesLayer {
     let color = this.options.color
     if (this.options.renderPolylineColorType === 'segmented') {
       color = this.getSegmentedPolylineColor(data)
+    }
+    if (this.options.renderPolylineColorType === 'classified') {
+      color = this.getClassifyPolylineColor(data)
     }
     switch (mode) {
       case 'darken':

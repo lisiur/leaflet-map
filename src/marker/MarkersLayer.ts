@@ -5,8 +5,8 @@ import Marker from './Marker'
 /** 渲染样式 散点|热力图 */
 type MarkersLayerRenderType = 'point' | 'heat' | 'cluster'
 
-/** 渲染颜色样式 单色|分段 */
-type MarkersLayerRenderPointColorType = 'single' | 'segmented'
+/** 渲染颜色样式 单色|分段|分类 */
+type MarkersLayerRenderPointColorType = 'single' | 'segmented' | 'classified'
 
 /** 散点图标类型 iconfont|svg|image */
 type MarkersLayerIconType = 'font_class' | 'unicode' | 'symbol' | 'image'
@@ -55,6 +55,10 @@ export interface MarkersLayerOptions {
   segmentedAttr?: string
   segmentedColors?: string[]
 
+  /** 分类型渲染统计字段 */
+  classifiedAttr?: string
+  classifiedColors?: string[]
+
   heatOptions?: MarkersHeatLayerOptions
   clusterOptions?: L.MarkersClusterOptions
 }
@@ -91,6 +95,14 @@ export default class MarkersLayer {
 
   private segmentedMin: number
   private segmentedStep: number
+  /** 记录某个 prop 对应的渲染颜色 */
+  private classifyColorMap: { [prop: string]: string }
+  /** 分类渲染颜色参照(提供给调用者使用) */
+  private classifyColorRefs: Array<{
+    attr: string
+    color: string
+    nums: number
+  }>
   private defaultOptions: MarkersLayerOptions
   constructor(
     map: L.Map,
@@ -114,6 +126,7 @@ export default class MarkersLayer {
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
       segmentedColors: ['#3388FF'],
+      classifiedColors: ['#3388FF'],
       isCluster: false,
       renderClusterColorType: 'smart',
       heatOptions: {
@@ -139,6 +152,7 @@ export default class MarkersLayer {
 
     this.segmentedMin = Infinity
     this.segmentedStep = 1
+    this.classifyColorMap = {}
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
@@ -245,6 +259,9 @@ export default class MarkersLayer {
       }
     })
   }
+  public getClassifyColorRefs() {
+    return this.classifyColorRefs
+  }
   protected _zoomStartCb() {
     if (!this.visible) {
       return
@@ -329,6 +346,7 @@ export default class MarkersLayer {
   protected initMarkers() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
+    this.cacheClassifyParams()
     this.markers = []
     this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0] as L.Marker
@@ -428,8 +446,7 @@ export default class MarkersLayer {
         it.getLatLng().lng,
         alts[index],
       ]),
-      // TODO: 使用 mergeConfig 简化
-      Object.assign({}, { minOpacity: 0.5 }, this.options.heatOptions)
+      optionsMerge({ minOpacity: 0.5 }, this.options.heatOptions)
     )
     return this.heatLayer
   }
@@ -500,82 +517,18 @@ export default class MarkersLayer {
       options = Object.assign({}, this.options, options)
       return this.options.iconRenderer(data, options)
     }
+    let color = this.options.iconColor
     switch (this.options.renderPointColorType) {
       case 'single': {
-        switch (this.options.iconType) {
-          // 使用 class
-          case 'font_class': {
-            return `
-              <i class="${this.options.iconClass}"
-                style="
-                  color: ${options.iconColor};
-                  font-size: ${options.iconSize[0]}px;
-                "
-                />
-            `
-          }
-          // 使用 svg
-          case 'symbol': {
-            return `
-              <svg class="icon-symbol" aria-hidden="true">
-                <use xlink:href="${this.options.iconSymbol}" />
-              </svg>
-            `
-          }
-          // 使用 unicode
-          case 'unicode': {
-            return `
-              <i
-                class="${this.options.iconClass}"
-                style="
-                  color: ${options.iconColor};
-                  font-size: ${options.iconSize[0]}px;
-                "
-                >
-                ${this.options.iconUnicode}
-              </i>
-            `
-          }
-        }
+        color = this.options.iconColor
+        break
+      }
+      case 'classified': {
+        color = this.getClassifyMarkerColor(data)
         break
       }
       case 'segmented': {
-        switch (this.options.iconType) {
-          // 使用 class
-          case 'font_class': {
-            return `
-              <i
-                class="${this.options.iconClass}"
-                style="
-                  color: ${this.getSegmentedMarkerColor(data)};
-                  font-size: ${options.iconSize[0]}px;
-                "
-                />
-            `
-          }
-          // 使用 svg
-          case 'symbol': {
-            return `
-              <svg class="icon-symbol" aria-hidden="true">
-                <use xlink:href="${this.options.iconSymbol}" />
-              </svg>
-            `
-          }
-          // 使用 unicode
-          case 'unicode': {
-            return `
-              <i
-                class="${this.options.iconClass}"
-                style="
-                  color: ${this.getSegmentedMarkerColor(data)};
-                  font-size: ${options.iconSize[0]}px;
-                "
-                >
-                ${this.options.iconUnicode}
-              </i>
-            `
-          }
-        }
+        color = this.getSegmentedMarkerColor(data)
         break
       }
       default: {
@@ -584,6 +537,74 @@ export default class MarkersLayer {
         )
       }
     }
+    switch (this.options.iconType) {
+      // 使用 class
+      case 'font_class': {
+        return `
+          <i class="${this.options.iconClass}"
+            style="
+              color: ${color};
+              font-size: ${options.iconSize[0]}px;
+            "
+            />
+        `
+      }
+      // 使用 svg
+      case 'symbol': {
+        return `
+          <svg class="icon-symbol" aria-hidden="true">
+            <use xlink:href="${this.options.iconSymbol}" />
+          </svg>
+        `
+      }
+      // 使用 unicode
+      case 'unicode': {
+        return `
+          <i
+            class="${this.options.iconClass}"
+            style="
+              color: ${color};
+              font-size: ${options.iconSize[0]}px;
+            "
+            >
+            ${this.options.iconUnicode}
+          </i>
+        `
+      }
+    }
+  }
+  private cacheClassifyParams() {
+    if (!this.options.classifiedAttr) {
+      return
+    }
+
+    const tmp: { [prop: string]: [string, number] } = {}
+    const prop = this.options.classifiedAttr
+    this.dataList.forEach((data) => {
+      if (data[prop] in tmp) {
+        tmp[data[prop]] = [data[prop], tmp[data[prop]][1] + 1]
+      } else {
+        tmp[data[prop]] = [data[prop], 1]
+      }
+    })
+    const values = Object.values(tmp)
+    values.sort((a, b) => b[1] - a[1])
+    this.classifyColorRefs = []
+    values.forEach(([attr, nums], index) => {
+      let color = 'black'
+      if (index < this.options.classifiedColors.length) {
+        color = this.options.classifiedColors[index]
+      }
+      this.classifyColorMap[attr] = color
+      this.classifyColorRefs.push({
+        attr,
+        color,
+        nums,
+      })
+    })
+  }
+  private getClassifyMarkerColor(data: DataListItem): string {
+    return this.classifyColorMap[data[this.options.classifiedAttr]]
   }
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length

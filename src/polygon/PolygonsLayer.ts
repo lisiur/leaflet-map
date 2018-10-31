@@ -3,7 +3,7 @@ import { DataListItem, ChannelFunc } from '../definitions'
 import Polygon from './Polygon'
 
 /** 渲染颜色样式 单色|分段 */
-type PolygonLayerRenderColorType = 'single' | 'segmented'
+type PolygonLayerRenderColorType = 'single' | 'segmented' | 'classified'
 type ColorMode = 'darken' | 'lighten' | 'normal'
 
 const DEFAULT_COLOR = '#72AFDF'
@@ -20,6 +20,10 @@ export interface PolygonLayerOptions extends L.PolylineOptions {
   /** 分段渲染统计字段 */
   segmentedAttr?: string
   segmentedColors?: string[]
+
+  /** 分类型渲染统计字段 */
+  classifiedAttr?: string
+  classifiedColors?: string[]
 }
 export default class PolygonsLayer {
   public type: string
@@ -38,6 +42,14 @@ export default class PolygonsLayer {
   protected focusedDisplayPolygon: Polygon
   protected polygonLayer: L.LayerGroup
 
+  /** 记录某个 prop 对应的渲染颜色 */
+  private classifyColorMap: { [prop: string]: string }
+  /** 分类渲染颜色参照(提供给调用者使用) */
+  private classifyColorRefs: Array<{
+    attr: string
+    color: string
+    nums: number
+  }>
   private defaultOptions: PolygonLayerOptions
   constructor(
     map: L.Map,
@@ -60,6 +72,7 @@ export default class PolygonsLayer {
       fillOpacity: 0.4,
       renderPolygonColorType: 'single',
       segmentedColors: [DEFAULT_COLOR],
+      classifiedColors: [DEFAULT_COLOR],
     }
     this.type = 'polygon'
     this.map = map
@@ -74,6 +87,7 @@ export default class PolygonsLayer {
     this.polygons = []
     this.segmentedMin = Infinity
     this.segmentedStep = 1
+    this.classifyColorMap = {}
     this.focusedPolygon = null
     this.focusedDisplayPolygon = null
   }
@@ -143,6 +157,9 @@ export default class PolygonsLayer {
       }
     })
   }
+  public getClassifyColorRefs() {
+    return this.classifyColorRefs
+  }
   // tslint:disable-next-line:no-empty
   protected initEvent() {}
   protected getToolTipContent(data: DataListItem) {
@@ -160,6 +177,39 @@ export default class PolygonsLayer {
         data[this.options.popupAttr.value]
       }`
     }
+  }
+  protected cacheClassifyParams() {
+    if (!this.options.classifiedAttr) {
+      return
+    }
+
+    const tmp: { [prop: string]: [string, number] } = {}
+    const prop = this.options.classifiedAttr
+    this.dataList.forEach((data) => {
+      if (data[prop] in tmp) {
+        tmp[data[prop]] = [data[prop], tmp[data[prop]][1] + 1]
+      } else {
+        tmp[data[prop]] = [data[prop], 1]
+      }
+    })
+    const values = Object.values(tmp)
+    values.sort((a, b) => b[1] - a[1])
+    this.classifyColorRefs = []
+    values.forEach(([attr, nums], index) => {
+      let color = 'black'
+      if (index < this.options.classifiedColors.length) {
+        color = this.options.classifiedColors[index]
+      }
+      this.classifyColorMap[attr] = color
+      this.classifyColorRefs.push({
+        attr,
+        color,
+        nums,
+      })
+    })
+  }
+  protected getClassifyPolygonColor(data: DataListItem): string {
+    return this.classifyColorMap[data[this.options.classifiedAttr]]
   }
   protected cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
@@ -219,6 +269,7 @@ export default class PolygonsLayer {
   protected initPolygons() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
+    this.cacheClassifyParams()
     this.polygons = []
     this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0]
@@ -231,7 +282,7 @@ export default class PolygonsLayer {
   private configPolygonLayer() {
     this.polygonLayer = L.layerGroup()
     this.polygons = this.polygons.map((polygon) => {
-      const options: L.PolylineOptions = Object.assign({}, this.options, {
+      const options: L.PolylineOptions = optionsMerge({}, this.options, {
         color: DEFAULT_COLOR,
         fillColor: this.getColor(polygon.getData()),
       })
@@ -255,6 +306,9 @@ export default class PolygonsLayer {
     let color = this.options.color
     if (this.options.renderPolygonColorType === 'segmented') {
       color = this.getSegmentedPolygonColor(data)
+    }
+    if (this.options.renderPolygonColorType === 'classified') {
+      color = this.getClassifyPolygonColor(data)
     }
     switch (mode) {
       case 'darken':

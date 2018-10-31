@@ -49,6 +49,7 @@ interface CanvasIconLayerEventHandler {
   (event: L.LeafletEvent, data: [{ data: Marker }])
 }
 
+/** canvas layer */
 export interface CanvasIconLayer extends Layer {
   /** Adds a marker to the layer. */
   addMarker(marker: L.Marker)

@@ -148,6 +148,23 @@ var dataList = [
       coordinates: [116.401216, 39.90778],
     },
     price: 1,
+    class: 'a'
+  },
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.391216, 39.90778],
+    },
+    price: 1,
+    class: 'b'
+  },
+  {
+    geometry: {
+      type: 'Point',
+      coordinates: [116.381216, 39.90778],
+    },
+    price: 1,
+    class: 'b'
   },
 ]
 
@@ -158,15 +175,19 @@ var layer = new leafletMap.MarkersLayer(
     iconUnicode: '&#xe655;',
     tooltip: false,
     popup: false,
+    renderPointColorType: 'classified',
+    classifiedAttr: 'class',
+    classifiedColors: ['red'],
   },
-  function(eventName, { event, marker }) {
-    const w = 100
-    const h = 200
-    const { x, y } = event.containerPoint
-    calcOffset(x, y, w, h)
+  function(eventName) {
+    // const w = 100
+    // const h = 200
+    // const { x, y } = event.containerPoint
+    // calcOffset(x, y, w, h)
   }
 )
 layer.draw()
+console.log(layer.getClassifyColorRefs())
 
 // var dataList = [
 //   [
