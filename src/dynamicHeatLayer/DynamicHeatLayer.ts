@@ -29,6 +29,9 @@ export default class DynamicHeatLayer {
     options: DynamicHeatLayerOptions,
     channelFunc: ChannelFunc
   ) {
+    if (!Array.isArray(dynamicDataList) || dynamicDataList.length === 0) {
+      throw new Error(`dataList 必须是非空数组`)
+    }
     this.map = map
     this.dynamicDataList = dynamicDataList
     this.options = options

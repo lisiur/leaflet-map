@@ -1,6 +1,6 @@
 import { DataListItem, ChannelFunc } from '../definitions'
 import Polyline, { PolylineLatLngExpression } from './Polyline'
-import { darken, lighten } from '../utils/index'
+import { darken, lighten, optionsMerge } from '../utils/index'
 
 /** 渲染颜色样式 单色|分段 */
 type PolylineLayerRenderColorType = 'single' | 'segmented'
@@ -35,13 +35,17 @@ export default class PolylinesLayer {
   protected focusedPolyline: Polyline
   protected focusedDisplayPolyline: Polyline
   protected polylineLayer: L.LayerGroup
+  private defaultOptions: PolylineLayerOptions
   constructor(
     map: L.Map,
     dataList: DataListItem[],
     options: PolylineLayerOptions,
     channelFunc: ChannelFunc
   ) {
-    const defaultOptions: PolylineLayerOptions = {
+    if (!Array.isArray(dataList) || dataList.length === 0) {
+      throw new Error(`dataList 必须是非空数组`)
+    }
+    this.defaultOptions = {
       color: '#3388FF',
       renderPolylineColorType: 'single',
       segmentedColors: ['#3388FF'],
@@ -51,7 +55,10 @@ export default class PolylinesLayer {
     this.type = 'polyline'
     this.map = map
     this.dataList = dataList
-    this.options = Object.assign({}, defaultOptions, options)
+    this.options = optionsMerge(
+      this.defaultOptions,
+      options
+    ) as PolylineLayerOptions
     this.channelFunc = channelFunc
 
     this.visible = true
@@ -62,7 +69,7 @@ export default class PolylinesLayer {
     this.focusedDisplayPolyline = null
   }
   public draw(options?: PolylineLayerOptions) {
-    this.options = Object.assign(this.options, options)
+    this.initOptions(options)
     this.initPolylines()
     return this.redraw()
   }
@@ -86,7 +93,10 @@ export default class PolylinesLayer {
     }
     return this.polylines.reduce(
       (prev, curr) => prev.extend(curr.getBounds()),
-      this.polylines[0].getBounds()
+      L.latLngBounds(
+        this.polylines[0].getBounds().getNorthEast(),
+        this.polylines[0].getBounds().getSouthWest()
+      )
     )
   }
   public destroy() {
@@ -119,6 +129,13 @@ export default class PolylinesLayer {
         return
       }
     })
+  }
+  protected initOptions(options: PolylineLayerOptions) {
+    this.options = optionsMerge(
+      this.defaultOptions,
+      this.options,
+      options
+    ) as PolylineLayerOptions
   }
   protected initPolylines() {
     // 缓存 segment 相关数据

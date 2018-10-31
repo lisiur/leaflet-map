@@ -1,4 +1,4 @@
-import { lighten } from '../utils/index'
+import { lighten, optionsMerge } from '../utils/index'
 import { DataListItem, ChannelFunc } from '../definitions'
 import Marker from './Marker'
 
@@ -98,6 +98,9 @@ export default class MarkersLayer {
     options: MarkersLayerOptions,
     channelFunc: ChannelFunc
   ) {
+    if (!Array.isArray(dataList) || dataList.length === 0) {
+      throw new Error(`dataList 必须是非空数组`)
+    }
     this.defaultOptions = {
       renderType: 'point',
       renderPointColorType: 'single',
@@ -317,7 +320,11 @@ export default class MarkersLayer {
     return '' + data[this.options.tooltipAttr]
   }
   protected initOptions(options: MarkersLayerOptions) {
-    this.options = Object.assign({}, this.defaultOptions, this.options, options)
+    this.options = optionsMerge(
+      this.defaultOptions,
+      this.options,
+      options
+    ) as MarkersLayerOptions
   }
   protected initMarkers() {
     // 缓存 segment 相关数据

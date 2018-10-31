@@ -1,4 +1,4 @@
-import { lighten, darken } from '../utils/index'
+import { lighten, darken, optionsMerge } from '../utils/index'
 import { DataListItem, ChannelFunc } from '../definitions'
 import Polygon from './Polygon'
 
@@ -38,13 +38,18 @@ export default class PolygonsLayer {
   protected focusedDisplayPolygon: Polygon
   protected polygonLayer: L.LayerGroup
 
+  private defaultOptions: PolygonLayerOptions
   constructor(
     map: L.Map,
     dataList: DataListItem[],
     options: PolygonLayerOptions,
     channelFunc: ChannelFunc
   ) {
-    const defaultOptions: PolygonLayerOptions = {
+    if (!Array.isArray(dataList) || dataList.length === 0) {
+      throw new Error(`dataList 必须是非空数组`)
+    }
+
+    this.defaultOptions = {
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
       color: DEFAULT_COLOR,
@@ -59,7 +64,10 @@ export default class PolygonsLayer {
     this.type = 'polygon'
     this.map = map
     this.dataList = dataList
-    this.options = Object.assign({}, defaultOptions, options)
+    this.options = optionsMerge(
+      this.defaultOptions,
+      options
+    ) as PolygonLayerOptions
     this.channelFunc = channelFunc
 
     this.visible = true
@@ -95,7 +103,10 @@ export default class PolygonsLayer {
     }
     return this.polygons.reduce(
       (prev, curr) => prev.extend(curr.getBounds()),
-      this.polygons[0].getBounds()
+      L.latLngBounds(
+        this.polygons[0].getBounds().getNorthEast(),
+        this.polygons[0].getBounds().getSouthWest()
+      )
     )
   }
   public destroy() {
@@ -199,7 +210,11 @@ export default class PolygonsLayer {
     this.channelFunc('on-click-polygon', polygon)
   }
   protected initOptions(options: PolygonLayerOptions) {
-    this.options = Object.assign(this.options, options)
+    this.options = optionsMerge(
+      this.defaultOptions,
+      this.options,
+      options
+    ) as PolygonLayerOptions
   }
   protected initPolygons() {
     // 缓存 segment 相关数据
