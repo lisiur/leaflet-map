@@ -155,7 +155,7 @@ var dataList = [
       type: 'Point',
       coordinates: [116.391216, 39.90778],
     },
-    price: 1,
+    price: 5,
     class: 'b'
   },
   {
@@ -163,7 +163,7 @@ var dataList = [
       type: 'Point',
       coordinates: [116.381216, 39.90778],
     },
-    price: 1,
+    price: 10,
     class: 'b'
   },
 ]
@@ -172,12 +172,19 @@ var layer = new leafletMap.MarkersLayer(
   map,
   dataList,
   {
-    iconUnicode: '&#xe655;',
-    tooltip: false,
+    renderType: 'bubble',
+    // iconUnicode: '&#xe655;',
+    // tooltip: false,
     popup: false,
-    renderPointColorType: 'classified',
-    classifiedAttr: 'class',
-    classifiedColors: ['red'],
+    tooltipAttr: 'price',
+    popupAttr: {label: '价格', value: 'price'},
+    bubbleColorAttr: 'class',
+    bubbleSizeAttr: 'price',
+    bubbleColors: ['red', 'green', 'blue'],
+    bubbleSizes: [10, 20, 30],
+    bubbleStrokeWidth: 10,
+    // bubbleStrokeColor: 'black',
+
   },
   function(eventName) {
     // const w = 100
@@ -187,7 +194,7 @@ var layer = new leafletMap.MarkersLayer(
   }
 )
 layer.draw()
-console.log(layer.getClassifyColorRefs())
+console.log(layer.getBubbledColorRefs())
 
 // var dataList = [
 //   [

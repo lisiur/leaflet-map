@@ -3,7 +3,7 @@ import { DataListItem, ChannelFunc } from '../definitions'
 import Marker from './Marker'
 
 /** 渲染样式 散点|热力图 */
-type MarkersLayerRenderType = 'point' | 'heat' | 'cluster'
+type MarkersLayerRenderType = 'point' | 'heat' | 'cluster' | 'bubble'
 
 /** 渲染颜色样式 单色|分段|分类 */
 type MarkersLayerRenderPointColorType = 'single' | 'segmented' | 'classified'
@@ -35,6 +35,15 @@ export interface MarkersLayerOptions {
   iconColor?: string
   iconAnchor?: [number, number]
   iconRenderer?: IconRenderFunc
+
+  bubbleColorAttr?: string
+  bubbleSizeAttr?: string
+  bubbleStrokeWidth?: number
+  bubbleStrokeColor?: string
+  bubbleColors?: string[]
+  bubbleSizes?: number[]
+  bubbleStrokeOpacity?: number
+  bubbleFillOpacity?: number
 
   // 是否聚合，优先级高于 renderType == point
   isCluster?: boolean
@@ -92,13 +101,22 @@ export default class MarkersLayer {
     | L.LayerGroup
   private heatLayer: L.HeatLayer
   private clusterLayer: L.MarkersCluster
+  private bubbleLayer: L.LayerGroup
 
   private segmentedMin: number
   private segmentedStep: number
+  private bubbledSizeMin: number
+  private bubbledSizeStep: number
+  private bubbledColorMap: { [prop: string]: string }
+  private bubbledColorRefs: Array<{
+    attr: string
+    color: string
+    nums: number
+  }>
   /** 记录某个 prop 对应的渲染颜色 */
-  private classifyColorMap: { [prop: string]: string }
+  private classifiedColorMap: { [prop: string]: string }
   /** 分类渲染颜色参照(提供给调用者使用) */
-  private classifyColorRefs: Array<{
+  private classifiedColorRefs: Array<{
     attr: string
     color: string
     nums: number
@@ -113,22 +131,28 @@ export default class MarkersLayer {
     if (!Array.isArray(dataList) || dataList.length === 0) {
       throw new Error(`dataList 必须是非空数组`)
     }
+    const DEFAULT_COLOR = '#3388FF'
     this.defaultOptions = {
       renderType: 'point',
       renderPointColorType: 'single',
       iconType: 'unicode',
       iconSize: [20, 20],
       iconClass: 'iconfont',
-      iconColor: '#3388FF',
+      iconColor: DEFAULT_COLOR,
       iconAnchor: [10, 20],
       popup: true,
       tooltip: true,
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
-      segmentedColors: ['#3388FF'],
-      classifiedColors: ['#3388FF'],
+      segmentedColors: [DEFAULT_COLOR],
+      classifiedColors: [DEFAULT_COLOR],
       isCluster: false,
       renderClusterColorType: 'smart',
+      bubbleStrokeWidth: 1,
+      bubbleColors: [DEFAULT_COLOR],
+      bubbleStrokeOpacity: 0.2,
+      bubbleFillOpacity: 0.5,
+      bubbleSizes: [10],
       heatOptions: {
         max: 1,
         minOpacity: 0.5,
@@ -149,10 +173,14 @@ export default class MarkersLayer {
     this.markerLayer = null
     this.heatLayer = null
     this.clusterLayer = null
+    this.bubbleLayer = null
 
     this.segmentedMin = Infinity
     this.segmentedStep = 1
-    this.classifyColorMap = {}
+    this.bubbledSizeMin = Infinity
+    this.bubbledSizeStep = 1
+    this.classifiedColorMap = {}
+    this.bubbledColorMap = {}
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true
@@ -184,6 +212,10 @@ export default class MarkersLayer {
         }
         case 'heat': {
           this.layer = this.configHeatLayer()
+          break
+        }
+        case 'bubble': {
+          this.layer = this.configBubbleLayer()
           break
         }
         default: {
@@ -259,19 +291,41 @@ export default class MarkersLayer {
       }
     })
   }
-  public getClassifyColorRefs() {
-    return this.classifyColorRefs
+  public getClassifiedColorRefs() {
+    return this.classifiedColorRefs
+  }
+  public getBubbledColorRefs() {
+    return this.bubbledColorRefs
   }
   protected _zoomStartCb() {
     if (!this.visible) {
       return
     }
     if (this.type === 'marker') {
-      if (this.options.renderType === 'point' && !this.options.isCluster) {
-        this.map.removeLayer(this.markerLayer)
+      switch (this.options.renderType) {
+        case 'point': {
+          if (this.options.isCluster) {
+            return
+          }
+          if (this.markerLayer) {
+            this.map.removeLayer(this.markerLayer)
+          }
+          break
+        }
+        case 'bubble': {
+          if (this.bubbleLayer) {
+            this.map.removeLayer(this.bubbleLayer)
+          }
+          break
+        }
+        default: {
+          return
+        }
       }
-    } else {
+    } else if (this.type === 'markerBuffer') {
       this.map.removeLayer(this.markerLayer)
+    } else {
+      return
     }
   }
   protected _zoomEndCb() {
@@ -279,11 +333,30 @@ export default class MarkersLayer {
       return
     }
     if (this.type === 'marker') {
-      if (this.options.renderType === 'point' && !this.options.isCluster) {
-        this.map.addLayer(this.markerLayer)
+      switch (this.options.renderType) {
+        case 'point': {
+          if (this.options.isCluster) {
+            return
+          }
+          if (this.markerLayer) {
+            this.map.addLayer(this.markerLayer)
+          }
+          break
+        }
+        case 'bubble': {
+          if (this.bubbleLayer) {
+            this.map.addLayer(this.bubbleLayer)
+          }
+          break
+        }
+        default: {
+          return
+        }
       }
-    } else {
+    } else if (this.type === 'markerBuffer') {
       this.map.addLayer(this.markerLayer)
+    } else {
+      return
     }
   }
   /** 渲染为散点图 */
@@ -347,6 +420,7 @@ export default class MarkersLayer {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
     this.cacheClassifyParams()
+    this.cacheBubbleParams()
     this.markers = []
     this.dataList.forEach((data) => {
       const layer = L.geoJSON(data.geometry).getLayers()[0] as L.Marker
@@ -449,6 +523,38 @@ export default class MarkersLayer {
       optionsMerge({ minOpacity: 0.5 }, this.options.heatOptions)
     )
     return this.heatLayer
+  }
+
+  /** 渲染为气泡图 */
+  private configBubbleLayer() {
+    if (this.bubbleLayer) {
+      this.bubbleLayer.remove()
+    }
+    this.bubbleLayer = L.layerGroup()
+    this.markers.forEach((marker) => {
+      const radius = this.getBubbledMarkerSize(marker.getData())
+      const fillColor = this.getBubbledMarkerColor(marker.getData())
+      const color = this.options.bubbleStrokeColor || lighten(fillColor)
+      const weight = this.options.bubbleStrokeWidth
+      const opacity = this.options.bubbleStrokeOpacity
+      const fillOpacity = this.options.bubbleFillOpacity
+      const bubble = L.circleMarker(marker.getLatLng(), {
+        radius,
+        color,
+        fillColor,
+        weight,
+        opacity,
+        fillOpacity,
+      })
+      if (this.options.popup) {
+        bubble.bindPopup(this.getPopupContent(marker.getData()))
+      }
+      if (this.options.tooltip) {
+        bubble.bindTooltip(this.getToolTipContent(marker.getData()))
+      }
+      this.bubbleLayer.addLayer(bubble)
+    })
+    return this.bubbleLayer
   }
 
   private getLargerMarkerIcon(data: DataListItem) {
@@ -589,14 +695,59 @@ export default class MarkersLayer {
     })
     const values = Object.values(tmp)
     values.sort((a, b) => b[1] - a[1])
-    this.classifyColorRefs = []
+    this.classifiedColorRefs = []
     values.forEach(([attr, nums], index) => {
       let color = 'black'
       if (index < this.options.classifiedColors.length) {
         color = this.options.classifiedColors[index]
       }
-      this.classifyColorMap[attr] = color
-      this.classifyColorRefs.push({
+      this.classifiedColorMap[attr] = color
+      this.classifiedColorRefs.push({
+        attr,
+        color,
+        nums,
+      })
+    })
+  }
+  private cacheBubbleParams() {
+    if (!this.options.bubbleSizeAttr) {
+      return
+    }
+    const bubbledSizesLength = this.options.bubbleSizes.length
+    let maxSizeVal = -Infinity
+    let minSizeVal = Infinity
+    for (const data of this.dataList) {
+      const sizeVal = data[this.options.bubbleSizeAttr]
+      maxSizeVal = Math.max(maxSizeVal, sizeVal)
+      minSizeVal = Math.min(minSizeVal, sizeVal)
+    }
+    const sizeStep = (maxSizeVal - minSizeVal + 1) / bubbledSizesLength
+    this.bubbledSizeMin = minSizeVal
+    this.bubbledSizeStep = sizeStep
+
+    if (!this.options.bubbleColorAttr) {
+      return
+    }
+
+    const tmp: { [prop: string]: [string, number] } = {}
+    const prop = this.options.bubbleColorAttr
+    this.dataList.forEach((data) => {
+      if (data[prop] in tmp) {
+        tmp[data[prop]] = [data[prop], tmp[data[prop]][1] + 1]
+      } else {
+        tmp[data[prop]] = [data[prop], 1]
+      }
+    })
+    const values = Object.values(tmp)
+    values.sort((a, b) => b[1] - a[1])
+    this.bubbledColorRefs = []
+    values.forEach(([attr, nums], index) => {
+      let color = 'black'
+      if (index < this.options.bubbleColors.length) {
+        color = this.options.bubbleColors[index]
+      }
+      this.bubbledColorMap[attr] = color
+      this.bubbledColorRefs.push({
         attr,
         color,
         nums,
@@ -604,7 +755,7 @@ export default class MarkersLayer {
     })
   }
   private getClassifyMarkerColor(data: DataListItem): string {
-    return this.classifyColorMap[data[this.options.classifiedAttr]]
+    return this.classifiedColorMap[data[this.options.classifiedAttr]]
   }
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
@@ -625,6 +776,16 @@ export default class MarkersLayer {
       parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
     ]
     return color
+  }
+  private getBubbledMarkerSize(data: DataListItem): number {
+    const val = data[this.options.bubbleSizeAttr]
+    const size = this.options.bubbleSizes[
+      parseInt('' + (val - this.bubbledSizeMin) / this.bubbledSizeStep, 10)
+    ]
+    return size
+  }
+  private getBubbledMarkerColor(data: DataListItem): string {
+    return this.bubbledColorMap[data[this.options.bubbleColorAttr]]
   }
   private getPopupContent(data: DataListItem) {
     if (!this.options.popupAttr) {
