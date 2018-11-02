@@ -82,6 +82,7 @@ export default class MarkersLayer {
     private bubbledSizeStep;
     private bubbledColorMap;
     private bubbledColorRefs;
+    private bubbledSizeRefs;
     /** 记录某个 prop 对应的渲染颜色 */
     private classifiedColorMap;
     /** 分类渲染颜色参照(提供给调用者使用) */
@@ -110,6 +111,10 @@ export default class MarkersLayer {
         attr: string;
         color: string;
         nums: number;
+    }[];
+    getBubbledSizeRefs(): {
+        size: number;
+        range: [number, number];
     }[];
     protected _zoomStartCb(): void;
     protected _zoomEndCb(): void;
