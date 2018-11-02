@@ -113,6 +113,10 @@ export default class MarkersLayer {
     color: string
     nums: number
   }>
+  private bubbledSizeRefs: Array<{
+    size: number
+    range: [number, number]
+  }>
   /** 记录某个 prop 对应的渲染颜色 */
   private classifiedColorMap: { [prop: string]: string }
   /** 分类渲染颜色参照(提供给调用者使用) */
@@ -296,6 +300,18 @@ export default class MarkersLayer {
   }
   public getBubbledColorRefs() {
     return this.bubbledColorRefs
+  }
+  public getBubbledSizeRefs() {
+    const sizeNums = this.options.bubbleSizes.length
+    for (let i = 0; i < sizeNums; i++) {
+      const rangeStart = this.bubbledSizeMin + i * this.bubbledSizeStep
+      const rangeEnd = rangeStart + this.bubbledSizeStep
+      this.bubbledSizeRefs.push({
+        range: [rangeStart, rangeEnd],
+        size: this.options.bubbleSizes[i],
+      })
+    }
+    return this.bubbledSizeRefs
   }
   protected _zoomStartCb() {
     if (!this.visible) {
