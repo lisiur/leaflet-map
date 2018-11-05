@@ -1,5 +1,6 @@
 import { DataListItem, ChannelFunc } from '../definitions'
 import MarkersLayer, { MarkersLayerOptions } from './MarkersLayer'
+import { optionsMerge } from 'src/utils/index'
 interface MarkersBufferLayerOptions extends MarkersLayerOptions {
   bufferTooltipAttr: string
   bufferOptions: L.CircleMarkerOptions
@@ -20,15 +21,18 @@ export default class MarkersBufferLayer extends MarkersLayer {
       stroke: true,
       weight: 1,
     }
-    this.options = Object.assign(
+    this.options = optionsMerge(
       this.options,
       { bufferOptions: defaultBufferOptions },
       options
-    )
+    ) as MarkersBufferLayerOptions
   }
 
   public draw(options?: MarkersBufferLayerOptions) {
-    this.options = Object.assign(this.options, options)
+    this.options = optionsMerge(
+      this.options,
+      options
+    ) as MarkersBufferLayerOptions
     this.options.bufferOptions.color = this.options.iconColor
     this.initMarkers()
     return this.redraw()
