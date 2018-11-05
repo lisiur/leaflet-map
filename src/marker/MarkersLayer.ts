@@ -99,6 +99,7 @@ export default class MarkersLayer {
     | L.HeatLayer
     | L.MarkersCluster
     | L.LayerGroup
+  protected defaultOptions: MarkersLayerOptions
   private heatLayer: L.HeatLayer
   private clusterLayer: L.MarkersCluster
   private bubbleLayer: L.LayerGroup
@@ -125,7 +126,6 @@ export default class MarkersLayer {
     color: string
     nums: number
   }>
-  private defaultOptions: MarkersLayerOptions
   constructor(
     map: L.Map,
     dataList: DataListItem[],
@@ -185,6 +185,8 @@ export default class MarkersLayer {
     this.bubbledSizeStep = 1
     this.classifiedColorMap = {}
     this.bubbledColorMap = {}
+    this.initOptions(options)
+    this.initEvents()
   }
   public draw(options?: MarkersLayerOptions) {
     this.visible = true

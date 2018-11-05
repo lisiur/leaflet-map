@@ -73,6 +73,7 @@ export default class MarkersLayer {
     protected markerLayer: L.CanvasIconLayer;
     protected visible: boolean;
     protected layer: L.CanvasIconLayer | L.HeatLayer | L.MarkersCluster | L.LayerGroup;
+    protected defaultOptions: MarkersLayerOptions;
     private heatLayer;
     private clusterLayer;
     private bubbleLayer;
@@ -87,7 +88,6 @@ export default class MarkersLayer {
     private classifiedColorMap;
     /** 分类渲染颜色参照(提供给调用者使用) */
     private classifiedColorRefs;
-    private defaultOptions;
     constructor(map: L.Map, dataList: DataListItem[], options: MarkersLayerOptions, channelFunc: ChannelFunc);
     draw(options?: MarkersLayerOptions): this;
     redraw(): this;

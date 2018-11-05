@@ -1,6 +1,6 @@
 import { DataListItem, ChannelFunc } from '../definitions'
 import MarkersLayer, { MarkersLayerOptions } from './MarkersLayer'
-import { optionsMerge } from 'src/utils/index'
+import { optionsMerge } from '../utils/index'
 interface MarkersBufferLayerOptions extends MarkersLayerOptions {
   bufferTooltipAttr: string
   bufferOptions: L.CircleMarkerOptions
@@ -24,7 +24,7 @@ export default class MarkersBufferLayer extends MarkersLayer {
     this.options = optionsMerge(
       this.options,
       { bufferOptions: defaultBufferOptions },
-      options
+      JSON.parse(JSON.stringify(options))
     ) as MarkersBufferLayerOptions
   }
 
