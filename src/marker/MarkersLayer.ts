@@ -77,6 +77,7 @@ export interface MarkersHeatLayerOptions extends L.HeatLayerOptions {
   dimensionAttr?: string
 }
 
+const DEFAULT_COLOR = '#3388FF'
 export default class MarkersLayer {
   public map: L.Map
   public dataList: DataListItem[]
@@ -135,7 +136,6 @@ export default class MarkersLayer {
     if (!Array.isArray(dataList) || dataList.length === 0) {
       throw new Error(`dataList 必须是非空数组`)
     }
-    const DEFAULT_COLOR = '#3388FF'
     this.defaultOptions = {
       renderType: 'point',
       renderPointColorType: 'single',
@@ -195,6 +195,7 @@ export default class MarkersLayer {
     this.initEvents()
     return this.redraw()
   }
+  /** 绘制图层 */
   public redraw() {
     if (!this.visible) {
       return
@@ -232,11 +233,13 @@ export default class MarkersLayer {
     this.map.addLayer(this.layer)
     return this
   }
+  /** 设置 data */
   public setData(data: DataListItem[]) {
     this.dataList = data
   }
+  /** 设置配置参数 */
   public setOptions(options: MarkersLayerOptions, redraw = false) {
-    this.options = Object.assign(this.options, options)
+    this.options = optionsMerge(this.options, options) as MarkersLayerOptions
     if (redraw) {
       this.redraw()
     }
@@ -245,9 +248,11 @@ export default class MarkersLayer {
   public getOptions() {
     return this.options
   }
+  /** 缩放至包含所有边界 */
   public fitBounds() {
     this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
+  /** 获取边界 */
   public getBounds(): L.LatLngBoundsExpression {
     if (this.markers.length <= 0) {
       return this.map.getBounds()
@@ -257,6 +262,7 @@ export default class MarkersLayer {
         [marker.getLatLng().lat, marker.getLatLng().lng] as [number, number]
     )
   }
+  /** 销毁图层 */
   public destroy() {
     if (this.layer) {
       this.map.removeLayer(this.layer)
@@ -267,6 +273,7 @@ export default class MarkersLayer {
     this.map.off('zoomstart', this._zoomStartCb, this)
     this.map.off('zoomend', this._zoomEndCb, this)
   }
+  /** 是否显示 */
   public toggleVisible(visible: boolean) {
     this.visible = visible
     if (!this.layer) {
@@ -281,14 +288,17 @@ export default class MarkersLayer {
       this.map.removeLayer(this.layer)
     }
   }
+  /** 更换颜色 */
   public changeColor(color: string) {
     this.options.iconColor = color
     this.redraw()
   }
+  /** 更换 icon */
   public changeIcon(iconUnicode: string) {
     this.options.iconUnicode = iconUnicode
     this.redraw()
   }
+  /** 聚焦某个 marker */
   public pitch(id: string) {
     this.markers.forEach((marker) => {
       if (marker.getData().id === id) {
@@ -297,12 +307,15 @@ export default class MarkersLayer {
       }
     })
   }
+  /** 获取分类颜色说明 */
   public getClassifiedColorRefs() {
     return this.classifiedColorRefs
   }
+  /** 获取气泡颜色图例说明 */
   public getBubbledColorRefs() {
     return this.bubbledColorRefs
   }
+  /** 获取气泡大小图例说明 */
   public getBubbledSizeRefs() {
     const sizeNums = this.options.bubbleSizes.length
     for (let i = 0; i < sizeNums; i++) {
@@ -377,7 +390,7 @@ export default class MarkersLayer {
       return
     }
   }
-  /** 渲染为散点图 */
+  /** 配置散点图 */
   protected configMarkerLayer() {
     if (this.markerLayer) {
       this.markerLayer.remove()
@@ -424,9 +437,11 @@ export default class MarkersLayer {
     this.markerLayer = canvasIconLayer
     return this.markerLayer
   }
+  /** 获取 tooltip 内容 */
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
+  /** 初始化配置参数 */
   protected initOptions(options: MarkersLayerOptions) {
     this.options = optionsMerge(
       this.defaultOptions,
@@ -434,6 +449,7 @@ export default class MarkersLayer {
       options
     ) as MarkersLayerOptions
   }
+  /** 初始化 Marker */
   protected initMarkers() {
     // 缓存 segment 相关数据
     this.cacheSegmentParams()
@@ -455,6 +471,7 @@ export default class MarkersLayer {
       this.markers.push(marker)
     })
   }
+  /** 初始化事件 */
   protected initEvents() {
     this.map.on('zoomstart', this._zoomStartCb, this)
     this.map.on('zoomend', this._zoomEndCb, this)
@@ -488,6 +505,7 @@ export default class MarkersLayer {
     }
     this.channelFunc('on-click-marker', marker)
   }
+  /** 配置聚合图层 */
   private configClusterLayer() {
     // 展示聚合图层
     if (this.clusterLayer) {
@@ -575,15 +593,20 @@ export default class MarkersLayer {
     return this.bubbleLayer
   }
 
+  /** 获取图标放大后 icon */
   private getLargerMarkerIcon(data: DataListItem) {
     return this._getMarkerIcon(data, true)
   }
 
+  /** 获取图标 icon */
   private getMarkerIcon(data: DataListItem) {
     return this._getMarkerIcon(data, false)
   }
 
-  /** 获取当前 marker 需要展示的 icon */
+  /** 获取当前 marker 需要展示的 icon
+   * @param data
+   * @param {boolean} isLarger 是否放大
+   */
   private _getMarkerIcon(
     data: DataListItem,
     isLarger: boolean
@@ -633,6 +656,7 @@ export default class MarkersLayer {
       }
     }
   }
+  /** 获取icon html */
   private getCustomIconHTML(
     data: DataListItem,
     options?: IconRenderFuncOption
@@ -697,6 +721,7 @@ export default class MarkersLayer {
       }
     }
   }
+  /** 缓存分类相关参数 */
   private cacheClassifyParams() {
     if (!this.options.classifiedAttr) {
       return
@@ -715,7 +740,7 @@ export default class MarkersLayer {
     values.sort((a, b) => b[1] - a[1])
     this.classifiedColorRefs = []
     values.forEach(([attr, nums], index) => {
-      let color = 'black'
+      let color = DEFAULT_COLOR
       if (index < this.options.classifiedColors.length) {
         color = this.options.classifiedColors[index]
       }
@@ -727,6 +752,7 @@ export default class MarkersLayer {
       })
     })
   }
+  /** 缓存气泡相关参数 */
   private cacheBubbleParams() {
     if (!this.options.bubbleSizeAttr) {
       return
@@ -760,7 +786,7 @@ export default class MarkersLayer {
     values.sort((a, b) => b[1] - a[1])
     this.bubbledColorRefs = []
     values.forEach(([attr, nums], index) => {
-      let color = 'black'
+      let color = DEFAULT_COLOR
       if (index < this.options.bubbleColors.length) {
         color = this.options.bubbleColors[index]
       }
@@ -772,9 +798,11 @@ export default class MarkersLayer {
       })
     })
   }
+  /** 获取分类颜色 */
   private getClassifyMarkerColor(data: DataListItem): string {
     return this.classifiedColorMap[data[this.options.classifiedAttr]]
   }
+  /** 缓存分段相关参数 */
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
     let maxVal = -Infinity
@@ -788,6 +816,7 @@ export default class MarkersLayer {
     this.segmentedMin = minVal
     this.segmentedStep = step
   }
+  /** 获取分段颜色 */
   private getSegmentedMarkerColor(data: DataListItem): string {
     const val = data[this.options.segmentedAttr]
     const color = this.options.segmentedColors[
@@ -795,6 +824,7 @@ export default class MarkersLayer {
     ]
     return color
   }
+  /** 获取气泡大小 */
   private getBubbledMarkerSize(data: DataListItem): number {
     const val = data[this.options.bubbleSizeAttr]
     const size = this.options.bubbleSizes[
@@ -802,9 +832,11 @@ export default class MarkersLayer {
     ]
     return size
   }
+  /** 获取气泡颜色 */
   private getBubbledMarkerColor(data: DataListItem): string {
     return this.bubbledColorMap[data[this.options.bubbleColorAttr]]
   }
+  /** 获取 popup 内容 */
   private getPopupContent(data: DataListItem) {
     if (!this.options.popupAttr) {
       return ''
@@ -818,6 +850,7 @@ export default class MarkersLayer {
       }`
     }
   }
+  /** 创建 cluster icon */
   private iconCreateFunction(cluster: L.MarkersCluster) {
     const colors = ['#757472', '#5093E2', '#CB7987', '#FC763B']
     const length = this.dataList.length

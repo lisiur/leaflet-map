@@ -90,59 +90,92 @@ export default class MarkersLayer {
     private classifiedColorRefs;
     constructor(map: L.Map, dataList: DataListItem[], options: MarkersLayerOptions, channelFunc: ChannelFunc);
     draw(options?: MarkersLayerOptions): this;
+    /** 绘制图层 */
     redraw(): this;
+    /** 设置 data */
     setData(data: DataListItem[]): void;
+    /** 设置配置参数 */
     setOptions(options: MarkersLayerOptions, redraw?: boolean): void;
     /** 获取当前 options */
     getOptions(): MarkersLayerOptions;
+    /** 缩放至包含所有边界 */
     fitBounds(): void;
+    /** 获取边界 */
     getBounds(): L.LatLngBoundsExpression;
+    /** 销毁图层 */
     destroy(): void;
+    /** 是否显示 */
     toggleVisible(visible: boolean): void;
+    /** 更换颜色 */
     changeColor(color: string): void;
+    /** 更换 icon */
     changeIcon(iconUnicode: string): void;
+    /** 聚焦某个 marker */
     pitch(id: string): void;
+    /** 获取分类颜色说明 */
     getClassifiedColorRefs(): {
         attr: string;
         color: string;
         nums: number;
     }[];
+    /** 获取气泡颜色图例说明 */
     getBubbledColorRefs(): {
         attr: string;
         color: string;
         nums: number;
     }[];
+    /** 获取气泡大小图例说明 */
     getBubbledSizeRefs(): {
         size: number;
         range: [number, number];
     }[];
     protected _zoomStartCb(): void;
     protected _zoomEndCb(): void;
-    /** 渲染为散点图 */
+    /** 配置散点图 */
     protected configMarkerLayer(): import("../../typings/leaflet").CanvasIconLayer;
+    /** 获取 tooltip 内容 */
     protected getToolTipContent(data: DataListItem): string;
+    /** 初始化配置参数 */
     protected initOptions(options: MarkersLayerOptions): void;
+    /** 初始化 Marker */
     protected initMarkers(): void;
+    /** 初始化事件 */
     protected initEvents(): void;
     private markerClickHandler;
+    /** 配置聚合图层 */
     private configClusterLayer;
     /** 渲染为热力图 */
     private configHeatLayer;
     /** 渲染为气泡图 */
     private configBubbleLayer;
+    /** 获取图标放大后 icon */
     private getLargerMarkerIcon;
+    /** 获取图标 icon */
     private getMarkerIcon;
-    /** 获取当前 marker 需要展示的 icon */
+    /** 获取当前 marker 需要展示的 icon
+     * @param data
+     * @param {boolean} isLarger 是否放大
+     */
     private _getMarkerIcon;
+    /** 获取icon html */
     private getCustomIconHTML;
+    /** 缓存分类相关参数 */
     private cacheClassifyParams;
+    /** 缓存气泡相关参数 */
     private cacheBubbleParams;
+    /** 获取分类颜色 */
     private getClassifyMarkerColor;
+    /** 缓存分段相关参数 */
     private cacheSegmentParams;
+    /** 获取分段颜色 */
     private getSegmentedMarkerColor;
+    /** 获取气泡大小 */
     private getBubbledMarkerSize;
+    /** 获取气泡颜色 */
     private getBubbledMarkerColor;
+    /** 获取 popup 内容 */
     private getPopupContent;
+    /** 创建 cluster icon */
     private iconCreateFunction;
 }
 export {};
