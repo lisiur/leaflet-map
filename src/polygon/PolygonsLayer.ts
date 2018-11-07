@@ -108,6 +108,9 @@ export default class PolygonsLayer {
     this.map.addLayer(this.layer)
     return this
   }
+  public getOptions() {
+    return this.options
+  }
   public fitBounds() {
     this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
   }
@@ -157,7 +160,7 @@ export default class PolygonsLayer {
       }
     })
   }
-  public getClassifyColorRefs() {
+  public getClassifiedColorRefs() {
     return this.classifyColorRefs
   }
   // tslint:disable-next-line:no-empty
@@ -195,17 +198,25 @@ export default class PolygonsLayer {
     const values = Object.values(tmp)
     values.sort((a, b) => b[1] - a[1])
     this.classifyColorRefs = []
+    let otherNums = 0
     values.forEach(([attr, nums], index) => {
-      let color = 'black'
+      let color = DEFAULT_COLOR
       if (index < this.options.classifiedColors.length) {
         color = this.options.classifiedColors[index]
+        this.classifyColorRefs.push({
+          attr,
+          color,
+          nums,
+        })
+      } else {
+        otherNums += nums
       }
       this.classifyColorMap[attr] = color
-      this.classifyColorRefs.push({
-        attr,
-        color,
-        nums,
-      })
+    })
+    this.classifyColorRefs.push({
+      attr: '其他',
+      color: DEFAULT_COLOR,
+      nums: otherNums,
     })
   }
   protected getClassifyPolygonColor(data: DataListItem): string {

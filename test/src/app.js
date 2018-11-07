@@ -56,12 +56,34 @@ function calcOffset(x, y, w, h) {
   }
 }
 
-var position = new L.LatLng(39.90778, 116.401216)
-var map = L.map('map').setView(position, 13)
+var position = new L.LatLng(30.90778, 120.401216)
+// var position = new L.LatLng(39.90778, 116.401216)
+var map = L.map('map', {
+  // crs: L.CRS.EPSG4326
+  crs: L.CRS.EPSG3857,
+}).setView(position, 13)
 
 L.tileLayer
   .chinaProvider('GaoDe.Normal.Map', { maxZoom: 18, minZoom: 3 })
   .addTo(map)
+
+const a = L.tileLayer
+  .wms(
+    'http://192.168.1.54:8090/geoserver/navigator_workspace/wms',
+    {
+      layers: "navigator_workspace:r_shanghaibaihuowanggehua_zsw2",
+      transparent: true,
+      format: 'image/png',
+      crs: L.CRS.EPSG4326
+    },
+  )
+a.addTo(map)
+a.on('load', e => {
+  console.log('load', e)
+})
+a.on('click', e => {
+  console.log(e)
+})
 
 // var dataList = [
 //   {
@@ -148,7 +170,7 @@ var dataList = [
       coordinates: [116.401216, 39.90778],
     },
     price: 1,
-    class: 'a'
+    class: 'a',
   },
   {
     geometry: {
@@ -156,15 +178,15 @@ var dataList = [
       coordinates: [116.391216, 39.90778],
     },
     price: 5,
-    class: 'b'
+    class: 'b',
   },
   {
     geometry: {
       type: 'Point',
-      coordinates: [116.381216, 39.90778],
+      coordinates: [120.381216, 30.90778],
     },
     price: 10,
-    class: 'b'
+    class: 'b',
   },
 ]
 
@@ -177,14 +199,13 @@ var layer = new leafletMap.MarkersLayer(
     // tooltip: false,
     popup: false,
     tooltipAttr: 'price',
-    popupAttr: {label: '价格', value: 'price'},
+    popupAttr: { label: '价格', value: 'price' },
     bubbleColorAttr: 'class',
     bubbleSizeAttr: 'price',
     bubbleColors: ['red', 'green', 'blue'],
     bubbleSizes: [10, 20, 30],
     bubbleStrokeWidth: 10,
     // bubbleStrokeColor: 'black',
-
   },
   function(eventName) {
     // const w = 100

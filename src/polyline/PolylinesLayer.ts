@@ -23,6 +23,8 @@ interface PolylineLayerOptions extends L.PolylineOptions {
   classifiedAttr?: string
   classifiedColors?: string[]
 }
+
+const DEFAULT_COLORS = '#3388FF'
 export default class PolylinesLayer {
   public type: string
 
@@ -58,12 +60,12 @@ export default class PolylinesLayer {
       throw new Error(`dataList 必须是非空数组`)
     }
     this.defaultOptions = {
-      color: '#3388FF',
+      color: DEFAULT_COLORS,
       renderPolylineColorType: 'single',
-      segmentedColors: ['#3388FF'],
+      segmentedColors: [DEFAULT_COLORS],
       popupAttr: { label: '名称', value: 'name' },
       tooltipAttr: 'name',
-      classifiedColors: ['#3388FF'],
+      classifiedColors: [DEFAULT_COLORS],
     }
     this.type = 'polyline'
     this.map = map
@@ -97,6 +99,9 @@ export default class PolylinesLayer {
     this.layer = this.configPolylineLayer()
     this.map.addLayer(this.layer)
     return this
+  }
+  public getOptions() {
+    return this.options
   }
   public fitBounds() {
     this.map.fitBounds(this.getBounds(), { padding: [20, 20] })
@@ -144,7 +149,7 @@ export default class PolylinesLayer {
       }
     })
   }
-  public getClassifyColorRefs() {
+  public getClassifiedColorRefs() {
     return this.classifyColorRefs
   }
   protected initOptions(options: PolylineLayerOptions) {
@@ -263,18 +268,28 @@ export default class PolylinesLayer {
     const values = Object.values(tmp)
     values.sort((a, b) => b[1] - a[1])
     this.classifyColorRefs = []
+    let otherNums = 0
     values.forEach(([attr, nums], index) => {
-      let color = 'black'
+      let color = DEFAULT_COLORS
       if (index < this.options.classifiedColors.length) {
         color = this.options.classifiedColors[index]
+        this.classifyColorRefs.push({
+          attr,
+          color,
+          nums,
+        })
+      } else {
+        otherNums += nums
       }
       this.classifyColorMap[attr] = color
-      this.classifyColorRefs.push({
-        attr,
-        color,
-        nums,
-      })
     })
+    if (this.options.classifiedColors.length < values.length) {
+      this.classifyColorRefs.push({
+        attr: '其他',
+        color: DEFAULT_COLORS,
+        nums: otherNums,
+      })
+    }
   }
   private getClassifyPolylineColor(data: DataListItem): string {
     return this.classifyColorMap[data[this.options.classifiedAttr]]

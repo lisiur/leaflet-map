@@ -41,13 +41,14 @@ export default class PolylinesLayer {
     constructor(map: L.Map, dataList: DataListItem[], options: PolylineLayerOptions, channelFunc: ChannelFunc);
     draw(options?: PolylineLayerOptions): this;
     redraw(): this;
+    getOptions(): PolylineLayerOptions;
     fitBounds(): void;
     getBounds(): L.LatLngBoundsExpression;
     destroy(): void;
     toggleVisible(visible: boolean): void;
     changeColor(color: string): void;
     pitch(id: string): void;
-    getClassifyColorRefs(): {
+    getClassifiedColorRefs(): {
         attr: string;
         color: string;
         nums: number;

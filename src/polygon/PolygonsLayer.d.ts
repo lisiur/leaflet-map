@@ -41,13 +41,14 @@ export default class PolygonsLayer {
     constructor(map: L.Map, dataList: DataListItem[], options: PolygonLayerOptions, channelFunc: ChannelFunc);
     draw(options?: PolygonLayerOptions): this;
     redraw(): this;
+    getOptions(): PolygonLayerOptions;
     fitBounds(): void;
     getBounds(): L.LatLngBoundsExpression;
     destroy(): void;
     toggleVisible(visible: boolean): void;
     changeColor(color: string): void;
     pitch(id: string): void;
-    getClassifyColorRefs(): {
+    getClassifiedColorRefs(): {
         attr: string;
         color: string;
         nums: number;

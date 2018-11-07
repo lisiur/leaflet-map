@@ -317,6 +317,7 @@ export default class MarkersLayer {
   }
   /** 获取气泡大小图例说明 */
   public getBubbledSizeRefs() {
+    this.bubbledSizeRefs = []
     const sizeNums = this.options.bubbleSizes.length
     for (let i = 0; i < sizeNums; i++) {
       const rangeStart = this.bubbledSizeMin + i * this.bubbledSizeStep
@@ -404,7 +405,7 @@ export default class MarkersLayer {
     canvasIconLayer.addOnContextmenuListener((event, [{ data: marker }]) => {
       this.channelFunc('contextmenu', {
         event,
-        marker,
+        target: marker,
       })
     })
     // 添加 hover 事件
@@ -739,18 +740,31 @@ export default class MarkersLayer {
     const values = Object.values(tmp)
     values.sort((a, b) => b[1] - a[1])
     this.classifiedColorRefs = []
+    let otherNums = 0
     values.forEach(([attr, nums], index) => {
       let color = DEFAULT_COLOR
       if (index < this.options.classifiedColors.length) {
         color = this.options.classifiedColors[index]
       }
       this.classifiedColorMap[attr] = color
-      this.classifiedColorRefs.push({
-        attr,
-        color,
-        nums,
-      })
+
+      if (index < this.options.classifiedColors.length) {
+        this.classifiedColorRefs.push({
+          attr,
+          color,
+          nums,
+        })
+      } else {
+        otherNums += nums
+      }
     })
+    if (otherNums > 0) {
+      this.classifiedColorRefs.push({
+        attr: '其它',
+        color: DEFAULT_COLOR,
+        nums: otherNums,
+      })
+    }
   }
   /** 缓存气泡相关参数 */
   private cacheBubbleParams() {
@@ -785,18 +799,28 @@ export default class MarkersLayer {
     const values = Object.values(tmp)
     values.sort((a, b) => b[1] - a[1])
     this.bubbledColorRefs = []
+    let otherNums = 0
     values.forEach(([attr, nums], index) => {
       let color = DEFAULT_COLOR
       if (index < this.options.bubbleColors.length) {
         color = this.options.bubbleColors[index]
+        this.bubbledColorRefs.push({
+          attr,
+          color,
+          nums,
+        })
+      } else {
+        otherNums += nums
       }
       this.bubbledColorMap[attr] = color
-      this.bubbledColorRefs.push({
-        attr,
-        color,
-        nums,
-      })
     })
+    if (this.options.bubbleColors.length < values.length) {
+      this.bubbledColorRefs.push({
+        attr: '其他',
+        color: DEFAULT_COLOR,
+        nums: otherNums,
+      })
+    }
   }
   /** 获取分类颜色 */
   private getClassifyMarkerColor(data: DataListItem): string {
