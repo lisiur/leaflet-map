@@ -11,6 +11,10 @@ function darken(hexColor: string) {
     .hex()
 }
 
+function cloneDeep(target: any) {
+  return JSON.parse(JSON.stringify(target))
+}
+
 function optionsMerge(...targets: any[]): object {
   if (targets.length === 0) {
     return {}
@@ -18,16 +22,17 @@ function optionsMerge(...targets: any[]): object {
   if (targets.length === 1) {
     return targets[0]
   }
-  const merged = targets[0]
-  for (const key in targets[1]) {
+  const merged = cloneDeep(targets[0])
+  const target = cloneDeep(targets[1])
+  for (const key in target) {
     if (key in merged) {
       if (Object.prototype.toString.call(merged[key]) === '[object Object]') {
-        merged[key] = optionsMerge(merged[key], targets[1][key])
+        merged[key] = optionsMerge(merged[key], target[key])
       } else {
-        merged[key] = targets[1][key]
+        merged[key] = target[key]
       }
     } else {
-      merged[key] = targets[1][key]
+      merged[key] = target[key]
     }
   }
   return optionsMerge(merged, ...targets.slice(2))
