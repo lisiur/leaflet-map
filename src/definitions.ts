@@ -4,4 +4,6 @@ interface DataListItem {
 }
 type ChannelFunc = (event: string, ...params: any[]) => void
 
-export { DataListItem, ChannelFunc }
+type GetDataByLatLng = (latlng: number[]) => Promise<DataListItem>
+
+export { DataListItem, ChannelFunc, GetDataByLatLng }
