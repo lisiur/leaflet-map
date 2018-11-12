@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash'
 import * as Color from 'color'
 
 function lighten(hexColor: string) {
@@ -9,10 +10,6 @@ function darken(hexColor: string) {
   return Color(hexColor)
     .darken(0.5)
     .hex()
-}
-
-function cloneDeep(target: any) {
-  return JSON.parse(JSON.stringify(target))
 }
 
 function optionsMerge(...targets: any[]): object {

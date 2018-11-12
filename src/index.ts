@@ -8,6 +8,7 @@ import Polygon from './polygon/Polygon'
 import PolygonsLayer from './polygon/PolygonsLayer'
 import GridsLayer from './polygon/GridsLayer'
 import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
+import WmsTile from './wmsTile/WmsTile'
 
 export default {
   Marker,
@@ -20,6 +21,7 @@ export default {
   PolygonsLayer,
   GridsLayer,
   DynamicHeatLayer,
+  WmsTile,
 }
 export {
   Marker,
@@ -32,4 +34,5 @@ export {
   PolygonsLayer,
   GridsLayer,
   DynamicHeatLayer,
+  WmsTile,
 }
