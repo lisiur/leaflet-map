@@ -1,9 +1,9 @@
 import { DataListItem, ChannelFunc, GetDataByLatLng } from '../definitions'
 import { optionsMerge } from '../utils/index'
 
-type GetOptionsByOptions = (
+type GetWmsConfigs = (
   options: WmsTileOptions
-) => Promise<{ wmsUrl: string; layers: string }>
+) => Promise<{ wmsURL: string; layers: string; styles: string }>
 
 /** 渲染样式 散点|热力图 */
 type GridLayerRenderType = 'single' | 'segmented' | 'heat'
@@ -14,9 +14,11 @@ export interface HeatLayerOptions extends L.HeatLayerOptions {
 
 interface WmsTileOptions extends L.WMSOptions {
   renderType?: GridLayerRenderType
-  wmsUrl?: string
+  wmsURL?: string
+  layers?: string
+  style?: string
   getDataByLatLng?: GetDataByLatLng
-  getOptionsByOptions?: GetOptionsByOptions
+  getWmsConfigs?: GetWmsConfigs
   popupAttr?: string | { label: string; value: any }
   color?: string
   segmentedAttr?: string
@@ -62,11 +64,11 @@ export default class WmsTile {
     if (options) {
       this.initOptions(options)
     }
-    if (this.options.getOptionsByOptions) {
-      const { wmsUrl, layers } = await this.options.getOptionsByOptions(
+    if (this.options.getWmsConfigs) {
+      const { wmsURL, layers, styles } = await this.options.getWmsConfigs(
         this.options
       )
-      this.initOptions({ wmsUrl, layers })
+      this.initOptions({ wmsURL, layers, styles })
     }
     this.layer = this.getLayer()
     if (this.layer) {
@@ -139,8 +141,7 @@ export default class WmsTile {
   private initOptions(options: WmsTileOptions) {
     const getDataByLatLng =
       options.getDataByLatLng || this.options.getDataByLatLng
-    const getOptionsByOptions =
-      options.getOptionsByOptions || this.options.getOptionsByOptions
+    const getWmsConfigs = options.getWmsConfigs || this.options.getWmsConfigs
 
     const defaultOptions: WmsTileOptions = {
       renderType: 'single',
@@ -160,14 +161,15 @@ export default class WmsTile {
       options
     ) as WmsTileOptions
     this.options.getDataByLatLng = getDataByLatLng
-    this.options.getOptionsByOptions = getOptionsByOptions
+    this.options.getWmsConfigs = getWmsConfigs
   }
 
   private getLayer() {
-    const { wmsUrl } = this.options
-    if (wmsUrl) {
-      return L.tileLayer.wms(wmsUrl, {
-        layers: this.options.layers,
+    const { wmsURL, layers, styles } = this.options
+    if (wmsURL) {
+      return L.tileLayer.wms(wmsURL, {
+        layers,
+        styles,
         transparent: true,
         format: 'image/png',
         crs: L.CRS.EPSG4326,

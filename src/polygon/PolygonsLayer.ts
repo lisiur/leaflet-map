@@ -294,7 +294,7 @@ export default class PolygonsLayer {
     this.polygonLayer = L.layerGroup()
     this.polygons = this.polygons.map((polygon) => {
       const options: L.PolylineOptions = optionsMerge({}, this.options, {
-        color: DEFAULT_COLOR,
+        color: this.getColor(polygon.getData(), 'darken'),
         fillColor: this.getColor(polygon.getData()),
       })
       // 重新应用 options
