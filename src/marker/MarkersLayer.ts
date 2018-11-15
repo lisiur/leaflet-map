@@ -101,6 +101,8 @@ export default class MarkersLayer {
     | L.MarkersCluster
     | L.LayerGroup
   protected defaultOptions: MarkersLayerOptions
+  /** 记录某个 prop 对应的渲染颜色 */
+  protected classifiedColorMap: { [prop: string]: string }
   private heatLayer: L.HeatLayer
   private clusterLayer: L.MarkersCluster
   private bubbleLayer: L.LayerGroup
@@ -119,8 +121,6 @@ export default class MarkersLayer {
     size: number
     range: [number, number]
   }>
-  /** 记录某个 prop 对应的渲染颜色 */
-  private classifiedColorMap: { [prop: string]: string }
   /** 分类渲染颜色参照(提供给调用者使用) */
   private classifiedColorRefs: Array<{
     attr: string
@@ -477,6 +477,18 @@ export default class MarkersLayer {
     this.map.on('zoomstart', this._zoomStartCb, this)
     this.map.on('zoomend', this._zoomEndCb, this)
   }
+  /** 获取分类颜色 */
+  protected getClassifyMarkerColor(data: DataListItem): string {
+    return this.classifiedColorMap[data[this.options.classifiedAttr]]
+  }
+  /** 获取分段颜色 */
+  protected getSegmentedMarkerColor(data: DataListItem): string {
+    const val = data[this.options.segmentedAttr]
+    const color = this.options.segmentedColors[
+      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
+    ]
+    return color
+  }
   // 处理 marker 点击事件
   private markerClickHandler(marker: Marker, fitBounds?: boolean) {
     this.focusedMarker = marker
@@ -822,10 +834,6 @@ export default class MarkersLayer {
       })
     }
   }
-  /** 获取分类颜色 */
-  private getClassifyMarkerColor(data: DataListItem): string {
-    return this.classifiedColorMap[data[this.options.classifiedAttr]]
-  }
   /** 缓存分段相关参数 */
   private cacheSegmentParams() {
     const segmentedLength = this.options.segmentedColors.length
@@ -839,14 +847,6 @@ export default class MarkersLayer {
     const step = (maxVal - minVal + 1) / segmentedLength
     this.segmentedMin = minVal
     this.segmentedStep = step
-  }
-  /** 获取分段颜色 */
-  private getSegmentedMarkerColor(data: DataListItem): string {
-    const val = data[this.options.segmentedAttr]
-    const color = this.options.segmentedColors[
-      parseInt('' + (val - this.segmentedMin) / this.segmentedStep, 10)
-    ]
-    return color
   }
   /** 获取气泡大小 */
   private getBubbledMarkerSize(data: DataListItem): number {

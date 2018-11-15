@@ -8,7 +8,7 @@ function lighten(hexColor: string) {
 }
 function darken(hexColor: string) {
   return Color(hexColor)
-    .darken(0.5)
+    .darken(0.3)
     .hex()
 }
 

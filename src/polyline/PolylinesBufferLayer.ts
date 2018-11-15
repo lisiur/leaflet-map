@@ -83,9 +83,6 @@ export default class PolylinesBufferLayer extends PolylinesLayer {
   private configPolylineBufferLayer() {
     this.polylineLayer = L.layerGroup()
     this.polylines.forEach((polyline) => {
-      polyline.on('click', () => {
-        this.polylineClickHandler(polyline)
-      })
       const options: PolylineBufferLayerOptions = Object.assign(
         {},
         this.options,
@@ -105,6 +102,9 @@ export default class PolylinesBufferLayer extends PolylinesLayer {
       )
       if (this.options.tooltipAttr) {
         polylineBuffer.bindTooltip(this.getToolTipContent(polyline.getData()))
+      }
+      if (this.options.popupAttr) {
+        polylineBuffer.bindPopup(this.getPopupContent(polyline.getData()))
       }
       this.polylineLayer.addLayer(polylineBuffer)
     })

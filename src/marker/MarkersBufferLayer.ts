@@ -75,7 +75,12 @@ export default class MarkersBufferLayer extends MarkersLayer {
     this.markers.forEach((marker) => {
       const circleLayer = L.circle(
         marker.getLatLng(),
-        this.options.bufferOptions
+        optionsMerge(this.options.bufferOptions, {
+          color:
+            this.options.renderPointColorType === 'segmented'
+              ? this.getSegmentedMarkerColor(marker.getData())
+              : this.options.bufferOptions.color,
+        })
       )
       if (this.options.bufferTooltipAttr) {
         circleLayer.bindTooltip(

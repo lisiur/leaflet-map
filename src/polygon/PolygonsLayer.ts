@@ -250,7 +250,7 @@ export default class PolygonsLayer {
     }
     // 生成当前 focus
     this.focusedDisplayPolygon = new Polygon(polygon.getLatLngs(), {
-      color: DEFAULT_COLOR,
+      color: this.getColor(polygon.getData(), 'darken'),
       fillColor: this.getColor(polygon.getData()),
     })
     this.focusedDisplayPolygon.addTo(this.map)

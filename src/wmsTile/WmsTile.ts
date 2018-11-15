@@ -61,6 +61,9 @@ export default class WmsTile {
     if (this.layer) {
       this.layer.remove()
     }
+    if (this.popup) {
+      this.popup.remove()
+    }
     if (options) {
       this.initOptions(options)
     }
@@ -186,7 +189,9 @@ export default class WmsTile {
     }
     const latlng = [event.latlng.lat, event.latlng.lng]
     const data = await this.options.getDataByLatLng(latlng)
-    this.showPopup(data, event.latlng)
+    if (data) {
+      this.showPopup(data, event.latlng)
+    }
   }
   private showPopup(data: DataListItem, latlng: L.LatLng) {
     this.popup = L.popup()
