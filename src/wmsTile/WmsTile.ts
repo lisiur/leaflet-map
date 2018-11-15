@@ -53,6 +53,7 @@ export default class WmsTile {
     this.initOptions(options)
     this.initEvents()
   }
+
   public async draw(options?: WmsTileOptions) {
     if (!this.visible) {
       return
@@ -84,6 +85,10 @@ export default class WmsTile {
       this.layer.remove()
     }
     this.map.off('click', this.clickHandler, this)
+  }
+
+  public getOptions() {
+    return this.options
   }
 
   public pitch(id: string) {
