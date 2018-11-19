@@ -306,6 +306,12 @@ export default class PolygonsLayer {
       newPolygon.on('click', () => {
         this.polygonClickHandler(polygon)
       })
+      newPolygon.on('contextmenu', (event) => {
+        this.channelFunc('contextmenu', {
+          event,
+          target: newPolygon,
+        })
+      })
       return newPolygon
     })
     this.polygons.forEach((polygon) => {

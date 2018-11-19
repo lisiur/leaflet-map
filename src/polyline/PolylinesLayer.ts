@@ -243,6 +243,12 @@ export default class PolylinesLayer {
       newPolyline.on('click', () => {
         this.polylineClickHandler(polyline)
       })
+      newPolyline.on('contextmenu', (event) => {
+        this.channelFunc('contextmenu', {
+          event,
+          target: newPolyline,
+        })
+      })
       newPolyline.setData(polyline.getData())
       if (this.options.tooltipAttr) {
         newPolyline.bindTooltip(this.getToolTipContent(newPolyline.getData()))
