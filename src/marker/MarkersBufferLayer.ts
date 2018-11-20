@@ -33,7 +33,8 @@ export default class MarkersBufferLayer extends MarkersLayer {
       this.options,
       options
     ) as MarkersBufferLayerOptions
-    this.options.bufferOptions.color = this.options.iconColor
+    this.options.bufferOptions.color =
+      this.options.color || this.options.iconColor
     this.initMarkers()
     return this.redraw()
   }

@@ -27,6 +27,7 @@ export interface MarkersLayerOptions {
   renderPointColorType?: MarkersLayerRenderPointColorType
   iconType?: MarkersLayerIconType
 
+  color?: string
   iconImageUrl?: string
   iconSize?: [number, number]
   iconClass?: string
@@ -143,6 +144,7 @@ export default class MarkersLayer {
       iconSize: [20, 20],
       iconClass: 'iconfont',
       iconColor: DEFAULT_COLOR,
+      color: DEFAULT_COLOR,
       iconAnchor: [10, 20],
       popup: true,
       tooltip: true,
@@ -290,6 +292,7 @@ export default class MarkersLayer {
   }
   /** 更换颜色 */
   public changeColor(color: string) {
+    this.options.color = color
     this.options.iconColor = color
     this.redraw()
   }
@@ -635,7 +638,7 @@ export default class MarkersLayer {
       number
     ]
 
-    const iconColor = this.options.iconColor
+    const iconColor = this.options.color || this.options.iconColor
 
     switch (this.options.iconType) {
       case 'image': {
@@ -678,10 +681,10 @@ export default class MarkersLayer {
       options = Object.assign({}, this.options, options)
       return this.options.iconRenderer(data, options)
     }
-    let color = this.options.iconColor
+    let color = this.options.color || this.options.iconColor
     switch (this.options.renderPointColorType) {
       case 'single': {
-        color = this.options.iconColor
+        color = this.options.color || this.options.iconColor
         break
       }
       case 'classified': {
@@ -880,7 +883,7 @@ export default class MarkersLayer {
     const length = this.dataList.length
     const step = length / colors.length
     const scaleStep = (1 - 0.75) / colors.length
-    let color = this.options.iconColor
+    let color = this.options.color || this.options.iconColor
     let scale = 1
     if (this.options.renderClusterColorType === 'smart') {
       color = colors[Math.floor((cluster.getChildCount() - 1) / step)]
