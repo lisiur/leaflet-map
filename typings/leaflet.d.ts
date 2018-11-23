@@ -57,6 +57,8 @@ export interface CanvasIconLayer extends Layer {
   addMarkers(markers: L.Marker[])
   /** Removes a marker from the layer.Set redraw to true if you want to redraw layer after marker remove */
   removeMarker(marker: L.Marker, redraw: boolean)
+  /** Clear layers */
+  clearLayers()
   /** Redraws the layer */
   redraw()
   /** Adds common click listener for all markers */

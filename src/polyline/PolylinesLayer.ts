@@ -85,14 +85,14 @@ export default class PolylinesLayer {
     this.focusedDisplayPolyline = null
   }
   public draw(options?: PolylineLayerOptions) {
+    if (!this.visible) {
+      return
+    }
     this.initOptions(options)
     this.initPolylines()
     return this.redraw()
   }
   public redraw() {
-    if (!this.visible) {
-      return
-    }
     if (this.layer) {
       this.layer.remove()
     }
@@ -306,8 +306,10 @@ export default class PolylinesLayer {
     let minVal = Infinity
     for (const data of this.dataList) {
       const val = data[this.options.segmentedAttr]
-      maxVal = Math.max(maxVal, val)
-      minVal = Math.min(minVal, val)
+      if (val !== undefined) {
+        maxVal = Math.max(maxVal, val)
+        minVal = Math.min(minVal, val)
+      }
     }
     const step = (maxVal - minVal + 1) / segmentedLength
     this.segmentedMin = minVal

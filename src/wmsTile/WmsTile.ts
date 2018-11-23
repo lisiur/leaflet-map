@@ -199,9 +199,14 @@ export default class WmsTile {
     }
   }
   private showPopup(data: DataListItem, latlng: L.LatLng) {
+    const popupContent = this.getPopupContent(data)
+    // 有些数据没有该字段，则不显示 popup
+    if (!popupContent) {
+      return
+    }
     this.popup = L.popup()
       .setLatLng(latlng)
-      .setContent(this.getPopupContent(data))
+      .setContent(popupContent)
       .openOn(this.map)
   }
   private getPopupContent(data: DataListItem) {

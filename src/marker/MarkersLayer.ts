@@ -191,7 +191,9 @@ export default class MarkersLayer {
     this.initEvents()
   }
   public draw(options?: MarkersLayerOptions) {
-    this.visible = true
+    if (!this.visible) {
+      return
+    }
     this.initOptions(options)
     this.initMarkers()
     this.initEvents()
@@ -199,9 +201,6 @@ export default class MarkersLayer {
   }
   /** 绘制图层 */
   public redraw() {
-    if (!this.visible) {
-      return
-    }
     if (this.layer) {
       this.layer.remove()
     }
@@ -398,6 +397,7 @@ export default class MarkersLayer {
   protected configMarkerLayer() {
     if (this.markerLayer) {
       this.markerLayer.remove()
+      this.map.removeLayer(this.markerLayer)
     }
     const canvasIconLayer = L.canvasIconLayer({}).addTo(this.map)
     // 添加点击事件
@@ -433,12 +433,11 @@ export default class MarkersLayer {
         }
       })
     }
-    canvasIconLayer.addMarkers(this.markers)
+    this.markerLayer = canvasIconLayer
+    this.markerLayer.addMarkers(this.markers)
 
     // 解决初次渲染不出图标问题
     this.map.panTo(this.map.getCenter())
-
-    this.markerLayer = canvasIconLayer
     return this.markerLayer
   }
   /** 获取 tooltip 内容 */
@@ -452,6 +451,7 @@ export default class MarkersLayer {
       this.options,
       options
     ) as MarkersLayerOptions
+    this.options.color = this.options.color || this.options.iconColor
   }
   /** 初始化 Marker */
   protected initMarkers() {
@@ -791,8 +791,10 @@ export default class MarkersLayer {
     let minSizeVal = Infinity
     for (const data of this.dataList) {
       const sizeVal = data[this.options.bubbleSizeAttr]
-      maxSizeVal = Math.max(maxSizeVal, sizeVal)
-      minSizeVal = Math.min(minSizeVal, sizeVal)
+      if (sizeVal !== undefined) {
+        maxSizeVal = Math.max(maxSizeVal, sizeVal)
+        minSizeVal = Math.min(minSizeVal, sizeVal)
+      }
     }
     const sizeStep = (maxSizeVal - minSizeVal + 1) / bubbledSizesLength
     this.bubbledSizeMin = minSizeVal
@@ -844,8 +846,10 @@ export default class MarkersLayer {
     let minVal = Infinity
     for (const data of this.dataList) {
       const val = data[this.options.segmentedAttr]
-      maxVal = Math.max(maxVal, val)
-      minVal = Math.min(minVal, val)
+      if (val !== undefined) {
+        maxVal = Math.max(maxVal, val)
+        minVal = Math.min(minVal, val)
+      }
     }
     const step = (maxVal - minVal + 1) / segmentedLength
     this.segmentedMin = minVal
