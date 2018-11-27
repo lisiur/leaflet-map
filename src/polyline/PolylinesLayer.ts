@@ -41,6 +41,10 @@ export default class PolylinesLayer {
   protected focusedPolyline: Polyline
   protected focusedDisplayPolyline: Polyline
   protected polylineLayer: L.LayerGroup
+  private segmentedRefs: Array<{
+    range: [number, number]
+    color: string
+  }>
   /** 记录某个 prop 对应的渲染颜色 */
   private classifyColorMap: { [prop: string]: string }
   /** 分类渲染颜色参照(提供给调用者使用) */
@@ -151,6 +155,26 @@ export default class PolylinesLayer {
   }
   public getClassifiedColorRefs() {
     return this.classifyColorRefs
+  }
+  /** 获取分段颜色说明 */
+  public getSegmentedColorRefs() {
+    if (
+      !Number.isFinite(this.segmentedMin) ||
+      !Number.isFinite(this.segmentedStep)
+    ) {
+      return []
+    }
+    this.segmentedRefs = []
+    const sizeNums = this.options.segmentedColors.length
+    for (let i = 0; i < sizeNums; i++) {
+      const rangeStart = this.segmentedMin + i * this.segmentedStep
+      const rangeEnd = rangeStart + this.segmentedStep
+      this.segmentedRefs.push({
+        range: [rangeStart, rangeEnd],
+        color: this.options.segmentedColors[i],
+      })
+    }
+    return this.segmentedRefs
   }
   protected initOptions(options: PolylineLayerOptions) {
     this.options = optionsMerge(
@@ -311,7 +335,7 @@ export default class PolylinesLayer {
         minVal = Math.min(minVal, val)
       }
     }
-    const step = (maxVal - minVal + 1) / segmentedLength
+    const step = Math.ceil((maxVal - minVal + 1) / segmentedLength)
     this.segmentedMin = minVal
     this.segmentedStep = step
   }

@@ -110,6 +110,10 @@ export default class MarkersLayer {
 
   private segmentedMin: number
   private segmentedStep: number
+  private segmentedRefs: Array<{
+    range: [number, number]
+    color: string
+  }>
   private bubbledSizeMin: number
   private bubbledSizeStep: number
   private bubbledColorMap: { [prop: string]: string }
@@ -308,6 +312,26 @@ export default class MarkersLayer {
         return
       }
     })
+  }
+  /** 获取分段颜色说明 */
+  public getSegmentedColorRefs() {
+    if (
+      !Number.isFinite(this.segmentedMin) ||
+      !Number.isFinite(this.segmentedStep)
+    ) {
+      return []
+    }
+    this.segmentedRefs = []
+    const sizeNums = this.options.segmentedColors.length
+    for (let i = 0; i < sizeNums; i++) {
+      const rangeStart = this.segmentedMin + i * this.segmentedStep
+      const rangeEnd = rangeStart + this.segmentedStep
+      this.segmentedRefs.push({
+        range: [rangeStart, rangeEnd],
+        color: this.options.segmentedColors[i],
+      })
+    }
+    return this.segmentedRefs
   }
   /** 获取分类颜色说明 */
   public getClassifiedColorRefs() {
@@ -851,7 +875,7 @@ export default class MarkersLayer {
         minVal = Math.min(minVal, val)
       }
     }
-    const step = (maxVal - minVal + 1) / segmentedLength
+    const step = Math.ceil((maxVal - minVal + 1) / segmentedLength)
     this.segmentedMin = minVal
     this.segmentedStep = step
   }

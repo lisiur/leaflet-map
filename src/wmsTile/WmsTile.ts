@@ -1,32 +1,24 @@
 import { DataListItem, ChannelFunc, GetDataByLatLng } from '../definitions'
 import { optionsMerge } from '../utils/index'
 
+/**
+ * 获取 GeoServer 参数
+ */
 type GetWmsConfigs = (
   options: WmsTileOptions
 ) => Promise<{ wmsURL: string; layers: string; styles: string }>
 
-/** 渲染样式 散点|热力图 */
-type GridLayerRenderType = 'single' | 'segmented' | 'heat'
-
-export interface HeatLayerOptions extends L.HeatLayerOptions {
-  dimensionAttr?: string
-}
-
 interface WmsTileOptions extends L.WMSOptions {
-  renderType?: GridLayerRenderType
   wmsURL?: string
   layers?: string
   style?: string
+
   getDataByLatLng?: GetDataByLatLng
   getWmsConfigs?: GetWmsConfigs
   popupAttr?: string | { label: string; value: any }
-  color?: string
-  segmentedAttr?: string
-  segmentedColors?: string[]
-  heatOptions?: HeatLayerOptions
-}
 
-const DEFAULT_COLORS = '#3388ff'
+  [prop: string]: any
+}
 
 export default class WmsTile {
   public type: string
@@ -152,16 +144,9 @@ export default class WmsTile {
     const getWmsConfigs = options.getWmsConfigs || this.options.getWmsConfigs
 
     const defaultOptions: WmsTileOptions = {
-      renderType: 'single',
-      color: DEFAULT_COLORS,
-      segmentedAttr: null,
-      segmentedColors: [DEFAULT_COLORS],
       format: 'image/png',
       transparent: true,
       crs: L.CRS.EPSG4326,
-      heatOptions: {
-        dimensionAttr: null,
-      },
     }
     this.options = optionsMerge(
       this.options,
@@ -211,12 +196,18 @@ export default class WmsTile {
   }
   private getPopupContent(data: DataListItem) {
     if (!this.options.popupAttr) {
-      return ''
+      return null
     }
     if (typeof this.options.popupAttr === 'string') {
+      if (!data[this.options.popupAttr]) {
+        return null
+      }
       return `${this.options.popupAttr}: ${data[this.options.popupAttr]}`
     }
     if (typeof this.options.popupAttr === 'object') {
+      if (!data[this.options.popupAttr.value]) {
+        return null
+      }
       return `${this.options.popupAttr.label}: ${
         data[this.options.popupAttr.value]
       }`
