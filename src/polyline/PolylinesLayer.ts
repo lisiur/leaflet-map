@@ -1,4 +1,4 @@
-import { DataListItem, ChannelFunc } from '../definitions'
+import { DataListItem, ChannelFunc, ILayer } from '../definitions'
 import Polyline, { PolylineLatLngExpression } from './Polyline'
 import { darken, lighten, optionsMerge } from '../utils/index'
 
@@ -25,7 +25,7 @@ interface PolylineLayerOptions extends L.PolylineOptions {
 }
 
 const DEFAULT_COLORS = '#3388FF'
-export default class PolylinesLayer {
+export default class PolylinesLayer implements ILayer {
   public type: string
 
   protected visible: boolean

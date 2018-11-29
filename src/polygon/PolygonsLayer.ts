@@ -1,5 +1,5 @@
 import { lighten, darken, optionsMerge } from '../utils/index'
-import { DataListItem, ChannelFunc } from '../definitions'
+import { DataListItem, ChannelFunc, ILayer } from '../definitions'
 import Polygon from './Polygon'
 
 /** 渲染颜色样式 单色|分段 */
@@ -25,7 +25,7 @@ export interface PolygonLayerOptions extends L.PolylineOptions {
   classifiedAttr?: string
   classifiedColors?: string[]
 }
-export default class PolygonsLayer {
+export default class PolygonsLayer implements ILayer {
   public type: string
 
   protected visible: boolean

@@ -1,5 +1,5 @@
 import { lighten, optionsMerge } from '../utils/index'
-import { DataListItem, ChannelFunc } from '../definitions'
+import { DataListItem, ChannelFunc, ILayer } from '../definitions'
 import Marker from './Marker'
 
 /** 渲染样式 散点|热力图 */
@@ -79,7 +79,7 @@ export interface MarkersHeatLayerOptions extends L.HeatLayerOptions {
 }
 
 const DEFAULT_COLOR = '#3388FF'
-export default class MarkersLayer {
+export default class MarkersLayer implements ILayer {
   public map: L.Map
   public dataList: DataListItem[]
   public options: MarkersLayerOptions
