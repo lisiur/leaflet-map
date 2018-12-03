@@ -35,6 +35,11 @@ function config(_, argv) {
         root: 'L',
       },
     },
+    devServer: {
+      contentBase: path.resolve(__dirname, './dist'),
+      publicPath: path.resolve(__dirname, './dist'),
+      port: 9001,
+    }
   }
   return config
 }

@@ -9,20 +9,9 @@ import PolygonsLayer from './polygon/PolygonsLayer'
 import GridsLayer from './polygon/GridsLayer'
 import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
 import WmsTile from './wmsTile/WmsTile'
+import PointStyles from './SLD/PointStyles'
+import PolygonStyles from './SLD/PolygonStyles'
 
-export default {
-  Marker,
-  MarkersLayer,
-  MarkersBufferLayer,
-  Polyline,
-  PolylinesLayer,
-  PolylinesBufferLayer,
-  Polygon,
-  PolygonsLayer,
-  GridsLayer,
-  DynamicHeatLayer,
-  WmsTile,
-}
 export {
   Marker,
   MarkersLayer,
@@ -35,4 +24,6 @@ export {
   GridsLayer,
   DynamicHeatLayer,
   WmsTile,
+  PointStyles,
+  PolygonStyles,
 }

@@ -35,9 +35,28 @@ function optionsMerge(...targets: any[]): object {
   return optionsMerge(merged, ...targets.slice(2))
 }
 
-export default {
+function isNull(arg: any) {
+  return null === arg
+}
+
+function isUndefined(arg: any) {
+  return undefined === arg
+}
+
+function isEmptyStr(arg: any) {
+  return '' === arg
+}
+
+function isNothing(arg: any) {
+  return isNull(arg) || isUndefined(arg) || isEmptyStr(arg)
+}
+
+export {
   lighten,
   darken,
   optionsMerge,
+  isNull,
+  isUndefined,
+  isEmptyStr,
+  isNothing,
 }
-export { lighten, darken, optionsMerge }

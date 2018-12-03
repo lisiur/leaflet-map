@@ -3,13 +3,14 @@
   "version": "1.2.0",
   "description": "",
   "main": "./dist/leaflet-layer.js",
-  "types": "./dist/typings/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "build:prod": "npx webpack --mode production",
     "build:dev": "npx webpack --mode development",
     "build": "npm run build:prod; npm run build:dev",
-    "test": "npm run build:dev && npx webpack --watch --config test/webpack.config.js --mode development",
-    "start": "npx webpack-dev-server --config test/webpack.config.js --open"
+    "test": "npx webpack --watch --config test/webpack.config.js --mode development",
+    "dev": "npx webpack --watch --config webpack.config.js --mode development",
+    "start": "npm run test; npm run dev"
   },
   "keywords": [],
   "author": "lisiurday",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@types/color": "^3.0.0",
     "@types/lodash": "^4.14.118",
+    "@types/xml-js": "^1.0.0",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.4",
     "dts-gen": "^0.5.7",
@@ -33,6 +35,7 @@
   },
   "dependencies": {
     "color": "^3.1.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "xml-js": "^1.6.8"
   }
 }
