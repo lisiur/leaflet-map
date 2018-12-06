@@ -7,6 +7,7 @@ import {
   PropSizeRefs,
   RangeSizeRefs,
   RangeColorRefs,
+  WellKnownNameItem,
 } from './def'
 import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
@@ -65,13 +66,13 @@ export default class PointStyles extends SLDStyles {
     }
     if (isNothing(stylesCfg.iconSize)) {
       throw this.sldError(
-        `invalid PointStylesConfig.fontSize: ${stylesCfg.fontSize}`
+        `invalid PointStylesConfig.iconSize: ${stylesCfg.iconSize}`
       )
     }
     return [
       {
         PointSymbolizer: [
-          this.getPointSymbolizerItem(
+          this.getPointSymbolizerItemUsingOnlineResource(
             stylesCfg.iconUrl,
             stylesCfg.fill,
             stylesCfg.iconSize
@@ -105,7 +106,7 @@ export default class PointStyles extends SLDStyles {
         return {
           Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
+            this.getPointSymbolizerItemUsingOnlineResource(
               stylesCfg.iconUrl,
               ref.color,
               stylesCfg.iconSize
@@ -140,7 +141,7 @@ export default class PointStyles extends SLDStyles {
         return {
           Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
+            this.getPointSymbolizerItemUsingOnlineResource(
               stylesCfg.iconUrl,
               ref.color,
               stylesCfg.iconSize
@@ -260,8 +261,8 @@ export default class PointStyles extends SLDStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
-              this.stylesCfg.iconUrl,
+            this.getPointSymbolizerItemUsingMark(
+              'circle',
               propColorRef.color,
               propSizeRef.size
             ),
@@ -291,8 +292,8 @@ export default class PointStyles extends SLDStyles {
             },
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
-              this.stylesCfg.iconUrl,
+            this.getPointSymbolizerItemUsingMark(
+              'circle',
               propColorRef.color,
               rangeSizeRef.size
             ),
@@ -320,8 +321,8 @@ export default class PointStyles extends SLDStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
-              this.stylesCfg.iconUrl,
+            this.getPointSymbolizerItemUsingMark(
+              'circle',
               rangeColorRef.color,
               propSizeRef.size
             ),
@@ -349,8 +350,8 @@ export default class PointStyles extends SLDStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItem(
-              this.stylesCfg.iconUrl,
+            this.getPointSymbolizerItemUsingMark(
+              'circle',
               rangeColorRef.color,
               rangeSizeRef.size
             ),
@@ -361,7 +362,36 @@ export default class PointStyles extends SLDStyles {
     return rule
   }
 
-  private getPointSymbolizerItem(
+  private getPointSymbolizerItemUsingMark(
+    name: WellKnownNameItem,
+    fill: string,
+    size: number
+  ): PointSymbolizerItem {
+    return {
+      Graphic: {
+        Mark: {
+          WellKnownName: {
+            _text: name,
+          },
+          Fill: {
+            CssParameter: [
+              {
+                _attributes: {
+                  name: 'fill',
+                },
+                _text: fill,
+              },
+            ],
+          },
+        },
+        Size: {
+          _text: size,
+        },
+      },
+    }
+  }
+
+  private getPointSymbolizerItemUsingOnlineResource(
     iconUrl: string,
     fill: string,
     size: number
@@ -372,7 +402,7 @@ export default class PointStyles extends SLDStyles {
           OnlineResource: {
             _attributes: {
               'xlink:type': 'simple',
-              'xlink:href': `${iconUrl}?fill=${fill}`,
+              'xlink:href': `${iconUrl}?color=${fill.slice(1)}`,
             },
           },
           Format: {

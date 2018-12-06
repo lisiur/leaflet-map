@@ -1,6 +1,15 @@
 import { SLDStyles } from './SLDStyles';
-import { StylesConfig, UserStyleItem, RuleItem } from './def';
+import { StylesConfig, Rule } from './def';
+export interface LineStylesConfig extends StylesConfig {
+    renderType: 'single' | 'segmented' | 'classified';
+}
 export default class LineStyles extends SLDStyles {
-    protected getUserStyles(stylesCfg: StylesConfig): UserStyleItem[];
-    protected getRule(stylesCfg: StylesConfig): RuleItem[];
+    protected layerName: string;
+    protected stylesCfg: LineStylesConfig;
+    constructor(layerName: string, stylesCfg: LineStylesConfig);
+    protected getRule(stylesCfg: LineStylesConfig): Rule;
+    private getSingleRenderRule;
+    private getSegmentedRenderRule;
+    private getClassifiedRenderRule;
+    private getLineSymbolizerItem;
 }

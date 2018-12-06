@@ -37,7 +37,7 @@ export interface IStyles {
     /** 获取 style 配置 */
     getStylesConfig(): StylesConfig;
     /** 获取 layer name */
-    getLayerName(): string;
+    getLayers(): string;
 }
 export declare const XMLBaseDeclaration: Styles['_declaration'];
 export declare const StyledLayerDescriptorBaseAttributes: StyledLayerDescriptor['_attributes'];
@@ -112,8 +112,26 @@ interface Font {
         _text: any;
     }>;
 }
-declare type RasterSymbolizer = RasterSymbolizerItem;
-interface RasterSymbolizerItem {
+export declare type RasterSymbolizer = RasterSymbolizerItem;
+export interface RasterSymbolizerItem {
+    ColorMap: ColorMap;
+    Opacity?: number;
+    ContrastEnhancement?: ContrastEnhancement;
+}
+interface ContrastEnhancement {
+    Normalize?: any;
+    GammaValue?: Text;
+}
+export interface ColorMap {
+    ColorMapEntry: ColorMapEntry;
+}
+export declare type ColorMapEntry = ColorMapEntryItem[];
+export interface ColorMapEntryItem {
+    _attributes: {
+        color: string;
+        quantity: number;
+        opacity?: number;
+    };
 }
 export declare type Rule = RuleItem[];
 interface StyledLayerDescriptor {
@@ -166,6 +184,7 @@ export interface FilterItem {
     And?: FilterItem | FilterItem[];
     Or?: Filter;
     Not?: Filter;
+    PropertyIsLike?: FilterProperty;
     PropertyIsLessThan?: FilterProperty;
     PropertyIsEqualTo?: FilterProperty;
     PropertyIsNotEqualTo?: FilterProperty;
@@ -243,7 +262,10 @@ interface Mark {
     Fill?: Fill;
     Stroke?: Stroke;
 }
-declare type WellKnownName = 'square' | 'triangle' | 'circle' | 'star' | 'cross' | 'x';
+interface WellKnownName {
+    _text: WellKnownNameItem;
+}
+export declare type WellKnownNameItem = 'square' | 'triangle' | 'circle' | 'star' | 'cross' | 'x';
 interface Fill {
     GraphicFill?: GraphicFill;
     CssParameter?: CssParameter;

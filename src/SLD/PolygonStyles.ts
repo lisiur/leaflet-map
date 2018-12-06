@@ -32,7 +32,8 @@ export default class PolygonStyles extends SLDStyles {
         PolygonSymbolizer: [
           this.getPolygonSymbolizerItem(
             stylesCfg.stroke,
-            stylesCfg.strokeWidth
+            stylesCfg.strokeWidth,
+            stylesCfg.fill
           ),
         ],
       },
@@ -63,7 +64,11 @@ export default class PolygonStyles extends SLDStyles {
         return {
           Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
           PolygonSymbolizer: [
-            this.getPolygonSymbolizerItem(ref.color, stylesCfg.strokeWidth),
+            this.getPolygonSymbolizerItem(
+              ref.color,
+              stylesCfg.strokeWidth,
+              ref.color
+            ),
           ],
         } as RuleItem
       }
@@ -94,7 +99,11 @@ export default class PolygonStyles extends SLDStyles {
         return {
           Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
           PolygonSymbolizer: [
-            this.getPolygonSymbolizerItem(ref.color, stylesCfg.strokeWidth),
+            this.getPolygonSymbolizerItem(
+              ref.color,
+              stylesCfg.strokeWidth,
+              ref.color
+            ),
           ],
         } as RuleItem
       }
@@ -103,9 +112,15 @@ export default class PolygonStyles extends SLDStyles {
 
   private getPolygonSymbolizerItem(
     stroke: string,
-    strokeWidth: number
+    strokeWidth: number,
+    fill: string
   ): PolygonSymbolizerItem {
     return {
+      Fill: {
+        CssParameter: this.getFillCssParameters({
+          fill,
+        } as StylesConfig),
+      },
       Stroke: {
         CssParameter: this.getStrokeCssParameters({
           stroke,

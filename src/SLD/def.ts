@@ -39,7 +39,7 @@ export interface IStyles {
   /** 获取 style 配置 */
   getStylesConfig(): StylesConfig
   /** 获取 layer name */
-  getLayerName(): string
+  getLayers(): string
 }
 
 export const XMLBaseDeclaration: Styles['_declaration'] = {
@@ -141,9 +141,32 @@ interface Font {
   }>
 }
 
-type RasterSymbolizer = RasterSymbolizerItem
+export type RasterSymbolizer = RasterSymbolizerItem
 
-interface RasterSymbolizerItem {}
+export interface RasterSymbolizerItem {
+  ColorMap: ColorMap
+  Opacity?: number
+  ContrastEnhancement?: ContrastEnhancement
+}
+
+interface ContrastEnhancement {
+  Normalize?: any
+  GammaValue?: Text
+}
+
+export interface ColorMap {
+  ColorMapEntry: ColorMapEntry
+}
+
+export type ColorMapEntry = ColorMapEntryItem[]
+
+export interface ColorMapEntryItem {
+  _attributes: {
+    color: string
+    quantity: number
+    opacity?: number
+  }
+}
 
 export type Rule = RuleItem[]
 
@@ -207,6 +230,7 @@ export interface FilterItem {
   And?: FilterItem | FilterItem[]
   Or?: Filter
   Not?: Filter
+  PropertyIsLike?: FilterProperty
   PropertyIsLessThan?: FilterProperty
   PropertyIsEqualTo?: FilterProperty
   PropertyIsNotEqualTo?: FilterProperty
@@ -301,7 +325,17 @@ interface Mark {
   Stroke?: Stroke
 }
 
-type WellKnownName = 'square' | 'triangle' | 'circle' | 'star' | 'cross' | 'x'
+interface WellKnownName {
+  _text: WellKnownNameItem
+}
+
+export type WellKnownNameItem =
+  | 'square'
+  | 'triangle'
+  | 'circle'
+  | 'star'
+  | 'cross'
+  | 'x'
 
 interface Fill {
   GraphicFill?: GraphicFill

@@ -24,5 +24,6 @@ export default class PointStyles extends SLDStyles {
     private colorPropXSizeRange;
     private colorRangeXSizeProp;
     private colorRangeXSizeRange;
-    private getPointSymbolizerItem;
+    private getPointSymbolizerItemUsingMark;
+    private getPointSymbolizerItemUsingOnlineResource;
 }

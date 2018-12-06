@@ -22,6 +22,10 @@ import {
 } from './def'
 import { isUndefined } from '../utils'
 
+const OTHERS_DEFAULT_PROP = '__others__=>'
+const OTHERS_DEFAULT_COLOR = '#3388ff'
+const OTHERS_DEFAULT_SIZE = 10
+
 export abstract class SLDStyles implements IStyles {
   constructor(protected layerName: string, protected stylesCfg: StylesConfig) {}
   public toXMLStr(): string {
@@ -37,6 +41,7 @@ export abstract class SLDStyles implements IStyles {
             'Not',
             'PropertyName',
             'Literal',
+            'PropertyIsLike',
             'PropertyIsLessThan',
             'PropertyIsEqualTo',
             'PropertyIsNotEqualTo',
@@ -55,7 +60,7 @@ export abstract class SLDStyles implements IStyles {
   public getStylesConfig() {
     return this.stylesCfg
   }
-  public getLayerName() {
+  public getLayers() {
     return this.layerName
   }
   protected abstract getRule(stylesCfg: StylesConfig): Rule
@@ -143,7 +148,7 @@ export abstract class SLDStyles implements IStyles {
   }
 
   protected getPropColorRefs(props: string[], colors: string[]): PropColorRefs {
-    return props
+    const refs = props
       .slice(0, Math.min(props.length, colors.length))
       .map((prop, index) => {
         return {
@@ -151,10 +156,17 @@ export abstract class SLDStyles implements IStyles {
           color: colors[index],
         } as PropColorRef
       })
+    if (props.length > colors.length) {
+      refs.push({
+        prop: this.stringifyOtherProps(props.slice(0, colors.length)),
+        color: OTHERS_DEFAULT_COLOR,
+      } as PropColorRef)
+    }
+    return refs
   }
 
   protected getPropSizeRefs(props: string[], sizes: number[]): PropSizeRefs {
-    return props
+    const refs = props
       .slice(0, Math.min(props.length, sizes.length))
       .map((prop, index) => {
         return {
@@ -162,6 +174,13 @@ export abstract class SLDStyles implements IStyles {
           size: sizes[index],
         } as PropSizeRef
       })
+    if (props.length > sizes.length) {
+      refs.push({
+        prop: this.stringifyOtherProps(props.slice(0, sizes.length)),
+        size: OTHERS_DEFAULT_SIZE,
+      } as PropSizeRef)
+    }
+    return refs
   }
 
   protected getRangeFilter(prop: string, range: [number, number]): Filter {
@@ -188,19 +207,24 @@ export abstract class SLDStyles implements IStyles {
   }
 
   protected getTypeFilter(prop: string, value: any): Filter {
-    return {
-      PropertyIsEqualTo: {
-        PropertyName: {
-          _text: prop,
+    if (this.isOtherPropRef(value)) {
+      const props = this.parseOtherProps(value)
+      return this.getTypeNotInFilter(prop, props)
+    } else {
+      return {
+        PropertyIsEqualTo: {
+          PropertyName: {
+            _text: prop,
+          },
+          Literal: {
+            _text: value,
+          },
         },
-        Literal: {
-          _text: value,
-        },
-      },
+      }
     }
   }
 
-  protected getTypeNotInFilter(prop: string, values: any[]): Filter {
+  private getTypeNotInFilter(prop: string, values: any[]): Filter {
     return {
       And: {
         PropertyIsNotEqualTo: values.map((value) => ({
@@ -215,12 +239,27 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
+  private isOtherPropRef(prop: string) {
+    return prop.startsWith(OTHERS_DEFAULT_PROP)
+  }
+
+  private stringifyOtherProps(props: string[]) {
+    return `${OTHERS_DEFAULT_PROP}${JSON.stringify(props)}`
+  }
+
+  private parseOtherProps(prop: string): string[] {
+    if (this.isOtherPropRef(prop)) {
+      return JSON.parse(prop.slice(OTHERS_DEFAULT_PROP.length)) as string[]
+    } else {
+      return []
+    }
+  }
+
   /** get valuable config */
   private getCssParameterItems(
     keys: CssParameterItemName[],
     stylesCfg: StylesConfig
-  ) {
-    // ): CssParameterItem[] {
+  ): CssParameter {
     return keys
       .map(this.slash2Camel) // transform to camel style key
       .map(

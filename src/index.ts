@@ -11,6 +11,8 @@ import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
 import WmsTile from './wmsTile/WmsTile'
 import PointStyles from './SLD/PointStyles'
 import PolygonStyles from './SLD/PolygonStyles'
+import RasterStyles from './SLD/RasterStyles'
+import TileLayer from './wmsTile/TileLayer'
 
 export {
   Marker,
@@ -26,4 +28,6 @@ export {
   WmsTile,
   PointStyles,
   PolygonStyles,
+  RasterStyles,
+  TileLayer,
 }

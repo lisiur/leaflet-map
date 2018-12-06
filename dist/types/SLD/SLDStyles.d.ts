@@ -5,7 +5,7 @@ export declare abstract class SLDStyles implements IStyles {
     constructor(layerName: string, stylesCfg: StylesConfig);
     toXMLStr(): string;
     getStylesConfig(): StylesConfig;
-    getLayerName(): string;
+    getLayers(): string;
     protected abstract getRule(stylesCfg: StylesConfig): Rule;
     protected getUserStyles(stylesCfg: StylesConfig): UserStyle;
     protected getSLDStyles(layerName: string, stylesCfg: StylesConfig): Styles;
@@ -19,7 +19,10 @@ export declare abstract class SLDStyles implements IStyles {
     protected getPropSizeRefs(props: string[], sizes: number[]): PropSizeRefs;
     protected getRangeFilter(prop: string, range: [number, number]): Filter;
     protected getTypeFilter(prop: string, value: any): Filter;
-    protected getTypeNotInFilter(prop: string, values: any[]): Filter;
+    private getTypeNotInFilter;
+    private isOtherPropRef;
+    private stringifyOtherProps;
+    private parseOtherProps;
     /** get valuable config */
     private getCssParameterItems;
     /** get specified key/value CssParameterItem */

@@ -11,4 +11,6 @@ import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer';
 import WmsTile from './wmsTile/WmsTile';
 import PointStyles from './SLD/PointStyles';
 import PolygonStyles from './SLD/PolygonStyles';
-export { Marker, MarkersLayer, MarkersBufferLayer, Polyline, PolylinesLayer, PolylinesBufferLayer, Polygon, PolygonsLayer, GridsLayer, DynamicHeatLayer, WmsTile, PointStyles, PolygonStyles, };
+import RasterStyles from './SLD/RasterStyles';
+import TileLayer from './wmsTile/TileLayer';
+export { Marker, MarkersLayer, MarkersBufferLayer, Polyline, PolylinesLayer, PolylinesBufferLayer, Polygon, PolygonsLayer, GridsLayer, DynamicHeatLayer, WmsTile, PointStyles, PolygonStyles, RasterStyles, TileLayer, };
