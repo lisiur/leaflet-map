@@ -12,6 +12,7 @@ import {
 import { isNothing } from '../utils'
 import RasterStyles, { RasterStylesConfig } from './RasterStyles'
 
+const DEFAULT_BUBBLE_FILL_OPACITY = 0.6
 export interface PointStylesConfig extends RasterStylesConfig {
   renderType:
     | 'single'
@@ -269,11 +270,11 @@ export default class PointStyles extends RasterStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItemUsingMark(
-              'circle',
-              propColorRef.color,
-              propSizeRef.size
-            ),
+            this.getPointSymbolizerItemUsingMark({
+              name: 'circle',
+              fill: propColorRef.color,
+              size: propSizeRef.size,
+            }),
           ],
         })
       }
@@ -300,11 +301,11 @@ export default class PointStyles extends RasterStyles {
             },
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItemUsingMark(
-              'circle',
-              propColorRef.color,
-              rangeSizeRef.size
-            ),
+            this.getPointSymbolizerItemUsingMark({
+              name: 'circle',
+              fill: propColorRef.color,
+              size: rangeSizeRef.size,
+            }),
           ],
         })
       }
@@ -329,11 +330,11 @@ export default class PointStyles extends RasterStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItemUsingMark(
-              'circle',
-              rangeColorRef.color,
-              propSizeRef.size
-            ),
+            this.getPointSymbolizerItemUsingMark({
+              name: 'circle',
+              fill: rangeColorRef.color,
+              size: propSizeRef.size,
+            }),
           ],
         })
       }
@@ -358,11 +359,11 @@ export default class PointStyles extends RasterStyles {
             ],
           },
           PointSymbolizer: [
-            this.getPointSymbolizerItemUsingMark(
-              'circle',
-              rangeColorRef.color,
-              rangeSizeRef.size
-            ),
+            this.getPointSymbolizerItemUsingMark({
+              name: 'circle',
+              fill: rangeColorRef.color,
+              size: rangeSizeRef.size,
+            }),
           ],
         })
       }
@@ -370,30 +371,27 @@ export default class PointStyles extends RasterStyles {
     return rule
   }
 
-  private getPointSymbolizerItemUsingMark(
-    name: WellKnownNameItem,
-    fill: string,
+  private getPointSymbolizerItemUsingMark(params: {
+    name: WellKnownNameItem
+    fill: string
+    fillOpacity?: number
     size: number
-  ): PointSymbolizerItem {
+  }): PointSymbolizerItem {
     return {
       Graphic: {
         Mark: {
           WellKnownName: {
-            _text: name,
+            _text: params.name,
           },
           Fill: {
-            CssParameter: [
-              {
-                _attributes: {
-                  name: 'fill',
-                },
-                _text: fill,
-              },
-            ],
+            CssParameter: this.getFillCssParameters({
+              fill: params.fill,
+              fillOpacity: params.fillOpacity || DEFAULT_BUBBLE_FILL_OPACITY,
+            }),
           },
         },
         Size: {
-          _text: size,
+          _text: params.size,
         },
       },
     }

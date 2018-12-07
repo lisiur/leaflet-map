@@ -77,10 +77,11 @@ export interface LineSymbolizerItem {
     PerpendicularOffset?: PerpendicularOffset;
 }
 interface Geometry {
+    Function: Functions;
 }
 interface PerpendicularOffset {
 }
-declare type TextSymbolizer = TextSymbolizerItem[];
+export declare type TextSymbolizer = TextSymbolizerItem[];
 interface TextSymbolizerItem {
     Geometry?: Geometry;
     Label?: Label;
@@ -183,8 +184,9 @@ export interface Transformation {
 export declare type Functions = FunctionItem[];
 export interface FunctionItem {
     _attributes?: {
-        name: 'vec:Heatmap' | 'parameter' | 'env';
+        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid';
     };
+    PropertyName?: Text;
     Function?: Functions;
     Literal?: Text | Text[];
 }
@@ -224,7 +226,7 @@ export interface PointSymbolizerItem {
     Graphic: Graphic;
 }
 interface Label {
-    PropertyName: string;
+    PropertyName: Text;
 }
 interface LabelPlacement {
     PointPlacement?: PointPlacement;
@@ -239,12 +241,12 @@ interface PointPlacement {
     Rotation?: Rotation;
 }
 interface AnchorPoint {
-    AnchorPointX?: number;
-    AnchorPointY?: number;
+    AnchorPointX?: Text;
+    AnchorPointY?: Text;
 }
 interface Displacement {
-    DisplacementX?: number;
-    DisplacementY?: number;
+    DisplacementX?: Text;
+    DisplacementY?: Text;
 }
 interface Graphic {
     ExternalGraphic?: ExternalGraphic;

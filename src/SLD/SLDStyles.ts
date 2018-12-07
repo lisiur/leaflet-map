@@ -101,9 +101,9 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
-  protected getFillCssParameters(stylesCfg: StylesConfig): CssParameter {
+  protected getFillCssParameters(params: object): CssParameter {
     const slashKeys = ['fill', 'fill-opacity'] as CssParameterItemName[]
-    return this.getCssParameterItems(slashKeys, stylesCfg)
+    return this.getCssParameterItems(slashKeys, params)
   }
 
   protected getFontCssParameters(stylesCfg: StylesConfig): CssParameter {
@@ -276,17 +276,11 @@ export abstract class SLDStyles implements IStyles {
   /** get valuable config */
   private getCssParameterItems(
     keys: CssParameterItemName[],
-    stylesCfg: StylesConfig
+    params: any
   ): CssParameter {
     return keys
       .map(this.slash2Camel) // transform to camel style key
-      .map(
-        (key, index) =>
-          [keys[index], stylesCfg[key as keyof StylesConfig]] as [
-            CssParameterItemName,
-            number
-          ]
-      ) // transform to [slash style key, value]
+      .map((key, index) => [keys[index], params[key]]) // transform to [slash style key, value]
       .filter(([_, val]) => !isUndefined(val)) // remove undefined value pair
       .map(([key, val]) => this.getCssParameterItem(key, val))
   }

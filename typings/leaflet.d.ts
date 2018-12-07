@@ -649,7 +649,7 @@ export function tileLayer(
 export namespace TileLayer {
   class WMS extends TileLayer {
     constructor(baseUrl: string, options: WMSOptions)
-    setParams(params: WMSParams, noRedraw?: boolean): this
+    setParams(params: object, noRedraw?: boolean): this
 
     wmsParams: WMSParams
     options: WMSOptions

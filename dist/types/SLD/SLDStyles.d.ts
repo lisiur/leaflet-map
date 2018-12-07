@@ -10,7 +10,7 @@ export declare abstract class SLDStyles implements IStyles {
     protected abstract getTransformation(stylesCfg: StylesConfig): Transformation | null;
     protected getUserStyles(stylesCfg: StylesConfig): UserStyle;
     protected getSLDStyles(layerName: string, stylesCfg: StylesConfig): Styles;
-    protected getFillCssParameters(stylesCfg: StylesConfig): CssParameter;
+    protected getFillCssParameters(params: object): CssParameter;
     protected getFontCssParameters(stylesCfg: StylesConfig): CssParameter;
     protected getStrokeCssParameters(stylesCfg: StylesConfig): CssParameter;
     protected sldError(msg: string): Error;

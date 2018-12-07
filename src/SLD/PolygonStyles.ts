@@ -4,6 +4,7 @@ import {
   PolygonSymbolizerItem,
   Rule,
   Transformation,
+  TextSymbolizer,
 } from './def'
 import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
@@ -46,6 +47,7 @@ export default class PolygonStyles extends SLDStyles {
             fillOpacity: stylesCfg.fillOpacity,
           }),
         ],
+        TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
       },
     ]
   }
@@ -81,6 +83,7 @@ export default class PolygonStyles extends SLDStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
+          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         } as RuleItem
       }
     )
@@ -117,6 +120,7 @@ export default class PolygonStyles extends SLDStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
+          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         } as RuleItem
       }
     )
@@ -142,5 +146,41 @@ export default class PolygonStyles extends SLDStyles {
         } as StylesConfig),
       },
     }
+  }
+
+  private getTextSymbolizer(displayProp: string): TextSymbolizer {
+    return [
+      {
+        Label: {
+          PropertyName: {
+            _text: displayProp,
+          },
+        },
+        Geometry: {
+          Function: [
+            {
+              _attributes: {
+                name: 'centroid',
+              },
+              PropertyName: {
+                _text: 'geometry',
+              },
+            },
+          ],
+        },
+        LabelPlacement: {
+          PointPlacement: {
+            AnchorPoint: {
+              AnchorPointX: {
+                _text: 0.5,
+              },
+              AnchorPointY: {
+                _text: 0.5,
+              },
+            },
+          },
+        },
+      },
+    ]
   }
 }

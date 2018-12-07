@@ -13,4 +13,5 @@ export default class PolygonStyles extends SLDStyles {
     private getSegmentedRenderRule;
     private getClassifiedRenderRule;
     private getPolygonSymbolizerItem;
+    private getTextSymbolizer;
 }

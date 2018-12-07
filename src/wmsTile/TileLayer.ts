@@ -1,13 +1,15 @@
 import { ILayer, ChannelFunc } from '../definitions'
 import { getFeatureInfo, getCapabilities } from './utils'
-import { isUndefined, isNull } from '../utils'
+import { isUndefined, isNull, isNothing } from '../utils'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
+type GetEnvParams = (options: any) => Promise<object>
 export interface WmsTileOptions extends L.WMSOptions {
   wmsURL?: string
   getLayers?: GetLayers
   getStyles?: GetStyles
+  getEnvParams?: GetEnvParams
 }
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
@@ -20,6 +22,7 @@ export default class TileLayer implements ILayer {
   private popupData: any
   private layers: string
   private styles: string
+  private envParams: object
   constructor(
     public map: L.Map,
     public options: WmsTileOptions,
@@ -33,6 +36,7 @@ export default class TileLayer implements ILayer {
     this.popupData = null
     this.layers = this.options.layers
     this.styles = this.options.styles
+    this.envParams = null
     this.initEvents()
   }
   public async draw() {
@@ -111,20 +115,31 @@ export default class TileLayer implements ILayer {
     }
   }
   private async getLayer() {
-    const { wmsURL, getLayers, getStyles } = this.options
+    const { wmsURL, getLayers, getStyles, getEnvParams } = this.options
     if (getLayers) {
       this.layers = await getLayers(this.getData())
     }
     if (getStyles) {
       this.styles = await getStyles(this.getData())
     }
-    return L.tileLayer.wms(wmsURL, {
+    if (getEnvParams) {
+      this.envParams = await getEnvParams(this.getData())
+    }
+    const tileLayer = L.tileLayer.wms(wmsURL, {
       layers: this.layers,
       styles: this.styles,
       transparent: true,
       format: 'image/png',
       crs: L.CRS.EPSG4326,
     })
+    if (!isNull(this.envParams)) {
+      tileLayer.setParams({
+        env: Object.entries(this.envParams)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(';'),
+      })
+    }
+    return tileLayer
   }
   private async clickHandler(e: L.LeafletMouseEvent) {
     const data = await this.getFeatureInfo(e)
@@ -132,25 +147,33 @@ export default class TileLayer implements ILayer {
       this.popup.remove()
     }
     if (data.features.length > 0) {
-      if (!isNull(this.popupProp)) {
-        this.popupData = data.features[0].properties
-        const popupContent = this.getPopupContent()
-        if (!isNull(popupContent)) {
-          this.popup = L.popup()
-            .setLatLng(e.latlng)
-            .setContent(popupContent)
-            .openOn(this.map)
-        }
+      this.channelFunc('click', data)
+      if (isNull(this.popupProp)) {
+        return
       }
+      this.popupData = data.features[0].properties
+      const popupContent = this.getPopupContent()
+      if (isNull(popupContent)) {
+        return
+      }
+      this.popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent)
+        .openOn(this.map)
     }
-    this.channelFunc('click', data)
   }
   private getPopupContent(): null | string {
-    if (isNull(this.popupProp)) {
+    if (isNothing(this.popupProp)) {
       return null
     }
     const popupContent = this.popupData[this.popupProp]
-    return isNull(popupContent) ? POPUP_CONTENT_NULL_TEXT : `${popupContent}`
+    if (isUndefined(popupContent)) {
+      return null
+    }
+    if (isNull(popupContent)) {
+      return POPUP_CONTENT_NULL_TEXT
+    }
+    return `${popupContent}`
   }
   private async contextmenuHandler(e: L.LeafletMouseEvent) {
     if (this.popup) {
