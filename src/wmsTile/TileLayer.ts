@@ -1,6 +1,7 @@
 import { ILayer, ChannelFunc } from '../definitions'
 import { getFeatureInfo, getCapabilities } from './utils'
 import { isUndefined, isNull, isNothing } from '../utils'
+import GridLayer from '../grid/GridLayer'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
@@ -23,6 +24,7 @@ export default class TileLayer implements ILayer {
   private layers: string
   private styles: string
   private envParams: object
+  private gridLayer: GridLayer
   constructor(
     public map: L.Map,
     public options: WmsTileOptions,
@@ -36,6 +38,7 @@ export default class TileLayer implements ILayer {
     this.popupData = null
     this.layers = this.options.layers
     this.styles = this.options.styles
+    this.gridLayer = null
     this.envParams = null
     this.initEvents()
   }
@@ -52,7 +55,15 @@ export default class TileLayer implements ILayer {
     }
   }
   public destroy(): void {
-    this.tileLayer.remove()
+    if (this.tileLayer) {
+      this.tileLayer.remove()
+    }
+    if (this.gridLayer) {
+      this.gridLayer.clear()
+    }
+    if (this.popup) {
+      this.popup.remove()
+    }
     this.destroyEvents()
   }
   public getData() {
@@ -62,7 +73,10 @@ export default class TileLayer implements ILayer {
     return this.options
   }
   public async fitBounds() {
-    this.map.fitBounds(await this.getBounds())
+    const bounds = await this.getBounds()
+    if (bounds) {
+      this.map.fitBounds(bounds)
+    }
   }
   public async getBounds() {
     const jsData = await getCapabilities(this.options.wmsURL)
@@ -75,7 +89,8 @@ export default class TileLayer implements ILayer {
       })
       .filter((it) => !isUndefined(it))
     if (layerInfos.length <= 0) {
-      return
+      console.warn('not found layerInfo')
+      return null
     }
     const {
       minx,
@@ -112,6 +127,15 @@ export default class TileLayer implements ILayer {
       if (!isNull(popupContent)) {
         this.popup.setContent(popupContent)
       }
+    }
+  }
+  public showGrid(distance: number = 100) {
+    this.hideGrid()
+    this.gridLayer = new GridLayer({ map: this.map, distance })
+  }
+  public hideGrid() {
+    if (this.gridLayer) {
+      this.gridLayer.clear()
     }
   }
   private async getLayer() {

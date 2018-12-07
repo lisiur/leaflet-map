@@ -21,6 +21,7 @@ export default class TileLayer implements ILayer {
     private layers;
     private styles;
     private envParams;
+    private gridLayer;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
     draw(): Promise<void>;
     destroy(): void;
@@ -31,6 +32,8 @@ export default class TileLayer implements ILayer {
     toggleVisible(visible: boolean): void;
     pitch(_id: string): void;
     setPopupProp(prop: string): void;
+    showGrid(distance?: number): void;
+    hideGrid(): void;
     private getLayer;
     private clickHandler;
     private getPopupContent;
