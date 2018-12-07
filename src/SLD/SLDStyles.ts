@@ -19,6 +19,8 @@ import {
   PropSizeRefs,
   PropSizeRef,
   Filter,
+  Transformation,
+  FeatureTypeStyleItem,
 } from './def'
 import { isUndefined } from '../utils'
 
@@ -41,6 +43,7 @@ export abstract class SLDStyles implements IStyles {
             'Not',
             'PropertyName',
             'Literal',
+            'Function',
             'PropertyIsLike',
             'PropertyIsLessThan',
             'PropertyIsEqualTo',
@@ -51,6 +54,8 @@ export abstract class SLDStyles implements IStyles {
           ].includes(name)
         ) {
           return `ogc:${name}`
+        } else if (['Heatmap'].includes(name)) {
+          return `vec:${name}`
         } else {
           return name
         }
@@ -64,14 +69,19 @@ export abstract class SLDStyles implements IStyles {
     return this.layerName
   }
   protected abstract getRule(stylesCfg: StylesConfig): Rule
+  protected abstract getTransformation(
+    stylesCfg: StylesConfig
+  ): Transformation | null
   protected getUserStyles(stylesCfg: StylesConfig): UserStyle {
+    const featureTypeStyleItem: FeatureTypeStyleItem = {}
+    const transformation = this.getTransformation(stylesCfg)
+    featureTypeStyleItem.Rule = this.getRule(stylesCfg)
+    if (transformation) {
+      featureTypeStyleItem.Transformation = transformation
+    }
     return [
       {
-        FeatureTypeStyle: [
-          {
-            Rule: this.getRule(stylesCfg),
-          },
-        ],
+        FeatureTypeStyle: [featureTypeStyleItem],
       },
     ]
   }
@@ -107,7 +117,15 @@ export abstract class SLDStyles implements IStyles {
   }
 
   protected getStrokeCssParameters(stylesCfg: StylesConfig): CssParameter {
-    const slashKeys = ['stroke', 'stroke-opacity'] as CssParameterItemName[]
+    const slashKeys = [
+      'stroke',
+      'stroke-opacity',
+      'stroke-width',
+      'stroke-dasharray',
+      'stroke-dashoffset',
+      'stroke-linecap',
+      'stroke-linejoin',
+    ] as CssParameterItemName[]
     return this.getCssParameterItems(slashKeys, stylesCfg)
   }
 
@@ -299,6 +317,6 @@ export abstract class SLDStyles implements IStyles {
         vItems.push(v[i])
       }
     }
-    return vItems.join()
+    return vItems.join('')
   }
 }

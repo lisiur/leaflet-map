@@ -10,6 +10,7 @@ import GridsLayer from './polygon/GridsLayer'
 import DynamicHeatLayer from './dynamicHeatLayer/DynamicHeatLayer'
 import WmsTile from './wmsTile/WmsTile'
 import PointStyles from './SLD/PointStyles'
+import LineStyles from './SLD/LineStyles'
 import PolygonStyles from './SLD/PolygonStyles'
 import RasterStyles from './SLD/RasterStyles'
 import TileLayer from './wmsTile/TileLayer'
@@ -27,6 +28,7 @@ export {
   DynamicHeatLayer,
   WmsTile,
   PointStyles,
+  LineStyles,
   PolygonStyles,
   RasterStyles,
   TileLayer,

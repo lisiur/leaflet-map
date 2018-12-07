@@ -1,5 +1,4 @@
 import {
-  StylesConfig,
   Rule,
   RuleItem,
   PointSymbolizerItem,
@@ -8,11 +7,12 @@ import {
   RangeSizeRefs,
   RangeColorRefs,
   WellKnownNameItem,
+  Transformation,
 } from './def'
-import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
+import RasterStyles, { RasterStylesConfig } from './RasterStyles'
 
-export interface PointStylesConfig extends StylesConfig {
+export interface PointStylesConfig extends RasterStylesConfig {
   renderType:
     | 'single'
     | 'segmented'
@@ -30,7 +30,7 @@ export interface PointStylesConfig extends StylesConfig {
   bubbleSizes: number[]
 }
 
-export default class PointStyles extends SLDStyles {
+export default class PointStyles extends RasterStyles {
   constructor(
     protected layerName: string,
     protected stylesCfg: PointStylesConfig
@@ -49,7 +49,7 @@ export default class PointStyles extends SLDStyles {
         return this.getClassifiedRenderRule(stylesCfg)
       }
       case 'heat': {
-        // TODO
+        return super.getRule(stylesCfg)
       }
       case 'bubble': {
         return this.getBubbleRenderRule(stylesCfg)
@@ -59,7 +59,15 @@ export default class PointStyles extends SLDStyles {
       }
     }
   }
-
+  protected getTransformation(
+    stylesCfg: PointStylesConfig
+  ): Transformation | null {
+    if (stylesCfg.renderType === 'heat') {
+      return super.getTransformation(stylesCfg)
+    } else {
+      return null
+    }
+  }
   private getSingleRenderRule(stylesCfg: PointStylesConfig): Rule {
     if (isNothing(stylesCfg.fill)) {
       throw this.sldError(`invalid PointStylesConfig.fill: ${stylesCfg.fill}`)

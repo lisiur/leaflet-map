@@ -7,10 +7,7 @@ export interface StylesConfig {
     fontStyle: string;
     fontSize: number;
     fontWeight: number;
-    popupProp: {
-        label: string;
-        value: string;
-    };
+    popupProp: string;
     segmentedProp: string;
     segmentedColors: string[];
     classifiedProp: string;
@@ -172,12 +169,24 @@ export interface UserStyleItem {
     FeatureTypeStyle: FeatureTypeStyle;
 }
 declare type FeatureTypeStyle = FeatureTypeStyleItem[];
-interface FeatureTypeStyleItem {
+export interface FeatureTypeStyleItem {
+    Transformation?: Transformation;
     Name?: Text;
     Title?: Text;
     Abstract?: Text;
     FeatureTypeName?: Text;
-    Rule: Rule;
+    Rule?: Rule;
+}
+export interface Transformation {
+    Function: Functions;
+}
+export declare type Functions = FunctionItem[];
+export interface FunctionItem {
+    _attributes?: {
+        name: 'vec:Heatmap' | 'parameter' | 'env';
+    };
+    Function?: Functions;
+    Literal?: Text | Text[];
 }
 export declare type Filter = FilterItem;
 export interface FilterItem {

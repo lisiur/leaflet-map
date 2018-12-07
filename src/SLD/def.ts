@@ -7,10 +7,7 @@ export interface StylesConfig {
   fontStyle: string
   fontSize: number
   fontWeight: number
-  popupProp: {
-    label: string
-    value: string
-  }
+  popupProp: string
   segmentedProp: string
   segmentedColors: string[]
   classifiedProp: string
@@ -216,12 +213,26 @@ export interface UserStyleItem {
 
 type FeatureTypeStyle = FeatureTypeStyleItem[]
 
-interface FeatureTypeStyleItem {
+export interface FeatureTypeStyleItem {
+  Transformation?: Transformation
   Name?: Text
   Title?: Text
   Abstract?: Text
   FeatureTypeName?: Text
-  Rule: Rule
+  Rule?: Rule
+}
+
+export interface Transformation {
+  Function: Functions
+}
+
+export type Functions = FunctionItem[]
+export interface FunctionItem {
+  _attributes?: {
+    name: 'vec:Heatmap' | 'parameter' | 'env'
+  }
+  Function?: Functions
+  Literal?: Text | Text[]
 }
 
 export type Filter = FilterItem

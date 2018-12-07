@@ -1,4 +1,10 @@
-import { StylesConfig, RuleItem, PolygonSymbolizerItem, Rule } from './def'
+import {
+  StylesConfig,
+  RuleItem,
+  PolygonSymbolizerItem,
+  Rule,
+  Transformation,
+} from './def'
 import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
 
@@ -26,15 +32,19 @@ export default class PolygonStyles extends SLDStyles {
       }
     }
   }
+  protected getTransformation(_: StylesConfig): Transformation | null {
+    return null
+  }
   private getSingleRenderRule(stylesCfg: PolygonStylesConfig): Rule {
     return [
       {
         PolygonSymbolizer: [
-          this.getPolygonSymbolizerItem(
-            stylesCfg.stroke,
-            stylesCfg.strokeWidth,
-            stylesCfg.fill
-          ),
+          this.getPolygonSymbolizerItem({
+            stroke: stylesCfg.stroke,
+            strokeWidth: stylesCfg.strokeWidth,
+            fill: stylesCfg.fill,
+            fillOpacity: stylesCfg.fillOpacity,
+          }),
         ],
       },
     ]
@@ -64,11 +74,12 @@ export default class PolygonStyles extends SLDStyles {
         return {
           Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
           PolygonSymbolizer: [
-            this.getPolygonSymbolizerItem(
-              ref.color,
-              stylesCfg.strokeWidth,
-              ref.color
-            ),
+            this.getPolygonSymbolizerItem({
+              stroke: ref.color,
+              strokeWidth: stylesCfg.strokeWidth,
+              fill: ref.color,
+              fillOpacity: stylesCfg.fillOpacity,
+            }),
           ],
         } as RuleItem
       }
@@ -99,32 +110,35 @@ export default class PolygonStyles extends SLDStyles {
         return {
           Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
           PolygonSymbolizer: [
-            this.getPolygonSymbolizerItem(
-              ref.color,
-              stylesCfg.strokeWidth,
-              ref.color
-            ),
+            this.getPolygonSymbolizerItem({
+              stroke: ref.color,
+              strokeWidth: stylesCfg.strokeWidth,
+              fill: ref.color,
+              fillOpacity: stylesCfg.fillOpacity,
+            }),
           ],
         } as RuleItem
       }
     )
   }
 
-  private getPolygonSymbolizerItem(
-    stroke: string,
-    strokeWidth: number,
+  private getPolygonSymbolizerItem(options: {
+    stroke: string
+    strokeWidth: number
     fill: string
-  ): PolygonSymbolizerItem {
+    fillOpacity: number
+  }): PolygonSymbolizerItem {
     return {
       Fill: {
         CssParameter: this.getFillCssParameters({
-          fill,
+          fill: options.fill,
+          fillOpacity: options.fillOpacity || 1,
         } as StylesConfig),
       },
       Stroke: {
         CssParameter: this.getStrokeCssParameters({
-          stroke,
-          strokeWidth,
+          stroke: options.stroke,
+          strokeWidth: options.strokeWidth,
         } as StylesConfig),
       },
     }

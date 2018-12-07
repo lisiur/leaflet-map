@@ -1,6 +1,6 @@
-import { StylesConfig, Rule } from './def';
-import { SLDStyles } from './SLDStyles';
-export interface PointStylesConfig extends StylesConfig {
+import { Rule, Transformation } from './def';
+import RasterStyles, { RasterStylesConfig } from './RasterStyles';
+export interface PointStylesConfig extends RasterStylesConfig {
     renderType: 'single' | 'segmented' | 'classified' | 'cluster' | 'heat' | 'bubble';
     iconUrl: string;
     iconSize: number;
@@ -11,11 +11,12 @@ export interface PointStylesConfig extends StylesConfig {
     bubbleSizeType: 'prop' | 'range';
     bubbleSizes: number[];
 }
-export default class PointStyles extends SLDStyles {
+export default class PointStyles extends RasterStyles {
     protected layerName: string;
     protected stylesCfg: PointStylesConfig;
     constructor(layerName: string, stylesCfg: PointStylesConfig);
     protected getRule(stylesCfg: PointStylesConfig): Rule;
+    protected getTransformation(stylesCfg: PointStylesConfig): Transformation | null;
     private getSingleRenderRule;
     private getSegmentedRenderRule;
     private getClassifiedRenderRule;

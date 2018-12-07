@@ -1,6 +1,12 @@
 import { SLDStyles } from './SLDStyles'
-import { StylesConfig, Rule, LineSymbolizerItem, RuleItem } from './def'
-import { isNothing } from 'src/utils'
+import {
+  StylesConfig,
+  Rule,
+  LineSymbolizerItem,
+  RuleItem,
+  Transformation,
+} from './def'
+import { isNothing } from '../utils'
 
 export interface LineStylesConfig extends StylesConfig {
   renderType: 'single' | 'segmented' | 'classified'
@@ -25,12 +31,17 @@ export default class LineStyles extends SLDStyles {
       }
     }
   }
-
+  protected getTransformation(_: StylesConfig): Transformation | null {
+    return null
+  }
   private getSingleRenderRule(stylesCfg: LineStylesConfig): Rule {
     return [
       {
         LineSymbolizer: [
-          this.getLineSymbolizerItem(stylesCfg.stroke, stylesCfg.strokeWidth),
+          this.getLineSymbolizerItem({
+            stroke: stylesCfg.stroke,
+            strokeWidth: stylesCfg.strokeWidth,
+          }),
         ],
       },
     ]
@@ -60,7 +71,10 @@ export default class LineStyles extends SLDStyles {
         return {
           Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
           LineSymbolizer: [
-            this.getLineSymbolizerItem(ref.color, stylesCfg.strokeWidth),
+            this.getLineSymbolizerItem({
+              stroke: ref.color,
+              strokeWidth: stylesCfg.strokeWidth,
+            }),
           ],
         } as RuleItem
       }
@@ -91,22 +105,25 @@ export default class LineStyles extends SLDStyles {
         return {
           Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
           LineSymbolizer: [
-            this.getLineSymbolizerItem(ref.color, stylesCfg.strokeWidth),
+            this.getLineSymbolizerItem({
+              stroke: ref.color,
+              strokeWidth: stylesCfg.strokeWidth,
+            }),
           ],
         } as RuleItem
       }
     )
   }
 
-  private getLineSymbolizerItem(
-    stroke: string,
+  private getLineSymbolizerItem(options: {
+    stroke: string
     strokeWidth: number
-  ): LineSymbolizerItem {
+  }): LineSymbolizerItem {
     return {
       Stroke: {
         CssParameter: this.getStrokeCssParameters({
-          stroke,
-          strokeWidth,
+          stroke: options.stroke,
+          strokeWidth: options.strokeWidth,
         } as StylesConfig),
       },
     }

@@ -1,19 +1,26 @@
-import { StylesConfig, Rule } from './def';
+import { StylesConfig, Rule, Transformation } from './def';
 import { SLDStyles } from './SLDStyles';
 export interface RasterStylesConfig extends StylesConfig {
-    gradient: Array<{
-        color: string;
-        percent: number;
-    }>;
-    opacity: number;
-    dimensionProp: string;
+    gradient: ColorMap[];
+    weightAttr: string;
+    radius: number;
+    pixelsPerCell: number;
 }
-export default class PointStyles extends SLDStyles {
+interface ColorMap {
+    color: string;
+    quantity: number;
+    opacity?: number;
+}
+export default class RasterStyles extends SLDStyles {
     protected layerName: string;
     protected stylesCfg: RasterStylesConfig;
     constructor(layerName: string, stylesCfg: RasterStylesConfig);
     protected getRule(stylesCfg: RasterStylesConfig): Rule;
+    protected getTransformation(stylesCfg: RasterStylesConfig): Transformation | null;
+    private getParameterFunction;
+    private getEnvFunction;
     private getRenderRule;
     private getRasterSymbolizerItem;
     private getColorMapEntryItem;
 }
+export {};
