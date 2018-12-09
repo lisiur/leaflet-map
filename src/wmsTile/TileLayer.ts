@@ -59,7 +59,7 @@ export default class TileLayer implements ILayer {
       this.tileLayer.remove()
     }
     if (this.gridLayer) {
-      this.gridLayer.clear()
+      this.gridLayer.remove()
     }
     if (this.popup) {
       this.popup.remove()
@@ -132,10 +132,11 @@ export default class TileLayer implements ILayer {
   public showGrid(distance: number = 100) {
     this.hideGrid()
     this.gridLayer = new GridLayer({ map: this.map, distance })
+    this.gridLayer.draw()
   }
   public hideGrid() {
     if (this.gridLayer) {
-      this.gridLayer.clear()
+      this.gridLayer.remove()
     }
   }
   private async getLayer() {

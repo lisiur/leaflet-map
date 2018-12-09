@@ -16,11 +16,9 @@ export default class GridLayer {
     private latlngList;
     private customMeterLatlngList;
     constructor(config: Config);
-    clear(): void;
-    getPolygonByPoint(point2: string[]): any[][];
-    private zoomCb;
-    private getNear;
-    private getZoomMeterList;
+    draw(): void;
+    remove(): void;
+    getPolygonByPoint(latLng: number[]): any[][];
     private getNextPointByDistance;
     private showGlobalGrid;
     private showGridLayerByZoom;

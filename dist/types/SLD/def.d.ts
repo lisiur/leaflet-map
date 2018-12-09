@@ -184,7 +184,7 @@ export interface Transformation {
 export declare type Functions = FunctionItem[];
 export interface FunctionItem {
     _attributes?: {
-        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid';
+        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid' | 'labelPoint';
     };
     PropertyName?: Text;
     Function?: Functions;
