@@ -1,9 +1,7 @@
 import { StylesConfig, RuleItem, Transformation } from './def';
-import { SLDStyles } from './SLDStyles';
-export interface PolygonStylesConfig extends StylesConfig {
-    renderType: 'single' | 'segmented' | 'classified';
-}
-export default class PolygonStyles extends SLDStyles {
+import RasterStyles, { RasterStylesConfig } from './RasterStyles';
+export declare type PolygonStylesConfig = RasterStylesConfig;
+export default class PolygonStyles extends RasterStyles {
     protected layerName: string;
     protected stylesCfg: PolygonStylesConfig;
     constructor(layerName: string, stylesCfg: PolygonStylesConfig);

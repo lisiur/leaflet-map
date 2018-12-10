@@ -6,6 +6,7 @@ import {
   Transformation,
   Functions,
   FunctionItem,
+  Ref,
 } from './def'
 import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
@@ -29,6 +30,9 @@ export default class RasterStyles extends SLDStyles {
     protected stylesCfg: RasterStylesConfig
   ) {
     super(layerName, stylesCfg)
+  }
+  public getRefs(): Ref[] {
+    return []
   }
   protected getRule(stylesCfg: RasterStylesConfig): Rule {
     return this.getRenderRule(stylesCfg)

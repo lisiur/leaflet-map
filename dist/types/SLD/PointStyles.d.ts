@@ -1,4 +1,4 @@
-import { Rule, Transformation } from './def';
+import { Rule, Transformation, Ref } from './def';
 import RasterStyles, { RasterStylesConfig } from './RasterStyles';
 export interface PointStylesConfig extends RasterStylesConfig {
     renderType: 'single' | 'segmented' | 'classified' | 'cluster' | 'heat' | 'bubble';
@@ -15,8 +15,10 @@ export default class PointStyles extends RasterStyles {
     protected layerName: string;
     protected stylesCfg: PointStylesConfig;
     constructor(layerName: string, stylesCfg: PointStylesConfig);
+    getRefs(): Ref[];
     protected getRule(stylesCfg: PointStylesConfig): Rule;
     protected getTransformation(stylesCfg: PointStylesConfig): Transformation | null;
+    private getBubbleRefs;
     private getSingleRenderRule;
     private getSegmentedRenderRule;
     private getClassifiedRenderRule;

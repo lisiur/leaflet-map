@@ -1,4 +1,5 @@
 export interface StylesConfig {
+  renderType: 'single' | 'classified' | 'segmented' | string
   stroke: string
   strokeWidth: number
   fill: string
@@ -20,6 +21,12 @@ export interface StylesConfig {
   }
 }
 
+export interface Ref {
+  size?: number
+  prop?: string
+  range?: [number, number]
+  color?: string
+}
 export interface Styles {
   _declaration: {
     _attributes: {

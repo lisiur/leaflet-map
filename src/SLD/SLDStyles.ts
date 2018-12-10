@@ -1,5 +1,6 @@
 import * as convert from 'xml-js'
 import {
+  Ref,
   StylesConfig,
   IStyles,
   Styles,
@@ -22,7 +23,7 @@ import {
   Transformation,
   FeatureTypeStyleItem,
 } from './def'
-import { isUndefined } from '../utils'
+import { isUndefined, isNothing } from '../utils'
 
 const OTHERS_DEFAULT_PROP = '__others__=>'
 const OTHERS_DEFAULT_COLOR = '#3388ff'
@@ -67,6 +68,19 @@ export abstract class SLDStyles implements IStyles {
   }
   public getLayers() {
     return this.layerName
+  }
+  public getRefs(): Ref[] {
+    switch (this.stylesCfg.renderType) {
+      case 'segmented': {
+        return this.getSegmentedColorRefs()
+      }
+      case 'classified': {
+        return this.getClassifiedColorRefs()
+      }
+      default: {
+        return []
+      }
+    }
   }
   protected abstract getRule(stylesCfg: StylesConfig): Rule
   protected abstract getTransformation(
@@ -240,6 +254,34 @@ export abstract class SLDStyles implements IStyles {
         },
       }
     }
+  }
+
+  private getSegmentedColorRefs(): Ref[] {
+    if (isNothing(this.stylesCfg.rangeSize)) {
+      return []
+    }
+    if (isNothing(this.stylesCfg.segmentedProp)) {
+      return []
+    }
+    const sizeRange = this.stylesCfg.rangeSize[this.stylesCfg.segmentedProp]
+    if (isNothing(sizeRange)) {
+      return []
+    }
+    return this.getRangeColorRefs(sizeRange, this.stylesCfg.segmentedColors)
+  }
+
+  private getClassifiedColorRefs(): Ref[] {
+    if (isNothing(this.stylesCfg.rangeProp)) {
+      return []
+    }
+    if (isNothing(this.stylesCfg.classifiedProp)) {
+      return []
+    }
+    const propRange = this.stylesCfg.rangeProp[this.stylesCfg.classifiedProp]
+    if (isNothing(propRange)) {
+      return []
+    }
+    return this.getPropColorRefs(propRange, this.stylesCfg.classifiedColors)
   }
 
   private getTypeNotInFilter(prop: string, values: any[]): Filter {

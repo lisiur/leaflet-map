@@ -1,12 +1,15 @@
-import { ILayer, ChannelFunc } from '../definitions';
+import { ILayer, ChannelFunc, DataListItem } from '../definitions';
+import MarkersLayer from '../marker/MarkersLayer';
 declare type GetStyles = (options: any) => Promise<string>;
 declare type GetLayers = (options: any) => Promise<string>;
 declare type GetEnvParams = (options: any) => Promise<object>;
+declare type GetCqlFilter = (options: any) => Promise<string>;
 export interface WmsTileOptions extends L.WMSOptions {
     wmsURL?: string;
     getLayers?: GetLayers;
     getStyles?: GetStyles;
     getEnvParams?: GetEnvParams;
+    getCqlFilter?: GetCqlFilter;
 }
 export default class TileLayer implements ILayer {
     map: L.Map;
@@ -21,7 +24,9 @@ export default class TileLayer implements ILayer {
     private layers;
     private styles;
     private envParams;
+    private cqlFilter;
     private gridLayer;
+    private clusterLayer;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
     draw(): Promise<void>;
     destroy(): void;
@@ -34,6 +39,7 @@ export default class TileLayer implements ILayer {
     setPopupProp(prop: string): void;
     showGrid(distance?: number): void;
     hideGrid(): void;
+    _cluster(dataList: DataListItem[]): MarkersLayer;
     private getLayer;
     private clickHandler;
     private getPopupContent;

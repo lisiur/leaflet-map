@@ -6,14 +6,12 @@ import {
   Transformation,
   TextSymbolizer,
 } from './def'
-import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
+import RasterStyles, { RasterStylesConfig } from './RasterStyles'
 
-export interface PolygonStylesConfig extends StylesConfig {
-  renderType: 'single' | 'segmented' | 'classified'
-}
+export type PolygonStylesConfig = RasterStylesConfig
 
-export default class PolygonStyles extends SLDStyles {
+export default class PolygonStyles extends RasterStyles {
   constructor(
     protected layerName: string,
     protected stylesCfg: PolygonStylesConfig

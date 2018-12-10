@@ -8,9 +8,7 @@ import {
 } from './def'
 import { isNothing } from '../utils'
 
-export interface LineStylesConfig extends StylesConfig {
-  renderType: 'single' | 'segmented' | 'classified'
-}
+export type LineStylesConfig = StylesConfig
 export default class LineStyles extends SLDStyles {
   constructor(
     protected layerName: string,

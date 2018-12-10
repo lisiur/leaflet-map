@@ -1,8 +1,6 @@
 import { SLDStyles } from './SLDStyles';
 import { StylesConfig, Rule, Transformation } from './def';
-export interface LineStylesConfig extends StylesConfig {
-    renderType: 'single' | 'segmented' | 'classified';
-}
+export declare type LineStylesConfig = StylesConfig;
 export default class LineStyles extends SLDStyles {
     protected layerName: string;
     protected stylesCfg: LineStylesConfig;

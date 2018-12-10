@@ -1,16 +1,19 @@
-import { ILayer, ChannelFunc } from '../definitions'
+import { ILayer, ChannelFunc, DataListItem } from '../definitions'
 import { getFeatureInfo, getCapabilities } from './utils'
 import { isUndefined, isNull, isNothing } from '../utils'
 import GridLayer from '../grid/GridLayer'
+import MarkersLayer from '../marker/MarkersLayer'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
 type GetEnvParams = (options: any) => Promise<object>
+type GetCqlFilter = (options: any) => Promise<string>
 export interface WmsTileOptions extends L.WMSOptions {
   wmsURL?: string
   getLayers?: GetLayers
   getStyles?: GetStyles
   getEnvParams?: GetEnvParams
+  getCqlFilter?: GetCqlFilter
 }
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
@@ -24,7 +27,9 @@ export default class TileLayer implements ILayer {
   private layers: string
   private styles: string
   private envParams: object
+  private cqlFilter: string
   private gridLayer: GridLayer
+  private clusterLayer: MarkersLayer
   constructor(
     public map: L.Map,
     public options: WmsTileOptions,
@@ -40,11 +45,15 @@ export default class TileLayer implements ILayer {
     this.styles = this.options.styles
     this.gridLayer = null
     this.envParams = null
+    this.cqlFilter = null
     this.initEvents()
   }
   public async draw() {
     if (!this.visible) {
       return
+    }
+    if (this.clusterLayer) {
+      this.clusterLayer.destroy()
     }
     if (this.tileLayer) {
       this.tileLayer.remove()
@@ -64,6 +73,9 @@ export default class TileLayer implements ILayer {
     if (this.popup) {
       this.popup.remove()
     }
+    if (this.clusterLayer) {
+      this.clusterLayer.destroy()
+    }
     this.destroyEvents()
   }
   public getData() {
@@ -73,6 +85,12 @@ export default class TileLayer implements ILayer {
     return this.options
   }
   public async fitBounds() {
+    // temp
+    if (this.clusterLayer) {
+      this.clusterLayer.fitBounds()
+      return
+    }
+
     const bounds = await this.getBounds()
     if (bounds) {
       this.map.fitBounds(bounds)
@@ -81,6 +99,10 @@ export default class TileLayer implements ILayer {
   public async getBounds() {
     const jsData = await getCapabilities(this.options.wmsURL)
     const layerList = jsData.WMT_MS_Capabilities.Capability.Layer.Layer as any[]
+    if (!this.layers) {
+      console.warn('wms.config.layers is null')
+      return null
+    }
     const layers = this.layers.split(',')
     const layerTableNameList = layers.map((it) => it.split(':')[1])
     const layerInfos = layerTableNameList
@@ -139,8 +161,33 @@ export default class TileLayer implements ILayer {
       this.gridLayer.remove()
     }
   }
+
+  public _cluster(dataList: DataListItem[]) {
+    if (this.tileLayer) {
+      this.tileLayer.remove()
+    }
+    const clusterLayer = new MarkersLayer(
+      this.map,
+      dataList,
+      {
+        renderType: 'cluster',
+        iconType: 'unicode',
+        iconUnicode: '&#xe655',
+      },
+      this.channelFunc
+    )
+    clusterLayer.draw()
+    this.clusterLayer = clusterLayer
+    return clusterLayer
+  }
   private async getLayer() {
-    const { wmsURL, getLayers, getStyles, getEnvParams } = this.options
+    const {
+      wmsURL,
+      getLayers,
+      getStyles,
+      getEnvParams,
+      getCqlFilter,
+    } = this.options
     if (getLayers) {
       this.layers = await getLayers(this.getData())
     }
@@ -149,6 +196,9 @@ export default class TileLayer implements ILayer {
     }
     if (getEnvParams) {
       this.envParams = await getEnvParams(this.getData())
+    }
+    if (getCqlFilter) {
+      this.cqlFilter = await getCqlFilter(this.getData())
     }
     const tileLayer = L.tileLayer.wms(wmsURL, {
       layers: this.layers,
@@ -162,6 +212,11 @@ export default class TileLayer implements ILayer {
         env: Object.entries(this.envParams)
           .map(([k, v]) => `${k}:${v}`)
           .join(';'),
+      })
+    }
+    if (!isNull(this.cqlFilter)) {
+      tileLayer.setParams({
+        cql_filter: this.cqlFilter,
       })
     }
     return tileLayer

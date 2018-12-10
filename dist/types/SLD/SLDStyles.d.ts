@@ -1,4 +1,4 @@
-import { StylesConfig, IStyles, Styles, Rule, UserStyle, CssParameter, RangeColorRefs, RangeSizeRefs, PropColorRefs, PropSizeRefs, Filter, Transformation } from './def';
+import { Ref, StylesConfig, IStyles, Styles, Rule, UserStyle, CssParameter, RangeColorRefs, RangeSizeRefs, PropColorRefs, PropSizeRefs, Filter, Transformation } from './def';
 export declare abstract class SLDStyles implements IStyles {
     protected layerName: string;
     protected stylesCfg: StylesConfig;
@@ -6,6 +6,7 @@ export declare abstract class SLDStyles implements IStyles {
     toXMLStr(): string;
     getStylesConfig(): StylesConfig;
     getLayers(): string;
+    getRefs(): Ref[];
     protected abstract getRule(stylesCfg: StylesConfig): Rule;
     protected abstract getTransformation(stylesCfg: StylesConfig): Transformation | null;
     protected getUserStyles(stylesCfg: StylesConfig): UserStyle;
@@ -20,6 +21,8 @@ export declare abstract class SLDStyles implements IStyles {
     protected getPropSizeRefs(props: string[], sizes: number[]): PropSizeRefs;
     protected getRangeFilter(prop: string, range: [number, number]): Filter;
     protected getTypeFilter(prop: string, value: any): Filter;
+    private getSegmentedColorRefs;
+    private getClassifiedColorRefs;
     private getTypeNotInFilter;
     private isOtherPropRef;
     private stringifyOtherProps;

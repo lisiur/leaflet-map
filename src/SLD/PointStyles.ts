@@ -8,6 +8,7 @@ import {
   RangeColorRefs,
   WellKnownNameItem,
   Transformation,
+  Ref,
 } from './def'
 import { isNothing } from '../utils'
 import RasterStyles, { RasterStylesConfig } from './RasterStyles'
@@ -38,6 +39,20 @@ export default class PointStyles extends RasterStyles {
   ) {
     super(layerName, stylesCfg)
   }
+  public getRefs(): Ref[] {
+    switch (this.stylesCfg.renderType) {
+      case 'segmented':
+      case 'classified': {
+        return super.getRefs()
+      }
+      case 'bubble': {
+        return this.getBubbleRefs()
+      }
+      default: {
+        return []
+      }
+    }
+  }
   protected getRule(stylesCfg: PointStylesConfig): Rule {
     switch (stylesCfg.renderType) {
       case 'single': {
@@ -67,6 +82,73 @@ export default class PointStyles extends RasterStyles {
       return super.getTransformation(stylesCfg)
     } else {
       return null
+    }
+  }
+  private getBubbleRefs(): Ref[] {
+    if (isNothing(this.stylesCfg.bubbleColorType)) {
+      return []
+    }
+    if (isNothing(this.stylesCfg.bubbleSizeType)) {
+      return []
+    }
+    if (isNothing(this.stylesCfg.bubbleSizeProp)) {
+      return []
+    }
+    if (isNothing(this.stylesCfg.bubbleColorProp)) {
+      return []
+    }
+    const colorPropRange = this.stylesCfg.rangeProp[
+      this.stylesCfg.bubbleColorProp
+    ]
+    const sizePropRange = this.stylesCfg.rangeProp[
+      this.stylesCfg.bubbleSizeProp
+    ]
+    const colorSizeRange = this.stylesCfg.rangeSize[
+      this.stylesCfg.bubbleColorProp
+    ]
+    const sizeSizeRange = this.stylesCfg.rangeSize[
+      this.stylesCfg.bubbleSizeProp
+    ]
+
+    const propColorRefs =
+      (colorPropRange &&
+        this.getPropColorRefs(colorPropRange, this.stylesCfg.bubbleColors)) ||
+      []
+    const propSizeRefs =
+      (sizePropRange &&
+        this.getPropSizeRefs(sizePropRange, this.stylesCfg.bubbleSizes)) ||
+      []
+    const rangeColorRefs =
+      (colorSizeRange &&
+        this.getRangeColorRefs(colorSizeRange, this.stylesCfg.bubbleColors)) ||
+      []
+    const rangeSizeRefs =
+      (sizeSizeRange &&
+        this.getRangeSizeRefs(sizeSizeRange, this.stylesCfg.bubbleSizes)) ||
+      []
+    if (
+      this.stylesCfg.bubbleColorType === 'prop' &&
+      this.stylesCfg.bubbleSizeType === 'prop'
+    ) {
+      return [].concat(propColorRefs).concat(propSizeRefs)
+    }
+    if (
+      this.stylesCfg.bubbleColorType === 'prop' &&
+      this.stylesCfg.bubbleSizeType === 'range'
+    ) {
+      return [].concat(propColorRefs).concat(rangeSizeRefs)
+    }
+    if (
+      this.stylesCfg.bubbleColorType === 'range' &&
+      this.stylesCfg.bubbleSizeType === 'prop'
+    ) {
+      return [].concat(rangeColorRefs).concat(propSizeRefs)
+    }
+    if (
+      this.stylesCfg.bubbleColorType === 'range' &&
+      this.stylesCfg.bubbleSizeType === 'range'
+    ) {
+      return [].concat(rangeColorRefs).concat(rangeSizeRefs)
     }
   }
   private getSingleRenderRule(stylesCfg: PointStylesConfig): Rule {
