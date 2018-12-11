@@ -99,6 +99,7 @@ export default class WmsTile {
       return
     }
     if (visible) {
+      this.initEvents()
       this.map.addLayer(this.layer)
     } else {
       if (this.popup) {

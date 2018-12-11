@@ -53,7 +53,6 @@ export default class TileLayer implements ILayer {
     this.gridLayer = null
     this.envParams = null
     this.cqlFilter = null
-    this.initEvents()
   }
   public async draw() {
     if (!this.visible) {
@@ -65,6 +64,7 @@ export default class TileLayer implements ILayer {
     if (this.tileLayer) {
       this.tileLayer.remove()
     }
+    this.initEvents()
     this.tileLayer = await this.getLayer()
     if (this.tileLayer) {
       this.tileLayer.addTo(this.map)
