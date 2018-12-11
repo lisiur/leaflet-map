@@ -18,6 +18,13 @@ export interface WmsTileOptions extends L.WMSOptions {
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
 
+const WMS_URL = '/geo/workspace_dev/wms'
+let geoserverCapabilities: any = null
+const geoserverCapabilitiesPromise = getCapabilities(WMS_URL).then((data) => {
+  geoserverCapabilities = data
+  return data
+})
+
 export default class TileLayer implements ILayer {
   private visible: boolean
   private tileLayer: L.TileLayer
@@ -96,12 +103,22 @@ export default class TileLayer implements ILayer {
       this.map.fitBounds(bounds)
     }
   }
-  public async getBounds() {
-    const jsData = await getCapabilities(this.options.wmsURL)
-    const layerList = jsData.WMT_MS_Capabilities.Capability.Layer.Layer as any[]
+  public async getBounds(fresh: boolean = false) {
+    if (isNull(geoserverCapabilities)) {
+      await geoserverCapabilitiesPromise
+    }
+    if (fresh) {
+      geoserverCapabilities = await getCapabilities(this.options.wmsURL)
+    }
+    const layerList = geoserverCapabilities.WMT_MS_Capabilities.Capability.Layer
+      .Layer as any[]
     if (!this.layers) {
-      console.warn('wms.config.layers is null')
-      return null
+      if (this.options.getLayers) {
+        this.layers = await this.options.getLayers(this.getData())
+      } else {
+        console.warn('wms.config.layers is null')
+        return null
+      }
     }
     const layers = this.layers.split(',')
     const layerTableNameList = layers.map((it) => it.split(':')[1])
@@ -131,10 +148,10 @@ export default class TileLayer implements ILayer {
     }, initialBounds)
     return allBounds
   }
-  public toggleVisible(visible: boolean): void {
+  public async toggleVisible(visible: boolean): Promise<void> {
     this.visible = visible
     if (this.visible) {
-      this.draw()
+      return this.draw()
     } else {
       this.destroy()
     }

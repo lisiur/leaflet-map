@@ -33,8 +33,8 @@ export default class TileLayer implements ILayer {
     getData(): any;
     getOptions(): WmsTileOptions;
     fitBounds(): Promise<void>;
-    getBounds(): Promise<any>;
-    toggleVisible(visible: boolean): void;
+    getBounds(fresh?: boolean): Promise<any>;
+    toggleVisible(visible: boolean): Promise<void>;
     pitch(_id: string): void;
     setPopupProp(prop: string): void;
     showGrid(distance?: number): void;

@@ -26,6 +26,7 @@ import {
 import { isUndefined, isNothing } from '../utils'
 
 const OTHERS_DEFAULT_PROP = '__others__=>'
+const OTHERS_DEFAULT_PROP_TEXT = '其它'
 const OTHERS_DEFAULT_COLOR = '#3388ff'
 const OTHERS_DEFAULT_SIZE = 10
 
@@ -256,6 +257,20 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
+  protected translateOtherProp(item: { prop: string; [prop: string]: any }) {
+    if (this.isOtherPropRef(item.prop)) {
+      return {
+        ...item,
+        prop: OTHERS_DEFAULT_PROP_TEXT,
+      }
+    }
+    return item
+  }
+
+  protected isOtherPropRef(prop: string) {
+    return prop.startsWith(OTHERS_DEFAULT_PROP)
+  }
+
   private getSegmentedColorRefs(): Ref[] {
     if (isNothing(this.stylesCfg.rangeSize)) {
       return []
@@ -281,7 +296,11 @@ export abstract class SLDStyles implements IStyles {
     if (isNothing(propRange)) {
       return []
     }
-    return this.getPropColorRefs(propRange, this.stylesCfg.classifiedColors)
+    const refs = this.getPropColorRefs(
+      propRange,
+      this.stylesCfg.classifiedColors
+    )
+    return refs.map((item) => this.translateOtherProp(item))
   }
 
   private getTypeNotInFilter(prop: string, values: any[]): Filter {
@@ -297,10 +316,6 @@ export abstract class SLDStyles implements IStyles {
         })),
       },
     }
-  }
-
-  private isOtherPropRef(prop: string) {
-    return prop.startsWith(OTHERS_DEFAULT_PROP)
   }
 
   private stringifyOtherProps(props: string[]) {

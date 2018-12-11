@@ -21,10 +21,17 @@ export declare abstract class SLDStyles implements IStyles {
     protected getPropSizeRefs(props: string[], sizes: number[]): PropSizeRefs;
     protected getRangeFilter(prop: string, range: [number, number]): Filter;
     protected getTypeFilter(prop: string, value: any): Filter;
+    protected translateOtherProp(item: {
+        prop: string;
+        [prop: string]: any;
+    }): {
+        [prop: string]: any;
+        prop: string;
+    };
+    protected isOtherPropRef(prop: string): boolean;
     private getSegmentedColorRefs;
     private getClassifiedColorRefs;
     private getTypeNotInFilter;
-    private isOtherPropRef;
     private stringifyOtherProps;
     private parseOtherProps;
     /** get valuable config */

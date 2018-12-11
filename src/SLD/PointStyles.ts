@@ -126,23 +126,29 @@ export default class PointStyles extends RasterStyles {
       (sizeSizeRange &&
         this.getRangeSizeRefs(sizeSizeRange, this.stylesCfg.bubbleSizes)) ||
       []
+    const translatedPropColorRefs = propColorRefs.map((item) =>
+      this.translateOtherProp(item)
+    )
+    const translatedPropSizeRefs = propSizeRefs.map((item) =>
+      this.translateOtherProp(item)
+    )
     if (
       this.stylesCfg.bubbleColorType === 'prop' &&
       this.stylesCfg.bubbleSizeType === 'prop'
     ) {
-      return [].concat(propColorRefs).concat(propSizeRefs)
+      return [].concat(translatedPropColorRefs).concat(translatedPropSizeRefs)
     }
     if (
       this.stylesCfg.bubbleColorType === 'prop' &&
       this.stylesCfg.bubbleSizeType === 'range'
     ) {
-      return [].concat(propColorRefs).concat(rangeSizeRefs)
+      return [].concat(translatedPropColorRefs).concat(rangeSizeRefs)
     }
     if (
       this.stylesCfg.bubbleColorType === 'range' &&
       this.stylesCfg.bubbleSizeType === 'prop'
     ) {
-      return [].concat(rangeColorRefs).concat(propSizeRefs)
+      return [].concat(rangeColorRefs).concat(translatedPropSizeRefs)
     }
     if (
       this.stylesCfg.bubbleColorType === 'range' &&
