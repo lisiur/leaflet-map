@@ -1,10 +1,10 @@
 import { StylesConfig, Rule, Transformation } from './def';
 import { SLDStyles } from './SLDStyles';
 export interface RasterStylesConfig extends StylesConfig {
-    gradient: ColorMap[];
-    weightAttr: string;
-    radius: number;
-    pixelsPerCell: number;
+    gradient?: ColorMap[];
+    weightAttr?: string;
+    radius?: number;
+    pixelsPerCell?: number;
 }
 interface ColorMap {
     color: string;

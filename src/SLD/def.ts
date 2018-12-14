@@ -1,24 +1,34 @@
 export interface StylesConfig {
-  renderType: 'single' | 'classified' | 'segmented' | string
-  stroke: string
-  strokeWidth: number
-  fill: string
-  fillOpacity: number
-  fontFamily: string
-  fontStyle: string
-  fontSize: number
-  fontWeight: number
-  popupProp: string
-  segmentedProp: string
-  segmentedColors: string[]
-  classifiedProp: string
-  classifiedColors: string[]
-  rangeSize: {
+  renderType?: 'single' | 'classified' | 'segmented' | string
+  stroke?: string
+  strokeWidth?: number
+  fill?: string
+  fillOpacity?: number
+  fontFamily?: string
+  fontStyle?: string
+  fontSize?: number
+  fontWeight?: number
+  popupProp?: string
+  segmentedProp?: string
+  segmentedColors?: string[]
+  segmentedRefs?: RangeColorRefs
+  classifiedProp?: string
+  classifiedColors?: string[]
+  rangeSize?: {
     [prop: string]: [number, number]
   }
-  rangeProp: {
+  rangeProp?: {
     [prop: string]: string[]
   }
+}
+
+const DEFAULT_COLOR = '#3388ff'
+export const DEFAULT_STYLES_CONFIG: StylesConfig = {
+  renderType: 'single',
+  stroke: DEFAULT_COLOR,
+  strokeWidth: 2,
+  fill: DEFAULT_COLOR,
+  fillOpacity: 0.8,
 }
 
 export interface Ref {

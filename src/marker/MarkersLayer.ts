@@ -305,9 +305,9 @@ export default class MarkersLayer implements ILayer {
     this.redraw()
   }
   /** 聚焦某个 marker */
-  public pitch(id: string) {
+  public pitch(item: DataListItem) {
     this.markers.forEach((marker) => {
-      if (marker.getData().id === id) {
+      if (marker.getData().id === item.id) {
         this.markerClickHandler(marker, true)
         return
       }

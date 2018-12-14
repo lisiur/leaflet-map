@@ -22,6 +22,7 @@ import {
   Filter,
   Transformation,
   FeatureTypeStyleItem,
+  DEFAULT_STYLES_CONFIG,
 } from './def'
 import { isUndefined, isNothing } from '../utils'
 
@@ -31,7 +32,9 @@ const OTHERS_DEFAULT_COLOR = '#3388ff'
 const OTHERS_DEFAULT_SIZE = 10
 
 export abstract class SLDStyles implements IStyles {
-  constructor(protected layerName: string, protected stylesCfg: StylesConfig) {}
+  constructor(protected layerName: string, protected stylesCfg: StylesConfig) {
+    this.stylesCfg = Object.assign({}, DEFAULT_STYLES_CONFIG, stylesCfg)
+  }
   public toXMLStr(): string {
     return convert.js2xml(this.getSLDStyles(this.layerName, this.stylesCfg), {
       compact: true,
@@ -152,6 +155,9 @@ export abstract class SLDStyles implements IStyles {
     range: [number, number],
     colors: string[]
   ): RangeColorRefs {
+    if (this.stylesCfg.segmentedRefs) {
+      return this.stylesCfg.segmentedRefs
+    }
     const minVal = range[0]
     const maxVal = range[1]
     const steps = colors.length
@@ -272,6 +278,9 @@ export abstract class SLDStyles implements IStyles {
   }
 
   private getSegmentedColorRefs(): Ref[] {
+    if (this.stylesCfg.segmentedRefs) {
+      return this.stylesCfg.segmentedRefs
+    }
     if (isNothing(this.stylesCfg.rangeSize)) {
       return []
     }

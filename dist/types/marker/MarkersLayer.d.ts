@@ -115,7 +115,7 @@ export default class MarkersLayer implements ILayer {
     /** 更换 icon */
     changeIcon(iconUnicode: string): void;
     /** 聚焦某个 marker */
-    pitch(id: string): void;
+    pitch(item: DataListItem): void;
     /** 获取分段颜色说明 */
     getSegmentedColorRefs(): {
         range: [number, number];

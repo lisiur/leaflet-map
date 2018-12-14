@@ -25,9 +25,12 @@ export interface PointStylesConfig extends RasterStylesConfig {
   iconUrl: string
   iconSize: number
   bubbleColorProp: string
+  bubbleColorRefs: RangeColorRefs
+  /** bubble 颜色渲染方式 */
   bubbleColorType: 'prop' | 'range'
   bubbleColors: string[]
   bubbleSizeProp: string
+  /** bubble 大小渲染方式 */
   bubbleSizeType: 'prop' | 'range'
   bubbleSizes: number[]
 }
@@ -148,13 +151,17 @@ export default class PointStyles extends RasterStyles {
       this.stylesCfg.bubbleColorType === 'range' &&
       this.stylesCfg.bubbleSizeType === 'prop'
     ) {
-      return [].concat(rangeColorRefs).concat(translatedPropSizeRefs)
+      return []
+        .concat(this.stylesCfg.bubbleColorRefs || rangeColorRefs)
+        .concat(translatedPropSizeRefs)
     }
     if (
       this.stylesCfg.bubbleColorType === 'range' &&
       this.stylesCfg.bubbleSizeType === 'range'
     ) {
-      return [].concat(rangeColorRefs).concat(rangeSizeRefs)
+      return []
+        .concat(this.stylesCfg.bubbleColorRefs || rangeColorRefs)
+        .concat(rangeSizeRefs)
     }
   }
   private getSingleRenderRule(stylesCfg: PointStylesConfig): Rule {
@@ -287,10 +294,12 @@ export default class PointStyles extends RasterStyles {
       (sizePropRange &&
         this.getPropSizeRefs(sizePropRange, stylesCfg.bubbleSizes)) ||
       []
-    const rangeColorRefs =
-      (colorSizeRange &&
-        this.getRangeColorRefs(colorSizeRange, stylesCfg.bubbleColors)) ||
-      []
+    /** 颜色渲染首先判断是否传入 bubbleColorRefs 有则直接使用，否则根据 bubbleColors 自动划分 */
+    const rangeColorRefs = stylesCfg.bubbleColorRefs
+      ? stylesCfg.bubbleColorRefs
+      : (colorSizeRange &&
+          this.getRangeColorRefs(colorSizeRange, stylesCfg.bubbleColors)) ||
+        []
     const rangeSizeRefs =
       (sizeSizeRange &&
         this.getRangeSizeRefs(sizeSizeRange, stylesCfg.bubbleSizes)) ||

@@ -12,7 +12,7 @@ export interface ILayer {
     getBounds(): void;
     destroy(): void;
     toggleVisible(visible: boolean): void;
-    pitch(id: string): void;
+    pitch(data: DataListItem): void;
 }
 export declare type ChannelFunc = (event: string, ...params: any[]) => void;
 export declare type GetDataByLatLng = (latlng: number[]) => Promise<DataListItem>;

@@ -48,7 +48,7 @@ export default class PolygonsLayer implements ILayer {
     destroy(): void;
     toggleVisible(visible: boolean): void;
     changeColor(color: string): void;
-    pitch(id: string): void;
+    pitch(data: DataListItem): void;
     /** 获取分段颜色说明 */
     getSegmentedColorRefs(): {
         range: [number, number];

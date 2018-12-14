@@ -145,9 +145,9 @@ export default class PolylinesLayer implements ILayer {
     this.options.fillColor = color
     this.redraw()
   }
-  public pitch(id: string) {
+  public pitch(data: DataListItem) {
     this.polylines.forEach((polyline) => {
-      if (polyline.getData().id === id) {
+      if (polyline.getData().id === data.id) {
         this.polylineClickHandler(polyline, true)
         return
       }

@@ -1,18 +1,41 @@
 import * as convert from 'xml-js'
+import { GeometryObject } from 'typings/geojson'
+
+interface FeatureInfo {
+  type: 'FeatureCollection'
+  crs: {
+    type: string
+    properties: {
+      name: string
+    } | null
+  }
+  features: Array<{
+    type: 'Feature'
+    id: string
+    geometry: GeometryObject
+    geometry_name: string
+    properties: {
+      [prop: string]: any
+    }
+  }>
+  totalFeatures: string
+}
 export interface GetFeatureInfoParams extends L.WMSOptions {
   map: L.Map
   latlng: L.LatLng
   wmsURL: string
 }
 
-export async function getFeatureInfo(options: GetFeatureInfoParams) {
+export async function getFeatureInfo(
+  options: GetFeatureInfoParams
+): Promise<FeatureInfo> {
   const url = getFeatureInfoUrl(options)
   const res = await fetch(url, {
     mode: 'cors',
     method: 'GET',
     credentials: 'include',
   })
-  return res.json()
+  return res.json() as Promise<FeatureInfo>
 }
 
 export async function getCapabilities(wmsURL: string) {

@@ -11,10 +11,23 @@ import { SLDStyles } from './SLDStyles'
 import { isNothing } from '../utils'
 
 export interface RasterStylesConfig extends StylesConfig {
-  gradient: ColorMap[]
-  weightAttr: string
-  radius: number
-  pixelsPerCell: number
+  gradient?: ColorMap[]
+  weightAttr?: string
+  radius?: number
+  pixelsPerCell?: number
+}
+
+const DEFAULT_RASTER_STYLES_CONFIG: RasterStylesConfig = {
+  gradient: [
+    { color: '#FFFFFF', quantity: 0, opacity: 0 },
+    { color: '#7F95E6', quantity: 0.1, opacity: 0.8 },
+    { color: '#7DFC3F', quantity: 0.3, opacity: 0.8 },
+    { color: '#F6FD01', quantity: 0.4, opacity: 0.8 },
+    { color: '#EF8C07', quantity: 0.5, opacity: 0.8 },
+    { color: '#FE0409', quantity: 1, opacity: 0.8 },
+  ],
+  radius: 20,
+  pixelsPerCell: 1,
 }
 
 interface ColorMap {
@@ -29,6 +42,11 @@ export default class RasterStyles extends SLDStyles {
     protected stylesCfg: RasterStylesConfig
   ) {
     super(layerName, stylesCfg)
+    this.stylesCfg = Object.assign(
+      {},
+      DEFAULT_RASTER_STYLES_CONFIG,
+      this.stylesCfg
+    )
   }
   protected getRule(stylesCfg: RasterStylesConfig): Rule {
     return this.getRenderRule(stylesCfg)

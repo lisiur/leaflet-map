@@ -1,13 +1,16 @@
-import { Rule, Transformation, Ref } from './def';
+import { Rule, RangeColorRefs, Transformation, Ref } from './def';
 import RasterStyles, { RasterStylesConfig } from './RasterStyles';
 export interface PointStylesConfig extends RasterStylesConfig {
     renderType: 'single' | 'segmented' | 'classified' | 'cluster' | 'heat' | 'bubble';
     iconUrl: string;
     iconSize: number;
     bubbleColorProp: string;
+    bubbleColorRefs: RangeColorRefs;
+    /** bubble 颜色渲染方式 */
     bubbleColorType: 'prop' | 'range';
     bubbleColors: string[];
     bubbleSizeProp: string;
+    /** bubble 大小渲染方式 */
     bubbleSizeType: 'prop' | 'range';
     bubbleSizes: number[];
 }

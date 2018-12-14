@@ -48,7 +48,7 @@ export default class PolylinesLayer implements ILayer {
     destroy(): void;
     toggleVisible(visible: boolean): void;
     changeColor(color: string): void;
-    pitch(id: string): void;
+    pitch(data: DataListItem): void;
     getClassifiedColorRefs(): {
         attr: string;
         color: string;

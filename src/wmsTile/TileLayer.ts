@@ -9,7 +9,6 @@ type GetLayers = (options: any) => Promise<string>
 type GetEnvParams = (options: any) => Promise<object>
 type GetCqlFilter = (options: any) => Promise<string>
 export interface WmsTileOptions extends L.WMSOptions {
-  wmsURL?: string
   getLayers?: GetLayers
   getStyles?: GetStyles
   getEnvParams?: GetEnvParams
@@ -18,7 +17,7 @@ export interface WmsTileOptions extends L.WMSOptions {
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
 
-const WMS_URL = '/geo/workspace_dev/wms'
+const WMS_URL = window.WMS_URL || '/geo/wms'
 let geoserverCapabilities: any = null
 const geoserverCapabilitiesPromise = getCapabilities(WMS_URL).then((data) => {
   geoserverCapabilities = data
@@ -31,12 +30,15 @@ export default class TileLayer implements ILayer {
   private popup: L.Popup
   private popupProp: string
   private popupData: any
+  private pitchedTarget: L.GeoJSON<any>
   private layers: string
   private styles: string
   private envParams: object
   private cqlFilter: string
   private gridLayer: GridLayer
   private clusterLayer: MarkersLayer
+  private showGridFlag: boolean
+  private eventHandlers: any[]
   constructor(
     public map: L.Map,
     public options: WmsTileOptions,
@@ -46,18 +48,35 @@ export default class TileLayer implements ILayer {
     this.visible = true
     this.tileLayer = null
     this.popup = null
+    this.pitchedTarget = null
     this.popupProp = null
     this.popupData = null
     this.layers = this.options.layers
     this.styles = this.options.styles
+    this.eventHandlers = []
+    this.showGridFlag = false
     this.gridLayer = null
     this.envParams = null
     this.cqlFilter = null
+    this.registerEvents()
   }
-  public async draw() {
+
+  /**
+   * 绘制 layer
+   * @param options
+   */
+  public async draw(options?: { showGrid: boolean }) {
     if (!this.visible) {
       return
     }
+
+    this.showGridFlag = !!(options && options.showGrid)
+    if (this.showGridFlag) {
+      this.showGrid()
+    } else {
+      this.hideGrid()
+    }
+
     if (this.clusterLayer) {
       this.clusterLayer.destroy()
     }
@@ -70,6 +89,10 @@ export default class TileLayer implements ILayer {
       this.tileLayer.addTo(this.map)
     }
   }
+
+  /**
+   * 销毁 layer
+   */
   public destroy(): void {
     if (this.tileLayer) {
       this.tileLayer.remove()
@@ -85,12 +108,24 @@ export default class TileLayer implements ILayer {
     }
     this.destroyEvents()
   }
+
+  /**
+   * 获取额外传入的数据
+   */
   public getData() {
     return this.data
   }
+
+  /**
+   * 获取 options
+   */
   public getOptions() {
     return this.options
   }
+
+  /**
+   * 将地图缩放到合适比例
+   */
   public async fitBounds() {
     // temp
     if (this.clusterLayer) {
@@ -103,12 +138,17 @@ export default class TileLayer implements ILayer {
       this.map.fitBounds(bounds)
     }
   }
+
+  /**
+   * 获取 bounds
+   * @param fresh 是否强制刷新数据
+   */
   public async getBounds(fresh: boolean = false) {
     if (isNull(geoserverCapabilities)) {
       await geoserverCapabilitiesPromise
     }
     if (fresh) {
-      geoserverCapabilities = await getCapabilities(this.options.wmsURL)
+      geoserverCapabilities = await getCapabilities(WMS_URL)
     }
     const layerList = geoserverCapabilities.WMT_MS_Capabilities.Capability.Layer
       .Layer as any[]
@@ -124,7 +164,7 @@ export default class TileLayer implements ILayer {
     const layerTableNameList = layers.map((it) => it.split(':')[1])
     const layerInfos = layerTableNameList
       .map((tableName) => {
-        return layerList.find((it) => it.Name._text === tableName)
+        return layerList.find((it) => new RegExp(tableName).test(it.Name._text))
       })
       .filter((it) => !isUndefined(it))
     if (layerInfos.length <= 0) {
@@ -151,14 +191,27 @@ export default class TileLayer implements ILayer {
   public async toggleVisible(visible: boolean): Promise<void> {
     this.visible = visible
     if (this.visible) {
-      return this.draw()
+      return this.draw({ showGrid: this.showGridFlag })
     } else {
       this.destroy()
     }
   }
-  public pitch(_id: string): void {
-    throw new Error('Method not implemented.')
+
+  /**
+   * 聚焦某条数据
+   * @param data
+   */
+  public pitch(data: DataListItem): void {
+    this.pitchedTarget = L.geoJSON(data.geometry)
+    const bounds = this.pitchedTarget.getBounds()
+    this.map.fitBounds(bounds)
+    this.map.panTo(bounds.getCenter())
   }
+
+  /**
+   * 设置 popup 显示的字段
+   * @param prop
+   */
   public setPopupProp(prop: string) {
     this.popupProp = prop
     if (this.popup && this.popup.isOpen()) {
@@ -168,17 +221,31 @@ export default class TileLayer implements ILayer {
       }
     }
   }
+
+  /**
+   * 显示全球网格
+   * @param distance 网格半径
+   */
   public showGrid(distance: number = 100) {
     this.hideGrid()
     this.gridLayer = new GridLayer({ map: this.map, distance })
     this.gridLayer.draw()
   }
+
+  /**
+   * 移除全球网格
+   */
   public hideGrid() {
     if (this.gridLayer) {
       this.gridLayer.remove()
     }
   }
 
+  /**
+   * 聚合（待废弃）
+   * @deprecated
+   * @param dataList 包含 geometry 信息的数据集
+   */
   public _cluster(dataList: DataListItem[]) {
     if (this.tileLayer) {
       this.tileLayer.remove()
@@ -197,14 +264,12 @@ export default class TileLayer implements ILayer {
     this.clusterLayer = clusterLayer
     return clusterLayer
   }
+
+  /**
+   * 获取 wms tile layer
+   */
   private async getLayer() {
-    const {
-      wmsURL,
-      getLayers,
-      getStyles,
-      getEnvParams,
-      getCqlFilter,
-    } = this.options
+    const { getLayers, getStyles, getEnvParams, getCqlFilter } = this.options
     if (getLayers) {
       this.layers = await getLayers(this.getData())
     }
@@ -217,7 +282,7 @@ export default class TileLayer implements ILayer {
     if (getCqlFilter) {
       this.cqlFilter = await getCqlFilter(this.getData())
     }
-    const tileLayer = L.tileLayer.wms(wmsURL, {
+    const tileLayer = L.tileLayer.wms(WMS_URL, {
       layers: this.layers,
       styles: this.styles,
       transparent: true,
@@ -238,6 +303,10 @@ export default class TileLayer implements ILayer {
     }
     return tileLayer
   }
+  /**
+   * 点击事件处理
+   * @param e event
+   */
   private async clickHandler(e: L.LeafletMouseEvent) {
     const data = await this.getFeatureInfo(e)
     if (this.popup) {
@@ -259,6 +328,9 @@ export default class TileLayer implements ILayer {
         .openOn(this.map)
     }
   }
+  /**
+   * 获取 popup 需要展示的内容，为 null 值表示不需要展示
+   */
   private getPopupContent(): null | string {
     if (isNothing(this.popupProp)) {
       return null
@@ -272,6 +344,11 @@ export default class TileLayer implements ILayer {
     }
     return `${popupContent}`
   }
+
+  /**
+   * 右键处理函数
+   * @param e {L.LeafletMouseEvent}
+   */
   private async contextmenuHandler(e: L.LeafletMouseEvent) {
     if (this.popup) {
       this.popup.remove()
@@ -279,11 +356,16 @@ export default class TileLayer implements ILayer {
     const data = await this.getFeatureInfo(e)
     this.channelFunc('contextmenu', data)
   }
+
+  /**
+   * 获取鼠标下的图层数据信息
+   * @param e event
+   */
   private async getFeatureInfo(e: L.LeafletMouseEvent) {
     const res = await getFeatureInfo({
       map: this.map,
       latlng: e.latlng,
-      wmsURL: this.options.wmsURL,
+      wmsURL: WMS_URL,
       layers: this.layers,
       styles: this.styles,
     })
@@ -292,11 +374,29 @@ export default class TileLayer implements ILayer {
       originalEvent: e,
     }
   }
-  private initEvents() {
-    this.map.on('contextmenu', this.contextmenuHandler, this)
-    this.map.on('click', this.clickHandler, this)
+  /**
+   * 注册事件监听
+   */
+  private registerEvents() {
+    this.eventHandlers = [
+      ['contextmenu', this.contextmenuHandler],
+      ['click', this.clickHandler],
+    ]
   }
+  /**
+   * 添加事件监听
+   */
+  private initEvents() {
+    this.eventHandlers.forEach(([eventName, handler]) => {
+      this.map.on(eventName, handler, this)
+    })
+  }
+  /**
+   * 移除事件监听
+   */
   private destroyEvents() {
-    this.map.off('click', this.clickHandler, this)
+    this.eventHandlers.forEach(([eventName, handler]) => {
+      this.map.off(eventName, handler, this)
+    })
   }
 }

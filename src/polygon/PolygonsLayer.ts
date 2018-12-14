@@ -156,9 +156,9 @@ export default class PolygonsLayer implements ILayer {
     this.options.fillColor = color
     this.redraw()
   }
-  public pitch(id: string) {
+  public pitch(data: DataListItem) {
     this.polygons.forEach((polygon) => {
-      if (polygon.getData().id === id) {
+      if (polygon.getData().id === data.id) {
         this.polygonClickHandler(polygon, true)
         return
       }
