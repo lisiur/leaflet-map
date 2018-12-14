@@ -37,6 +37,8 @@ export default class TileLayer implements ILayer {
   private cqlFilter: string
   private gridLayer: GridLayer
   private clusterLayer: MarkersLayer
+  private isCluster: boolean
+  private clusterLayerDataList: DataListItem[]
   private showGridFlag: boolean
   private eventHandlers: any[]
   constructor(
@@ -58,6 +60,7 @@ export default class TileLayer implements ILayer {
     this.gridLayer = null
     this.envParams = null
     this.cqlFilter = null
+    this.isCluster = false
     this.registerEvents()
   }
 
@@ -69,6 +72,8 @@ export default class TileLayer implements ILayer {
     if (!this.visible) {
       return
     }
+
+    this.isCluster = false
 
     this.showGridFlag = !!(options && options.showGrid)
     if (this.showGridFlag) {
@@ -156,7 +161,7 @@ export default class TileLayer implements ILayer {
       if (this.options.getLayers) {
         this.layers = await this.options.getLayers(this.getData())
       } else {
-        console.warn('wms.config.layers is null')
+        console.warn('[TileLayer.getBounds] wms.config.layers is null')
         return null
       }
     }
@@ -168,7 +173,7 @@ export default class TileLayer implements ILayer {
       })
       .filter((it) => !isUndefined(it))
     if (layerInfos.length <= 0) {
-      console.warn('not found layerInfo')
+      console.warn('[TileLayer.getBounds] not found layerInfo')
       return null
     }
     const {
@@ -191,7 +196,11 @@ export default class TileLayer implements ILayer {
   public async toggleVisible(visible: boolean): Promise<void> {
     this.visible = visible
     if (this.visible) {
-      return this.draw({ showGrid: this.showGridFlag })
+      if (this.isCluster) {
+        this._cluster(this.clusterLayerDataList)
+      } else {
+        this.draw({ showGrid: this.showGridFlag })
+      }
     } else {
       this.destroy()
     }
@@ -242,11 +251,13 @@ export default class TileLayer implements ILayer {
   }
 
   /**
-   * 聚合（待废弃）
+   * 聚合
    * @deprecated
    * @param dataList 包含 geometry 信息的数据集
    */
   public _cluster(dataList: DataListItem[]) {
+    this.clusterLayerDataList = dataList
+    this.isCluster = true
     if (this.tileLayer) {
       this.tileLayer.remove()
     }
