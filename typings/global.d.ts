@@ -6,6 +6,7 @@ declare global {
   const GeoJSON: typeof GeoJSON
   interface Window {
     WMS_URL: string
+    GET_WMS_LAYER_URL: function
   }
 }
 export {}
