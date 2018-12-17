@@ -29,6 +29,9 @@ export default class PolygonStyles extends RasterStyles {
       case 'classified': {
         return this.getClassifiedRenderRule(stylesCfg)
       }
+      case 'rank': {
+        return this.getRankRenderRule(stylesCfg)
+      }
     }
   }
   protected getTransformation(_: StylesConfig): Transformation | null {
@@ -122,6 +125,41 @@ export default class PolygonStyles extends RasterStyles {
         } as RuleItem
       }
     )
+  }
+
+  private getRankRenderRule(stylesCfg: PolygonStylesConfig): Rule {
+    if (isNothing(stylesCfg.rankProp)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankProp: ${stylesCfg.rankProp}`
+      )
+    }
+    if (isNothing(stylesCfg.rankColors)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankColors: ${stylesCfg.rankColors}`
+      )
+    }
+    if (isNothing(stylesCfg.rankPropRange)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankPropRange: ${stylesCfg.rankPropRange}`
+      )
+    }
+    return this.getPropColorRefs(
+      stylesCfg.rankPropRange,
+      stylesCfg.rankColors
+    ).map((ref) => {
+      return {
+        Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
+        PolygonSymbolizer: [
+          this.getPolygonSymbolizerItem({
+            stroke: ref.color,
+            strokeWidth: stylesCfg.strokeWidth,
+            fill: ref.color,
+            fillOpacity: stylesCfg.fillOpacity,
+          }),
+        ],
+        TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
+      } as RuleItem
+    })
   }
 
   private getPolygonSymbolizerItem(options: {

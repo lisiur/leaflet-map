@@ -27,6 +27,9 @@ export default class LineStyles extends SLDStyles {
       case 'classified': {
         return this.getClassifiedRenderRule(stylesCfg)
       }
+      case 'rank': {
+        return this.getRankRenderRule(stylesCfg)
+      }
     }
   }
   protected getTransformation(_: StylesConfig): Transformation | null {
@@ -111,6 +114,38 @@ export default class LineStyles extends SLDStyles {
         } as RuleItem
       }
     )
+  }
+
+  private getRankRenderRule(stylesCfg: LineStylesConfig): Rule {
+    if (isNothing(stylesCfg.rankProp)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankProp: ${stylesCfg.rankProp}`
+      )
+    }
+    if (isNothing(stylesCfg.rankColors)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankColors: ${stylesCfg.rankColors}`
+      )
+    }
+    if (isNothing(stylesCfg.rankPropRange)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankPropRange: ${stylesCfg.rankPropRange}`
+      )
+    }
+    return this.getPropColorRefs(
+      stylesCfg.rankPropRange,
+      stylesCfg.rankColors
+    ).map((ref) => {
+      return {
+        Filter: this.getTypeFilter(stylesCfg.rankProp, ref.prop),
+        LineSymbolizer: [
+          this.getLineSymbolizerItem({
+            stroke: ref.color,
+            strokeWidth: stylesCfg.strokeWidth,
+          }),
+        ],
+      } as RuleItem
+    })
   }
 
   private getLineSymbolizerItem(options: {

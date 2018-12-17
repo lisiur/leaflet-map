@@ -186,6 +186,11 @@ export abstract class SLDStyles implements IStyles {
     })
   }
 
+  /**
+   * 获取 prop-color 的 refs
+   * @param props 属性值列表
+   * @param colors 颜色列表
+   */
   protected getPropColorRefs(props: string[], colors: string[]): PropColorRefs {
     const refs = props
       .slice(0, Math.min(props.length, colors.length))
@@ -222,6 +227,11 @@ export abstract class SLDStyles implements IStyles {
     return refs
   }
 
+  /**
+   * 获取以 range 划分的 filter
+   * @param prop
+   * @param range
+   */
   protected getRangeFilter(prop: string, range: [number, number]): Filter {
     return {
       And: {
@@ -245,6 +255,7 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
+  /** 获取以 prop 划分的 filter */
   protected getTypeFilter(prop: string, value: any): Filter {
     if (this.isOtherPropRef(value)) {
       const props = this.parseOtherProps(value)
@@ -263,6 +274,10 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
+  /**
+   * 将内部表示的其他属性名翻译为 OTHERS_DEFAULT_PROP_TEXT
+   * @param item
+   */
   protected translateOtherProp(item: { prop: string; [prop: string]: any }) {
     if (this.isOtherPropRef(item.prop)) {
       return {
@@ -273,10 +288,17 @@ export abstract class SLDStyles implements IStyles {
     return item
   }
 
+  /**
+   * 判断是否是描述其他属性的 prop
+   * @param prop
+   */
   protected isOtherPropRef(prop: string) {
     return prop.startsWith(OTHERS_DEFAULT_PROP)
   }
 
+  /**
+   * 获取分段渲染的 refs
+   */
   private getSegmentedColorRefs(): Ref[] {
     if (this.stylesCfg.segmentedRefs) {
       return this.stylesCfg.segmentedRefs
@@ -294,6 +316,9 @@ export abstract class SLDStyles implements IStyles {
     return this.getRangeColorRefs(sizeRange, this.stylesCfg.segmentedColors)
   }
 
+  /**
+   * 获取分类渲染的 refs
+   */
   private getClassifiedColorRefs(): Ref[] {
     if (isNothing(this.stylesCfg.rangeProp)) {
       return []
@@ -312,12 +337,17 @@ export abstract class SLDStyles implements IStyles {
     return refs.map((item) => this.translateOtherProp(item))
   }
 
-  private getTypeNotInFilter(prop: string, values: any[]): Filter {
+  /**
+   * 获取不属于 propValues 的 filter 描述
+   * @param propName
+   * @param propValues all **not** other props
+   */
+  private getTypeNotInFilter(propName: string, propValues: any[]): Filter {
     return {
       And: {
-        PropertyIsNotEqualTo: values.map((value) => ({
+        PropertyIsNotEqualTo: propValues.map((value) => ({
           PropertyName: {
-            _text: prop,
+            _text: propName,
           },
           Literal: {
             _text: value,
@@ -327,10 +357,18 @@ export abstract class SLDStyles implements IStyles {
     }
   }
 
+  /**
+   * 将所有非其他 prop 序列化为表示其他字段的 prop
+   * @param props all **not** other props
+   */
   private stringifyOtherProps(props: string[]) {
     return `${OTHERS_DEFAULT_PROP}${JSON.stringify(props)}`
   }
 
+  /**
+   * get all **not** other props
+   * @description other prop 是由 OTHERS_DEFAULT_PROP + 所有非 other prop 组合成的字符串所表示
+   */
   private parseOtherProps(prop: string): string[] {
     if (this.isOtherPropRef(prop)) {
       return JSON.parse(prop.slice(OTHERS_DEFAULT_PROP.length)) as string[]

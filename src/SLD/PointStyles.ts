@@ -22,6 +22,7 @@ export interface PointStylesConfig extends RasterStylesConfig {
     | 'cluster'
     | 'heat'
     | 'bubble'
+    | 'rank'
   iconUrl: string
   iconSize: number
   bubbleColorProp: string
@@ -72,6 +73,9 @@ export default class PointStyles extends RasterStyles {
       }
       case 'bubble': {
         return this.getBubbleRenderRule(stylesCfg)
+      }
+      case 'rank': {
+        return this.getRankRenderRule(stylesCfg)
       }
       case 'cluster': {
         // TODO
@@ -348,6 +352,39 @@ export default class PointStyles extends RasterStyles {
         rangeSizeRefs
       )
     }
+  }
+
+  private getRankRenderRule(stylesCfg: PointStylesConfig): Rule {
+    if (isNothing(stylesCfg.rankProp)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankProp: ${stylesCfg.rankProp}`
+      )
+    }
+    if (isNothing(stylesCfg.rankColors)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankColors: ${stylesCfg.rankColors}`
+      )
+    }
+    if (isNothing(stylesCfg.rankPropRange)) {
+      throw this.sldError(
+        `invalid PointStylesConfig.rankPropRange: ${stylesCfg.rankPropRange}`
+      )
+    }
+    return this.getPropColorRefs(
+      stylesCfg.rankPropRange,
+      stylesCfg.rankColors
+    ).map((ref) => {
+      return {
+        Filter: this.getTypeFilter(stylesCfg.rankProp, ref.prop),
+        PointSymbolizer: [
+          this.getPointSymbolizerItemUsingOnlineResource(
+            stylesCfg.iconUrl,
+            ref.color,
+            stylesCfg.iconSize
+          ),
+        ],
+      } as RuleItem
+    })
   }
 
   private colorPropXSizeProp(

@@ -18,11 +18,12 @@ export interface WmsTileOptions extends L.WMSOptions {
 const POPUP_CONTENT_NULL_TEXT = '无数据'
 
 const WMS_URL = window.WMS_URL || '/geo/wms'
-let geoserverCapabilities: any = null
-const geoserverCapabilitiesPromise = getCapabilities(WMS_URL).then((data) => {
-  geoserverCapabilities = data
-  return data
-})
+const GET_WMS_LAYER_URL =
+  window.GET_WMS_LAYER_URL ||
+  // tslint:disable-next-line:only-arrow-functions
+  function(name: string) {
+    return `/geo/${name}/wms`
+  }
 
 export default class TileLayer implements ILayer {
   private visible: boolean
@@ -41,6 +42,7 @@ export default class TileLayer implements ILayer {
   private clusterLayerDataList: DataListItem[]
   private showGridFlag: boolean
   private eventHandlers: any[]
+
   constructor(
     public map: L.Map,
     public options: WmsTileOptions,
@@ -129,6 +131,18 @@ export default class TileLayer implements ILayer {
   }
 
   /**
+   * 设置 options
+   * @param options
+   * @param redraw 是否重绘，默认为 true
+   */
+  public setOptions(options: WmsTileOptions, redraw = true) {
+    this.options = Object.assign(this.options, options)
+    if (redraw) {
+      this.draw()
+    }
+  }
+
+  /**
    * 将地图缩放到合适比例
    */
   public async fitBounds() {
@@ -148,51 +162,14 @@ export default class TileLayer implements ILayer {
    * 获取 bounds
    * @param fresh 是否强制刷新数据
    */
-  public async getBounds(fresh: boolean = false) {
-    if (isNull(geoserverCapabilities)) {
-      await geoserverCapabilitiesPromise
-    }
-    if (fresh) {
-      geoserverCapabilities = await getCapabilities(WMS_URL)
-    }
-    const layerList = geoserverCapabilities.WMT_MS_Capabilities.Capability.Layer
-      .Layer as any[]
-    if (!this.layers) {
-      if (this.options.getLayers) {
-        this.layers = await this.options.getLayers(this.getData())
-      } else {
-        console.warn('[TileLayer.getBounds] wms.config.layers is null')
-        return null
-      }
-    }
-    const layers = this.layers.split(',')
-    const layerTableNameList = layers.map((it) => it.split(':')[1])
-    const layerInfos = layerTableNameList
-      .map((tableName) => {
-        return layerList.find((it) => new RegExp(tableName).test(it.Name._text))
-      })
-      .filter((it) => !isUndefined(it))
-    if (layerInfos.length <= 0) {
-      console.warn('[TileLayer.getBounds] not found layerInfo')
-      return null
-    }
-    const {
-      minx,
-      miny,
-      maxx,
-      maxy,
-    } = layerInfos[0].LatLonBoundingBox._attributes
-    const initialBounds = L.latLngBounds(
-      L.latLng(miny, minx),
-      L.latLng(maxy, maxx)
-    )
-    const allBounds = layerInfos.slice(1).reduce((prev, curr) => {
-      // tslint:disable-next-line:no-shadowed-variable
-      const { minx, miny, maxx, maxy } = curr.LatLonBoundingBox._attributes
-      return prev.extend(L.latLng(miny, minx)).extend(L.latLng(maxy, maxx))
-    }, initialBounds)
-    return allBounds
+  public async getBounds() {
+    // TODO: 获取所有 layer bounds 的并集
+    // NOTE: 目前只获取第一个
+    const layers = await this.options.getLayers(this.getData())
+    const firstLayerName = layers.split(',')[0].split(':')[1]
+    return this.getLayerBounds(firstLayerName)
   }
+
   public async toggleVisible(visible: boolean): Promise<void> {
     this.visible = visible
     if (this.visible) {
@@ -274,6 +251,38 @@ export default class TileLayer implements ILayer {
     clusterLayer.draw()
     this.clusterLayer = clusterLayer
     return clusterLayer
+  }
+
+  private async getLayerBounds(layerName: string) {
+    const wmsUrl = GET_WMS_LAYER_URL(layerName)
+    const capabilities = await getCapabilities(wmsUrl)
+    const singleLayer = capabilities.WMT_MS_Capabilities.Capability.Layer
+      .Layer as any
+    if (!this.layers) {
+      if (this.options.getLayers) {
+        this.layers = await this.options.getLayers(this.getData())
+      } else {
+        console.warn('[TileLayer.getBounds] wms.config.layers is null')
+        return null
+      }
+    }
+    const layerInfos = [singleLayer]
+    const {
+      minx,
+      miny,
+      maxx,
+      maxy,
+    } = layerInfos[0].LatLonBoundingBox._attributes
+    const initialBounds = L.latLngBounds(
+      L.latLng(miny, minx),
+      L.latLng(maxy, maxx)
+    )
+    const allBounds = layerInfos.slice(1).reduce((prev, curr) => {
+      // tslint:disable-next-line:no-shadowed-variable
+      const { minx, miny, maxx, maxy } = curr.LatLonBoundingBox._attributes
+      return prev.extend(L.latLng(miny, minx)).extend(L.latLng(maxy, maxx))
+    }, initialBounds)
+    return allBounds
   }
 
   /**

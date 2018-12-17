@@ -920,6 +920,7 @@ export default class MarkersLayer implements ILayer {
         0.75
     }
     return L.divIcon({
+      className: 'cluster-icon',
       html: `
        <div
         style="
@@ -950,6 +951,7 @@ export default class MarkersLayer implements ILayer {
             width: 32px;
             height: 32px;
             margin: 9px;
+            position: absolute;
           ">
         </div>
         <div
