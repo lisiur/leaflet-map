@@ -27,6 +27,8 @@ export default class TileLayer implements ILayer {
     private cqlFilter;
     private gridLayer;
     private clusterLayer;
+    private isCluster;
+    private clusterLayerDataList;
     private showGridFlag;
     private eventHandlers;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
@@ -50,6 +52,12 @@ export default class TileLayer implements ILayer {
      */
     getOptions(): WmsTileOptions;
     /**
+     * 设置 options
+     * @param options
+     * @param redraw 是否重绘，默认为 true
+     */
+    setOptions(options: WmsTileOptions, redraw?: boolean): void;
+    /**
      * 将地图缩放到合适比例
      */
     fitBounds(): Promise<void>;
@@ -57,7 +65,7 @@ export default class TileLayer implements ILayer {
      * 获取 bounds
      * @param fresh 是否强制刷新数据
      */
-    getBounds(fresh?: boolean): Promise<any>;
+    getBounds(): Promise<any>;
     toggleVisible(visible: boolean): Promise<void>;
     /**
      * 聚焦某条数据
@@ -79,11 +87,12 @@ export default class TileLayer implements ILayer {
      */
     hideGrid(): void;
     /**
-     * 聚合（待废弃）
+     * 聚合
      * @deprecated
      * @param dataList 包含 geometry 信息的数据集
      */
     _cluster(dataList: DataListItem[]): MarkersLayer;
+    private getLayerBounds;
     /**
      * 获取 wms tile layer
      */

@@ -10,5 +10,6 @@ export default class LineStyles extends SLDStyles {
     private getSingleRenderRule;
     private getSegmentedRenderRule;
     private getClassifiedRenderRule;
+    private getRankRenderRule;
     private getLineSymbolizerItem;
 }

@@ -10,6 +10,7 @@ export default class PolygonStyles extends RasterStyles {
     private getSingleRenderRule;
     private getSegmentedRenderRule;
     private getClassifiedRenderRule;
+    private getRankRenderRule;
     private getPolygonSymbolizerItem;
     private getTextSymbolizer;
 }

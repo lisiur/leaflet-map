@@ -1,5 +1,5 @@
 export interface StylesConfig {
-    renderType?: 'single' | 'classified' | 'segmented' | string;
+    renderType?: 'single' | 'classified' | 'segmented' | 'rank' | string;
     stroke?: string;
     strokeWidth?: number;
     fill?: string;
@@ -14,6 +14,9 @@ export interface StylesConfig {
     segmentedRefs?: RangeColorRefs;
     classifiedProp?: string;
     classifiedColors?: string[];
+    rankProp?: string;
+    rankColors?: string[];
+    rankPropRange?: string[];
     rangeSize?: {
         [prop: string]: [number, number];
     };
