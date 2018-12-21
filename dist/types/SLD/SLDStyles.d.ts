@@ -78,4 +78,5 @@ export declare abstract class SLDStyles implements IStyles {
     private getCssParameterItem;
     /** transform slash var to camel style */
     private slash2Camel;
+    private lowercaseProps;
 }

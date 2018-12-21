@@ -37,10 +37,8 @@ interface ColorMap {
 }
 
 export default class RasterStyles extends SLDStyles {
-  constructor(
-    protected layerName: string,
-    protected stylesCfg: RasterStylesConfig
-  ) {
+  protected stylesCfg: RasterStylesConfig
+  constructor(layerName: string, stylesCfg: RasterStylesConfig) {
     super(layerName, stylesCfg)
     this.stylesCfg = Object.assign(
       {},

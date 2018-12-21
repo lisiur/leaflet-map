@@ -12,7 +12,6 @@ interface ColorMap {
     opacity?: number;
 }
 export default class RasterStyles extends SLDStyles {
-    protected layerName: string;
     protected stylesCfg: RasterStylesConfig;
     constructor(layerName: string, stylesCfg: RasterStylesConfig);
     protected getRule(stylesCfg: RasterStylesConfig): Rule;

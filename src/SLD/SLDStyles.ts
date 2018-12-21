@@ -36,36 +36,39 @@ export abstract class SLDStyles implements IStyles {
     this.stylesCfg = Object.assign({}, DEFAULT_STYLES_CONFIG, stylesCfg)
   }
   public toXMLStr(): string {
-    return convert.js2xml(this.getSLDStyles(this.layerName, this.stylesCfg), {
-      compact: true,
-      spaces: '\t',
-      elementNameFn: (name) => {
-        if (
-          [
-            'Filter',
-            'And',
-            'Or',
-            'Not',
-            'PropertyName',
-            'Literal',
-            'Function',
-            'PropertyIsLike',
-            'PropertyIsLessThan',
-            'PropertyIsEqualTo',
-            'PropertyIsNotEqualTo',
-            'PropertyIsGreaterThan',
-            'PropertyIsLessThanOrEqualTo',
-            'PropertyIsGreaterThanOrEqualTo',
-          ].includes(name)
-        ) {
-          return `ogc:${name}`
-        } else if (['Heatmap'].includes(name)) {
-          return `vec:${name}`
-        } else {
-          return name
-        }
-      },
-    })
+    return convert.js2xml(
+      this.getSLDStyles(this.layerName, this.lowercaseProps(this.stylesCfg)),
+      {
+        compact: true,
+        spaces: '\t',
+        elementNameFn: (name) => {
+          if (
+            [
+              'Filter',
+              'And',
+              'Or',
+              'Not',
+              'PropertyName',
+              'Literal',
+              'Function',
+              'PropertyIsLike',
+              'PropertyIsLessThan',
+              'PropertyIsEqualTo',
+              'PropertyIsNotEqualTo',
+              'PropertyIsGreaterThan',
+              'PropertyIsLessThanOrEqualTo',
+              'PropertyIsGreaterThanOrEqualTo',
+            ].includes(name)
+          ) {
+            return `ogc:${name}`
+          } else if (['Heatmap'].includes(name)) {
+            return `vec:${name}`
+          } else {
+            return name
+          }
+        },
+      }
+    )
   }
   public getStylesConfig() {
     return this.stylesCfg
@@ -416,5 +419,22 @@ export abstract class SLDStyles implements IStyles {
       }
     }
     return vItems.join('')
+  }
+
+  private lowercaseProps<T>(stylesCfg: any): T {
+    const temp = JSON.parse(JSON.stringify(stylesCfg))
+    const props = [
+      'popupProp',
+      'classifiedProp',
+      'segmentedProp',
+      'bubbleSizeProp',
+      'bubbleColorProp',
+    ]
+    props.forEach((prop) => {
+      if (temp[prop]) {
+        temp[prop] = temp[prop].toLowerCase()
+      }
+    })
+    return temp
   }
 }

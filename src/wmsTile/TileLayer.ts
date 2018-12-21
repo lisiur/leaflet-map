@@ -166,7 +166,8 @@ export default class TileLayer implements ILayer {
     // TODO: 获取所有 layer bounds 的并集
     // NOTE: 目前只获取第一个
     const layers = await this.options.getLayers(this.getData())
-    const firstLayerName = layers.split(',')[0].split(':')[1]
+    // const firstLayerName = layers.split(',')[0].split(':')[1]
+    const firstLayerName = layers.split(',')[0]
     return this.getLayerBounds(firstLayerName)
   }
 
