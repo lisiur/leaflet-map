@@ -9,6 +9,7 @@ import {
   WellKnownNameItem,
   Transformation,
   Ref,
+  RANGE_TYPE,
 } from './def'
 import { isNothing } from '../utils'
 import RasterStyles, { RasterStylesConfig } from './RasterStyles'
@@ -210,9 +211,13 @@ export default class PointStyles extends RasterStyles {
       )
     }
     return this.getRangeColorRefs(sizeRange, stylesCfg.segmentedColors).map(
-      (ref) => {
+      (ref, index, { length }) => {
         return {
-          Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
+          Filter: this.getRangeFilter(
+            stylesCfg.segmentedProp,
+            ref.range,
+            index === length - 1 ? RANGE_TYPE['[]'] : RANGE_TYPE['[)']
+          ),
           PointSymbolizer: [
             this.getPointSymbolizerItemUsingOnlineResource(
               stylesCfg.iconUrl,
@@ -424,13 +429,20 @@ export default class PointStyles extends RasterStyles {
   ): Rule {
     const rule: Rule = []
     for (const propColorRef of propColorRefs) {
-      for (const rangeSizeRef of rangeSizeRefs) {
+      for (let i = 0; i < rangeSizeRefs.length; i++) {
+        const rangeSizeRef = rangeSizeRefs[i]
         rule.push({
           Filter: {
             And: {
               And: [
                 this.getTypeFilter(colorPropName, propColorRef.prop),
-                this.getRangeFilter(sizePropName, rangeSizeRef.range),
+                this.getRangeFilter(
+                  sizePropName,
+                  rangeSizeRef.range,
+                  i === rangeSizeRefs.length - 1
+                    ? RANGE_TYPE['[]']
+                    : RANGE_TYPE['[)']
+                ),
               ],
             },
           },
@@ -454,12 +466,19 @@ export default class PointStyles extends RasterStyles {
     propSizeRefs: PropSizeRefs
   ): Rule {
     const rule: Rule = []
-    for (const rangeColorRef of rangeColorRefs) {
+    for (let i = 0; i < rangeColorRefs.length; i++) {
+      const rangeColorRef = rangeColorRefs[i]
       for (const propSizeRef of propSizeRefs) {
         rule.push({
           Filter: {
             And: [
-              this.getRangeFilter(colorPropName, rangeColorRef.range),
+              this.getRangeFilter(
+                colorPropName,
+                rangeColorRef.range,
+                i === rangeColorRefs.length - 1
+                  ? RANGE_TYPE['[]']
+                  : RANGE_TYPE['[)']
+              ),
               this.getTypeFilter(sizePropName, propSizeRef.prop),
             ],
           },
@@ -483,13 +502,27 @@ export default class PointStyles extends RasterStyles {
     rangeSizeRefs: RangeSizeRefs
   ): Rule {
     const rule: Rule = []
-    for (const rangeColorRef of rangeColorRefs) {
-      for (const rangeSizeRef of rangeSizeRefs) {
+    for (let i = 0; i < rangeColorRefs.length; i++) {
+      const rangeColorRef = rangeColorRefs[i]
+      for (let j = 0; j < rangeSizeRefs.length; j++) {
+        const rangeSizeRef = rangeSizeRefs[j]
         rule.push({
           Filter: {
             And: [
-              this.getRangeFilter(colorPropName, rangeColorRef.range),
-              this.getRangeFilter(sizePropName, rangeSizeRef.range),
+              this.getRangeFilter(
+                colorPropName,
+                rangeColorRef.range,
+                i === rangeColorRefs.length - 1
+                  ? RANGE_TYPE['[]']
+                  : RANGE_TYPE['[)']
+              ),
+              this.getRangeFilter(
+                sizePropName,
+                rangeSizeRef.range,
+                j === rangeSizeRefs.length - 1
+                  ? RANGE_TYPE['[]']
+                  : RANGE_TYPE['[)']
+              ),
             ],
           },
           PointSymbolizer: [

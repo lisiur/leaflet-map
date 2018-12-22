@@ -5,6 +5,7 @@ import {
   Rule,
   Transformation,
   TextSymbolizer,
+  RANGE_TYPE,
 } from './def'
 import { isNothing } from '../utils'
 import RasterStyles, { RasterStylesConfig } from './RasterStyles'
@@ -73,9 +74,13 @@ export default class PolygonStyles extends RasterStyles {
       )
     }
     return this.getRangeColorRefs(sizeRange, stylesCfg.segmentedColors).map(
-      (ref) => {
+      (ref, index, { length }) => {
         return {
-          Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
+          Filter: this.getRangeFilter(
+            stylesCfg.segmentedProp,
+            ref.range,
+            index === length - 1 ? RANGE_TYPE['[]'] : RANGE_TYPE['[)']
+          ),
           PolygonSymbolizer: [
             this.getPolygonSymbolizerItem({
               stroke: ref.color,

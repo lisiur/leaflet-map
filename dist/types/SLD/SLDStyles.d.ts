@@ -1,4 +1,4 @@
-import { Ref, StylesConfig, IStyles, Styles, Rule, UserStyle, CssParameter, RangeColorRefs, RangeSizeRefs, PropColorRefs, PropSizeRefs, Filter, Transformation } from './def';
+import { Ref, StylesConfig, IStyles, Styles, Rule, UserStyle, CssParameter, RangeColorRefs, RangeSizeRefs, PropColorRefs, PropSizeRefs, Filter, Transformation, RANGE_TYPE } from './def';
 export declare abstract class SLDStyles implements IStyles {
     protected layerName: string;
     protected stylesCfg: StylesConfig;
@@ -29,7 +29,7 @@ export declare abstract class SLDStyles implements IStyles {
      * @param prop
      * @param range
      */
-    protected getRangeFilter(prop: string, range: [number, number]): Filter;
+    protected getRangeFilter(prop: string, range: [number, number], rangeType?: RANGE_TYPE): Filter;
     /** 获取以 prop 划分的 filter */
     protected getTypeFilter(prop: string, value: any): Filter;
     /**

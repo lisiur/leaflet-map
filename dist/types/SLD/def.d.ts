@@ -25,6 +25,12 @@ export interface StylesConfig {
     };
 }
 export declare const DEFAULT_STYLES_CONFIG: StylesConfig;
+export declare enum RANGE_TYPE {
+    '[)' = "[)",
+    '[]' = "[]",
+    '(]' = "(]",
+    '()' = "()"
+}
 export interface Ref {
     size?: number;
     prop?: string;

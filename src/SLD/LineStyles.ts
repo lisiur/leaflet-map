@@ -5,6 +5,7 @@ import {
   LineSymbolizerItem,
   RuleItem,
   Transformation,
+  RANGE_TYPE,
 } from './def'
 import { isNothing } from '../utils'
 
@@ -68,9 +69,13 @@ export default class LineStyles extends SLDStyles {
       )
     }
     return this.getRangeColorRefs(sizeRange, stylesCfg.segmentedColors).map(
-      (ref) => {
+      (ref, index, { length }) => {
         return {
-          Filter: this.getRangeFilter(stylesCfg.segmentedProp, ref.range),
+          Filter: this.getRangeFilter(
+            stylesCfg.segmentedProp,
+            ref.range,
+            index === length - 1 ? RANGE_TYPE['[]'] : RANGE_TYPE['[)']
+          ),
           LineSymbolizer: [
             this.getLineSymbolizerItem({
               stroke: ref.color,

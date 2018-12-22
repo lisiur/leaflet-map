@@ -34,6 +34,13 @@ export const DEFAULT_STYLES_CONFIG: StylesConfig = {
   fillOpacity: 0.8,
 }
 
+export enum RANGE_TYPE {
+  '[)' = '[)',
+  '[]' = '[]',
+  '(]' = '(]',
+  '()' = '()',
+}
+
 export interface Ref {
   size?: number
   prop?: string

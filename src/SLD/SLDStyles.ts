@@ -23,6 +23,7 @@ import {
   Transformation,
   FeatureTypeStyleItem,
   DEFAULT_STYLES_CONFIG,
+  RANGE_TYPE,
 } from './def'
 import { isUndefined, isNothing } from '../utils'
 
@@ -235,10 +236,23 @@ export abstract class SLDStyles implements IStyles {
    * @param prop
    * @param range
    */
-  protected getRangeFilter(prop: string, range: [number, number]): Filter {
+  protected getRangeFilter(
+    prop: string,
+    range: [number, number],
+    rangeType = RANGE_TYPE['[)']
+  ): Filter {
+    const rangeMap: {
+      [prop: string]: keyof Filter
+    } = {
+      '[': 'PropertyIsGreaterThanOrEqualTo',
+      '(': 'PropertyIsGreaterThan',
+      ']': 'PropertyIsLessThanOrEqualTo',
+      ')': 'PropertyIsLessThan',
+    }
+    const [left, right] = rangeType
     return {
       And: {
-        PropertyIsGreaterThanOrEqualTo: {
+        [rangeMap[left]]: {
           PropertyName: {
             _text: prop,
           },
@@ -246,7 +260,7 @@ export abstract class SLDStyles implements IStyles {
             _text: range[0],
           },
         },
-        PropertyIsLessThan: {
+        [rangeMap[right]]: {
           PropertyName: {
             _text: prop,
           },
