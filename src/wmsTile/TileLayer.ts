@@ -79,9 +79,9 @@ export default class TileLayer implements ILayer {
 
     this.showGridFlag = !!(options && options.showGrid)
     if (this.showGridFlag) {
-      this.showGrid()
+      // this.showGrid()
     } else {
-      this.hideGrid()
+      // this.hideGrid()
     }
 
     if (this.clusterLayer) {

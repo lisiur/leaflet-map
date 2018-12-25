@@ -403,10 +403,12 @@ export default class PointStyles extends RasterStyles {
       for (const propSizeRef of propSizeRefs) {
         rule.push({
           Filter: {
-            And: [
-              this.getTypeFilter(colorPropName, propColorRef.prop),
-              this.getTypeFilter(sizePropName, propSizeRef.prop),
-            ],
+            And: {
+              And: [
+                this.getTypeFilter(colorPropName, propColorRef.prop),
+                this.getTypeFilter(sizePropName, propSizeRef.prop),
+              ],
+            },
           },
           PointSymbolizer: [
             this.getPointSymbolizerItemUsingMark({
@@ -471,16 +473,18 @@ export default class PointStyles extends RasterStyles {
       for (const propSizeRef of propSizeRefs) {
         rule.push({
           Filter: {
-            And: [
-              this.getRangeFilter(
-                colorPropName,
-                rangeColorRef.range,
-                i === rangeColorRefs.length - 1
-                  ? RANGE_TYPE['[]']
-                  : RANGE_TYPE['[)']
-              ),
-              this.getTypeFilter(sizePropName, propSizeRef.prop),
-            ],
+            And: {
+              And: [
+                this.getRangeFilter(
+                  colorPropName,
+                  rangeColorRef.range,
+                  i === rangeColorRefs.length - 1
+                    ? RANGE_TYPE['[]']
+                    : RANGE_TYPE['[)']
+                ),
+                this.getTypeFilter(sizePropName, propSizeRef.prop),
+              ],
+            },
           },
           PointSymbolizer: [
             this.getPointSymbolizerItemUsingMark({
@@ -508,22 +512,24 @@ export default class PointStyles extends RasterStyles {
         const rangeSizeRef = rangeSizeRefs[j]
         rule.push({
           Filter: {
-            And: [
-              this.getRangeFilter(
-                colorPropName,
-                rangeColorRef.range,
-                i === rangeColorRefs.length - 1
-                  ? RANGE_TYPE['[]']
-                  : RANGE_TYPE['[)']
-              ),
-              this.getRangeFilter(
-                sizePropName,
-                rangeSizeRef.range,
-                j === rangeSizeRefs.length - 1
-                  ? RANGE_TYPE['[]']
-                  : RANGE_TYPE['[)']
-              ),
-            ],
+            And: {
+              And: [
+                this.getRangeFilter(
+                  colorPropName,
+                  rangeColorRef.range,
+                  i === rangeColorRefs.length - 1
+                    ? RANGE_TYPE['[]']
+                    : RANGE_TYPE['[)']
+                ),
+                this.getRangeFilter(
+                  sizePropName,
+                  rangeSizeRef.range,
+                  j === rangeSizeRefs.length - 1
+                    ? RANGE_TYPE['[]']
+                    : RANGE_TYPE['[)']
+                ),
+              ],
+            },
           },
           PointSymbolizer: [
             this.getPointSymbolizerItemUsingMark({
