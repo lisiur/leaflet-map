@@ -50,7 +50,6 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
-          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         },
       ]
     } else {
@@ -64,6 +63,7 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
+          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         },
       ]
     }
