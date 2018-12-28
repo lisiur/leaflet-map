@@ -189,7 +189,9 @@ export default class TileLayer implements ILayer {
    * @param data
    */
   public pitch(data: DataListItem): void {
-    this.pitchedTarget = L.geoJSON(data.geometry)
+    this.pitchedTarget = L.geoJSON(data.geometry, {
+      pointToLayer: () => {},
+    })
     const bounds = this.pitchedTarget.getBounds()
     this.map.fitBounds(bounds)
     this.map.panTo(bounds.getCenter())

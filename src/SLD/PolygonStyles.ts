@@ -39,19 +39,34 @@ export default class PolygonStyles extends RasterStyles {
     return null
   }
   private getSingleRenderRule(stylesCfg: PolygonStylesConfig): Rule {
-    return [
-      {
-        PolygonSymbolizer: [
-          this.getPolygonSymbolizerItem({
-            stroke: stylesCfg.stroke,
-            strokeWidth: stylesCfg.strokeWidth,
-            fill: stylesCfg.fill,
-            fillOpacity: stylesCfg.fillOpacity,
-          }),
-        ],
-        TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
-      },
-    ]
+    if (isNothing(stylesCfg.popupProp)) {
+      return [
+        {
+          PolygonSymbolizer: [
+            this.getPolygonSymbolizerItem({
+              stroke: stylesCfg.stroke,
+              strokeWidth: stylesCfg.strokeWidth,
+              fill: stylesCfg.fill,
+              fillOpacity: stylesCfg.fillOpacity,
+            }),
+          ],
+          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
+        },
+      ]
+    } else {
+      return [
+        {
+          PolygonSymbolizer: [
+            this.getPolygonSymbolizerItem({
+              stroke: stylesCfg.stroke,
+              strokeWidth: stylesCfg.strokeWidth,
+              fill: stylesCfg.fill,
+              fillOpacity: stylesCfg.fillOpacity,
+            }),
+          ],
+        },
+      ]
+    }
   }
 
   private getSegmentedRenderRule(stylesCfg: PolygonStylesConfig): Rule {
