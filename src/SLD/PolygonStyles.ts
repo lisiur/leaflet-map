@@ -168,7 +168,7 @@ export default class PolygonStyles extends RasterStyles {
       stylesCfg.rankColors
     ).map((ref) => {
       return {
-        Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
+        Filter: this.getTypeFilter(stylesCfg.rankProp, ref.prop),
         PolygonSymbolizer: [
           this.getPolygonSymbolizerItem({
             stroke: ref.color,
