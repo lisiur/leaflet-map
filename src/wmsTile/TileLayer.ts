@@ -254,6 +254,11 @@ export default class TileLayer implements ILayer {
     return clusterLayer
   }
 
+  public setZIndex(zIndex: number) {
+    this.options.zIndex = zIndex
+    this.tileLayer.setZIndex(zIndex)
+  }
+
   private async getLayerBounds(layerName: string) {
     const wmsUrl = GET_WMS_LAYER_URL(layerName)
     const capabilities = await getCapabilities(wmsUrl)
@@ -309,6 +314,7 @@ export default class TileLayer implements ILayer {
       transparent: true,
       format: 'image/png',
       crs: L.CRS.EPSG4326,
+      zIndex: this.options.zIndex || 1,
     })
     if (!isNull(this.envParams)) {
       tileLayer.setParams({

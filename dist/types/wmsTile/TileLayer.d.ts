@@ -92,6 +92,7 @@ export default class TileLayer implements ILayer {
      * @param dataList 包含 geometry 信息的数据集
      */
     _cluster(dataList: DataListItem[]): MarkersLayer;
+    setZIndex(zIndex: number): void;
     private getLayerBounds;
     /**
      * 获取 wms tile layer
