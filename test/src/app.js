@@ -1,7 +1,7 @@
 // @ts-ignore
 import leafletMap from '../../../leaflet-layer'
 import { PointStyles, RasterStyles } from 'leaflet-layer'
-import { Transform } from 'leaflet-layer'
+import { StandardGrid } from 'leaflet-layer'
 const convert = require('xml-js')
 
 // @ts-ignore
@@ -65,14 +65,19 @@ const latlngs = [
 ]
 
 latlngs.forEach((latlng) => {
-  let [lat, lng] = latlng
-  ;[lng, lat] = Transform.gcj02towgs84(lng, lat)
-  L.marker([lat, lng])
-    .addTo(map)
-    .bindTooltip(JSON.stringify([lat, lng]))
+  const [lat, lng] = latlng
+  L.marker(L.latLng(lat, lng)).addTo(map)
 })
 
-let [lng, lat] = Transform.wgs84togcj02(121, 31)
-console.log(lng, lat)
-;[lng, lat] = Transform.gcj02towgs84(lng, lat)
-console.log(Transform.wgs84togcj02(lng, lat))
+const data = latlngs.map((latlng) => {
+  const [lat, lng] = latlng
+  return {
+    geometry: {
+      type: 'Point',
+      coordinates: [lng, lat],
+    },
+  }
+})
+const layer = new StandardGrid(map, data, {}, console.log)
+layer.draw()
+layer.fitBounds()

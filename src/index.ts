@@ -16,6 +16,7 @@ import RasterStyles from './SLD/RasterStyles'
 import TileLayer from './wmsTile/TileLayer'
 import GridLayer from './grid/GridLayer'
 import Transform from './utils/transform'
+import StandardGrid from './standardGrid/grid'
 
 export {
   Marker,
@@ -36,4 +37,5 @@ export {
   TileLayer,
   GridLayer,
   Transform,
+  StandardGrid,
 }

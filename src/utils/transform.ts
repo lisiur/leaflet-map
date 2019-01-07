@@ -146,7 +146,19 @@ export function out_of_china(lng: number, lat: number) {
   )
 }
 
+export function hx2bs(latlng: L.LatLng): L.LatLng {
+  const [lng, lat] = gcj02towgs84(latlng.lng, latlng.lat)
+  return L.latLng(lat, lng)
+}
+
+export function bs2hx(latlng: L.LatLng): L.LatLng {
+  const [lng, lat] = wgs84togcj02(latlng.lng, latlng.lat)
+  return L.latLng(lat, lng)
+}
+
 export default {
   wgs84togcj02,
   gcj02towgs84,
+  hx2bs,
+  bs2hx,
 }

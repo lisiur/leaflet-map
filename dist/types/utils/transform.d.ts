@@ -41,8 +41,12 @@ export declare function transformlng(lng: number, lat: number): number;
  * @returns {boolean}
  */
 export declare function out_of_china(lng: number, lat: number): boolean;
+export declare function hx2bs(latlng: L.LatLng): L.LatLng;
+export declare function bs2hx(latlng: L.LatLng): L.LatLng;
 declare const _default: {
     wgs84togcj02: typeof wgs84togcj02;
     gcj02towgs84: typeof gcj02towgs84;
+    hx2bs: typeof hx2bs;
+    bs2hx: typeof bs2hx;
 };
 export default _default;
