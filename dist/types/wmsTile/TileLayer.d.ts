@@ -29,6 +29,7 @@ export default class TileLayer implements ILayer {
     private clusterLayer;
     private isCluster;
     private clusterLayerDataList;
+    private clusterColor;
     private showGridFlag;
     private eventHandlers;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
@@ -91,7 +92,7 @@ export default class TileLayer implements ILayer {
      * @deprecated
      * @param dataList 包含 geometry 信息的数据集
      */
-    _cluster(dataList: DataListItem[]): MarkersLayer;
+    _cluster(dataList: DataListItem[], color?: string): MarkersLayer;
     setZIndex(zIndex: number): void;
     private getLayerBounds;
     /**

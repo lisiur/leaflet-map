@@ -15,6 +15,7 @@ import PolygonStyles from './SLD/PolygonStyles'
 import RasterStyles from './SLD/RasterStyles'
 import TileLayer from './wmsTile/TileLayer'
 import GridLayer from './grid/GridLayer'
+import Transform from './utils/transform'
 
 export {
   Marker,
@@ -34,4 +35,5 @@ export {
   RasterStyles,
   TileLayer,
   GridLayer,
+  Transform,
 }

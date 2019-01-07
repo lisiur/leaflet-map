@@ -22,7 +22,10 @@ const GET_WMS_LAYER_URL =
   window.GET_WMS_LAYER_URL ||
   // tslint:disable-next-line:only-arrow-functions
   function(name: string) {
-    return `/geo/${name}/wms`
+    if (name.includes(':')) {
+      // has workspace
+      return `/geo/${name.split(':')[1]}/wms`
+    }
   }
 
 export default class TileLayer implements ILayer {
@@ -40,6 +43,7 @@ export default class TileLayer implements ILayer {
   private clusterLayer: MarkersLayer
   private isCluster: boolean
   private clusterLayerDataList: DataListItem[]
+  private clusterColor: string
   private showGridFlag: boolean
   private eventHandlers: any[]
 
@@ -63,6 +67,7 @@ export default class TileLayer implements ILayer {
     this.envParams = null
     this.cqlFilter = null
     this.isCluster = false
+    this.clusterColor = '#38f'
     this.registerEvents()
   }
 
@@ -233,8 +238,9 @@ export default class TileLayer implements ILayer {
    * @deprecated
    * @param dataList 包含 geometry 信息的数据集
    */
-  public _cluster(dataList: DataListItem[]) {
+  public _cluster(dataList: DataListItem[], color?: string) {
     this.clusterLayerDataList = dataList
+    this.clusterColor = color
     this.isCluster = true
     if (this.tileLayer) {
       this.tileLayer.remove()
@@ -246,6 +252,8 @@ export default class TileLayer implements ILayer {
         renderType: 'cluster',
         iconType: 'unicode',
         iconUnicode: '&#xe655',
+        renderClusterColorType: 'single',
+        color: color || this.clusterColor,
       },
       this.channelFunc
     )
@@ -256,7 +264,10 @@ export default class TileLayer implements ILayer {
 
   public setZIndex(zIndex: number) {
     this.options.zIndex = zIndex
-    this.tileLayer.setZIndex(zIndex)
+    if (this.tileLayer) {
+      this.tileLayer.setZIndex(zIndex)
+    }
+    // TODO: clusterLayer.setZIndex
   }
 
   private async getLayerBounds(layerName: string) {
