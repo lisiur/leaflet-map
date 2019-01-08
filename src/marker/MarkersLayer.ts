@@ -45,6 +45,7 @@ export interface MarkersLayerOptions {
   bubbleSizes?: number[]
   bubbleStrokeOpacity?: number
   bubbleFillOpacity?: number
+  zIndex?: number
 
   // 是否聚合，优先级高于 renderType == point
   isCluster?: boolean
@@ -193,6 +194,15 @@ export default class MarkersLayer implements ILayer {
     this.bubbledColorMap = {}
     this.initOptions(options)
     this.initEvents()
+  }
+  public setZIndex(index: number) {
+    if (this.options.renderType === 'cluster' || this.options.isCluster) {
+      this.clusterLayer.setZIndex(index)
+      this.options.zIndex = index
+    }
+  }
+  public getZIndex() {
+    return this.options.zIndex
   }
   public draw(options?: MarkersLayerOptions) {
     if (!this.visible) {

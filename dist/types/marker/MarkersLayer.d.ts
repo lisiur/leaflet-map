@@ -33,6 +33,7 @@ export interface MarkersLayerOptions {
     bubbleSizes?: number[];
     bubbleStrokeOpacity?: number;
     bubbleFillOpacity?: number;
+    zIndex?: number;
     isCluster?: boolean;
     renderClusterColorType?: MarkersLayerRenderClusterColorType;
     /** 是否展示 popup */
@@ -93,6 +94,8 @@ export default class MarkersLayer implements ILayer {
     /** 分类渲染颜色参照(提供给调用者使用) */
     private classifiedColorRefs;
     constructor(map: L.Map, dataList: DataListItem[], options: MarkersLayerOptions, channelFunc: ChannelFunc);
+    setZIndex(index: number): void;
+    getZIndex(): number;
     draw(options?: MarkersLayerOptions): this;
     /** 绘制图层 */
     redraw(): this;

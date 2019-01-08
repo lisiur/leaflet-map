@@ -68,6 +68,7 @@ export default class TileLayer implements ILayer {
      */
     getBounds(): Promise<any>;
     toggleVisible(visible: boolean): Promise<void>;
+    isVisible(): boolean;
     /**
      * 聚焦某条数据
      * @param data
@@ -94,6 +95,23 @@ export default class TileLayer implements ILayer {
      */
     _cluster(dataList: DataListItem[], color?: string): MarkersLayer;
     setZIndex(zIndex: number): void;
+    getZIndex(): number;
+    /**
+     * 获取鼠标下的图层数据信息
+     * @param e event
+     */
+    getFeatureInfo(e: L.LeafletMouseEvent): Promise<{
+        features: {
+            type: "Feature";
+            id: string;
+            geometry: import("../../typings/geojson").GeometryObject;
+            geometry_name: string;
+            properties: {
+                [prop: string]: any;
+            };
+        }[];
+        originalEvent: import("../../typings/leaflet").LeafletMouseEvent;
+    }>;
     private getLayerBounds;
     /**
      * 获取 wms tile layer
@@ -113,11 +131,6 @@ export default class TileLayer implements ILayer {
      * @param e {L.LeafletMouseEvent}
      */
     private contextmenuHandler;
-    /**
-     * 获取鼠标下的图层数据信息
-     * @param e event
-     */
-    private getFeatureInfo;
     /**
      * 注册事件监听
      */

@@ -189,6 +189,10 @@ export default class TileLayer implements ILayer {
     }
   }
 
+  public isVisible() {
+    return this.visible
+  }
+
   /**
    * 聚焦某条数据
    * @param data
@@ -267,7 +271,31 @@ export default class TileLayer implements ILayer {
     if (this.tileLayer) {
       this.tileLayer.setZIndex(zIndex)
     }
-    // TODO: clusterLayer.setZIndex
+    if (this.clusterLayer) {
+      this.clusterLayer.setZIndex(zIndex)
+    }
+  }
+
+  public getZIndex() {
+    return this.options.zIndex
+  }
+
+  /**
+   * 获取鼠标下的图层数据信息
+   * @param e event
+   */
+  public async getFeatureInfo(e: L.LeafletMouseEvent) {
+    const res = await getFeatureInfo({
+      map: this.map,
+      latlng: e.latlng,
+      wmsURL: WMS_URL,
+      layers: this.layers,
+      styles: this.styles,
+    })
+    return {
+      features: res.features,
+      originalEvent: e,
+    }
   }
 
   private async getLayerBounds(layerName: string) {
@@ -346,6 +374,7 @@ export default class TileLayer implements ILayer {
    * @param e event
    */
   private async clickHandler(e: L.LeafletMouseEvent) {
+    // L.DomEvent.stopPropagation(e.originalEvent)
     const data = await this.getFeatureInfo(e)
     if (this.popup) {
       this.popup.remove()
@@ -388,6 +417,7 @@ export default class TileLayer implements ILayer {
    * @param e {L.LeafletMouseEvent}
    */
   private async contextmenuHandler(e: L.LeafletMouseEvent) {
+    L.DomEvent.stopPropagation(e.originalEvent)
     if (this.popup) {
       this.popup.remove()
     }
@@ -396,28 +426,11 @@ export default class TileLayer implements ILayer {
   }
 
   /**
-   * 获取鼠标下的图层数据信息
-   * @param e event
-   */
-  private async getFeatureInfo(e: L.LeafletMouseEvent) {
-    const res = await getFeatureInfo({
-      map: this.map,
-      latlng: e.latlng,
-      wmsURL: WMS_URL,
-      layers: this.layers,
-      styles: this.styles,
-    })
-    return {
-      features: res.features,
-      originalEvent: e,
-    }
-  }
-  /**
    * 注册事件监听
    */
   private registerEvents() {
     this.eventHandlers = [
-      ['contextmenu', this.contextmenuHandler],
+      ['single-contextmenu', this.contextmenuHandler],
       ['click', this.clickHandler],
     ]
   }
