@@ -139,9 +139,9 @@ export default class MarkersLayer implements ILayer {
     options: MarkersLayerOptions,
     channelFunc: ChannelFunc
   ) {
-    if (!Array.isArray(dataList) || dataList.length === 0) {
-      throw new Error(`dataList 必须是非空数组`)
-    }
+    // if (!Array.isArray(dataList) || dataList.length === 0) {
+    //   throw new Error(`dataList 必须是非空数组`)
+    // }
     this.defaultOptions = {
       renderType: 'point',
       renderPointColorType: 'single',
