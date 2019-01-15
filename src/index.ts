@@ -17,6 +17,7 @@ import TileLayer from './wmsTile/TileLayer'
 import GridLayer from './grid/GridLayer'
 import Transform from './utils/transform'
 import StandardGrid from './standardGrid/grid'
+import WfsCql from './wfs/WfsCql'
 
 export {
   Marker,
@@ -38,4 +39,5 @@ export {
   GridLayer,
   Transform,
   StandardGrid,
+  WfsCql,
 }

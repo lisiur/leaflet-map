@@ -1,8 +1,10 @@
 import { ILayer, ChannelFunc, DataListItem } from '../definitions'
 import { getFeatureInfo, getCapabilities } from './utils'
-import { isUndefined, isNull, isNothing } from '../utils'
+import { isUndefined, isNull, isNothing, debounce, lighten } from '../utils'
 import GridLayer from '../grid/GridLayer'
 import MarkersLayer from '../marker/MarkersLayer'
+import Supercluster from 'supercluster'
+import { FeatureCollection, GeoJsonObject } from 'typings/geojson'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
@@ -41,11 +43,15 @@ export default class TileLayer implements ILayer {
   private cqlFilter: string
   private gridLayer: GridLayer
   private clusterLayer: MarkersLayer
+  private superCluster: supercluster.Supercluster
+  private clusterMarkersLayer: L.GeoJSON<any>
+  private clusterFeatureCollectionFeatures: FeatureCollection['features']
   private isCluster: boolean
   private clusterLayerDataList: DataListItem[]
   private clusterColor: string
   private showGridFlag: boolean
   private eventHandlers: any[]
+  private worker: Worker
 
   constructor(
     public map: L.Map,
@@ -68,6 +74,17 @@ export default class TileLayer implements ILayer {
     this.cqlFilter = null
     this.isCluster = false
     this.clusterColor = '#38f'
+    this.superCluster = null
+    this.clusterFeatureCollectionFeatures = null
+    this.clusterMarkersLayer = L.geoJSON(null, {
+      pointToLayer: this.createClusterIcon.bind(this),
+    })
+    // @ts-ignore
+    if (window.Worker) {
+      this.worker = new Worker('./statics/js/clusterWorker.js')
+    } else {
+      this.worker = null
+    }
     this.registerEvents()
   }
 
@@ -91,6 +108,9 @@ export default class TileLayer implements ILayer {
 
     if (this.clusterLayer) {
       this.clusterLayer.destroy()
+    }
+    if (this.clusterMarkersLayer) {
+      this.clusterMarkersLayer.remove()
     }
     if (this.tileLayer) {
       this.tileLayer.remove()
@@ -117,6 +137,9 @@ export default class TileLayer implements ILayer {
     }
     if (this.clusterLayer) {
       this.clusterLayer.destroy()
+    }
+    if (this.clusterMarkersLayer) {
+      this.clusterMarkersLayer.remove()
     }
     this.destroyEvents()
   }
@@ -209,11 +232,18 @@ export default class TileLayer implements ILayer {
    * @param prop
    */
   public setPopupProp(prop: string) {
-    this.popupProp = prop
-    if (this.popup && this.popup.isOpen()) {
-      const popupContent = this.getPopupContent()
-      if (!isNull(popupContent)) {
-        this.popup.setContent(popupContent)
+    if (prop === '_none') {
+      this.popupProp = null
+      if (this.popup && this.popup.isOpen()) {
+        this.map.closePopup(this.popup)
+      }
+    } else {
+      this.popupProp = prop
+      if (this.popup && this.popup.isOpen()) {
+        const popupContent = this.getPopupContent()
+        if (!isNull(popupContent)) {
+          this.popup.setContent(popupContent)
+        }
       }
     }
   }
@@ -237,33 +267,93 @@ export default class TileLayer implements ILayer {
     }
   }
 
+  public _cluster_(dataList: DataListItem[], color?: string) {
+    this.clusterColor = color || this.clusterColor
+    this.clusterLayerDataList = dataList
+    this.isCluster = true
+    if (this.tileLayer) {
+      this.tileLayer.remove()
+    }
+    // 已经聚合
+    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+      this.updateCluster()
+      return
+    }
+    this.clusterFeatureCollectionFeatures =
+      this.clusterFeatureCollectionFeatures ||
+      (dataList.map(
+        this.mapDataListItemToGeojsonFeature
+      ) as FeatureCollection['features'])
+    if (this.worker) {
+      this.worker.postMessage({
+        action: 'loadData',
+        data: this.clusterFeatureCollectionFeatures,
+      })
+    } else {
+      // @ts-ignore
+      this.superCluster = new Supercluster({
+        radius: 160,
+        nodeSize: 8,
+      }).load(this.clusterFeatureCollectionFeatures)
+    }
+    this.clusterMarkersLayer.addTo(this.map)
+    this.clusterMarkersLayer.on('contextmenu', (e: any) => {
+      const isCluster = e.layer.feature.properties.cluster
+      if (!isCluster) {
+        this.contextmenuHandler(e)
+      }
+    })
+    this.clusterMarkersLayer.on('click', (e: any) => {
+      const clusterId = e.layer.feature.properties.cluster_id
+      if (clusterId) {
+        if (this.worker) {
+          this.worker.postMessage({
+            action: 'zoom',
+            data: {
+              clusterId,
+              center: e.latlng,
+            },
+          })
+        } else {
+          this.map.flyTo(
+            e.latLng,
+            // @ts-ignore
+            this.superCluster.getClusterExpansionZoom(clusterId)
+          )
+        }
+      }
+    })
+    this.updateCluster()
+  }
+
   /**
    * 聚合
    * @deprecated
    * @param dataList 包含 geometry 信息的数据集
    */
   public _cluster(dataList: DataListItem[], color?: string) {
-    this.clusterLayerDataList = dataList
-    this.clusterColor = color
-    this.isCluster = true
-    if (this.tileLayer) {
-      this.tileLayer.remove()
-    }
-    const clusterLayer = new MarkersLayer(
-      this.map,
-      dataList,
-      {
-        renderType: 'cluster',
-        iconType: 'unicode',
-        iconUnicode: '&#xe655',
-        renderClusterColorType: 'single',
-        color: color || this.clusterColor,
-      },
-      this.channelFunc
-    )
-    clusterLayer.draw()
-    this.clusterLayer = clusterLayer
-    return clusterLayer
+    this._cluster_(dataList, color)
+    // this.clusterLayerDataList = dataList
+    // this.clusterColor = color || this.clusterColor
+    // this.isCluster = true
+    // if (this.tileLayer) {
+    //   this.tileLayer.remove()
+    // }
+    // const clusterLayer = new MarkersLayer(
+    //   this.map,
+    //   dataList,
+    //   {
+    //     renderType: 'cluster',
+    //     iconType: 'unicode',
+    //     iconUnicode: '&#xe655',
+    //     renderClusterColorType: 'single',
+    //     color: color || this.clusterColor,
+    //   },
+    //   this.channelFunc
+    // )
+    // // clusterLayer.draw()
+    // this.clusterLayer = clusterLayer
+    // return clusterLayer
   }
 
   public setZIndex(zIndex: number) {
@@ -296,6 +386,31 @@ export default class TileLayer implements ILayer {
       features: res.features,
       originalEvent: e,
     }
+  }
+
+  private updateCluster() {
+    if (!this.map.hasLayer(this.clusterMarkersLayer)) {
+      return
+    }
+    const bounds = this.map.getBounds()
+    const bbox = [
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
+    ] as [number, number, number, number]
+    const zoom = this.map.getZoom()
+    if (this.worker) {
+      this.worker.postMessage({ action: 'draw', bbox, zoom })
+    } else {
+      const data = (this.superCluster.getClusters(
+        bbox,
+        zoom
+      ) as unknown) as GeoJsonObject
+      this.clusterMarkersLayer.clearLayers()
+      this.clusterMarkersLayer.addData(data)
+    }
+    return
   }
 
   private async getLayerBounds(layerName: string) {
@@ -369,6 +484,18 @@ export default class TileLayer implements ILayer {
     }
     return tileLayer
   }
+
+  private zoomHandler() {
+    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+      this.updateCluster()
+    }
+  }
+  private moveHandler() {
+    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+      this.updateCluster()
+    }
+  }
+
   /**
    * 点击事件处理
    * @param e event
@@ -430,9 +557,21 @@ export default class TileLayer implements ILayer {
    */
   private registerEvents() {
     this.eventHandlers = [
-      ['single-contextmenu', this.contextmenuHandler],
+      ['single-contextmenu', this.contextmenuHandler], // single-contextmenu 避免在 layer 上触发 contextmenu，在 map 上触发
       ['click', this.clickHandler],
+      ['zoom', debounce(this.zoomHandler, 200)],
+      ['moveend', debounce(this.moveHandler, 200)],
     ]
+    if (this.worker) {
+      this.worker.onmessage = (e) => {
+        if (e.data.action === 'draw') {
+          this.clusterMarkersLayer.clearLayers()
+          this.clusterMarkersLayer.addData(e.data.data)
+        } else if (e.data.action === 'zoom') {
+          this.map.flyTo(e.data.center, e.data.expansionZoom)
+        }
+      }
+    }
   }
   /**
    * 添加事件监听
@@ -449,5 +588,88 @@ export default class TileLayer implements ILayer {
     this.eventHandlers.forEach(([eventName, handler]) => {
       this.map.off(eventName, handler, this)
     })
+  }
+
+  private mapDataListItemToGeojsonFeature(dataItem: DataListItem) {
+    const { geometry, ...properties } = dataItem
+    return {
+      type: 'Feature',
+      properties,
+      geometry,
+    }
+  }
+
+  private createClusterIcon(feature: any, latlng: L.LatLng) {
+    const levels = 4
+    const color = this.clusterColor
+    if (!feature.properties.cluster) {
+      return L.marker(latlng, {
+        icon: L.icon({
+          iconUrl: 'http://47.101.142.174:8011/fs/svg/marker.svg?color=4b73b5',
+        }),
+      })
+    }
+
+    const length = this.clusterLayerDataList.length
+    const step = length / levels
+    const scaleStep = (1 - 0.75) / levels
+    const count = feature.properties.point_count
+    const scale = (Math.floor((count - 1) / step) + 1) * scaleStep + 0.75
+    const icon = L.divIcon({
+      className: 'cluster-icon',
+      html: `
+       <div
+        style="
+          border-radius: 50%;
+          position: relative;
+          width: 50px;
+          height: 50px;
+          transform: scale3d(${scale}, ${scale}, 1)
+        "
+        >
+        <div
+          style="
+            border-radius: 50%;
+            background: ${lighten(color)};
+            width: 50px;
+            height: 50px;
+            opacity: 0.7;
+            position: absolute;
+            top: 0;
+            left: 0;
+            ">
+        </div>
+        <div
+          style="
+            border-radius: 50%;
+            background: ${color};
+            opacity: 0.8;
+            width: 32px;
+            height: 32px;
+            margin: 9px;
+            position: absolute;
+          ">
+        </div>
+        <div
+          style="
+            text-align: center;
+            line-height: 32px;
+            position: absolute;
+            top: 9px;
+            left: 9px;
+            width: 32px;
+            height: 32px;
+            color: white;
+            font-size: 14px;
+          "
+          >
+          ${feature.properties.point_count_abbreviated}
+        </div>
+       </div>
+      `,
+      iconSize: [40, 40],
+    })
+
+    return L.marker(latlng, { icon })
   }
 }

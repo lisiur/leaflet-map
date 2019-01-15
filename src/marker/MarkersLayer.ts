@@ -282,6 +282,9 @@ export default class MarkersLayer implements ILayer {
     if (this.layer) {
       this.map.removeLayer(this.layer)
     }
+    if (this.clusterLayer) {
+      this.clusterLayer.remove()
+    }
     if (this.focusedDisplayMarker) {
       this.map.removeLayer(this.focusedDisplayMarker)
     }

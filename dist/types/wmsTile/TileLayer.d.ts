@@ -1,5 +1,4 @@
 import { ILayer, ChannelFunc, DataListItem } from '../definitions';
-import MarkersLayer from '../marker/MarkersLayer';
 declare type GetStyles = (options: any) => Promise<string>;
 declare type GetLayers = (options: any) => Promise<string>;
 declare type GetEnvParams = (options: any) => Promise<object>;
@@ -27,11 +26,15 @@ export default class TileLayer implements ILayer {
     private cqlFilter;
     private gridLayer;
     private clusterLayer;
+    private superCluster;
+    private clusterMarkersLayer;
+    private clusterFeatureCollectionFeatures;
     private isCluster;
     private clusterLayerDataList;
     private clusterColor;
     private showGridFlag;
     private eventHandlers;
+    private worker;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
     /**
      * 绘制 layer
@@ -88,12 +91,13 @@ export default class TileLayer implements ILayer {
      * 移除全球网格
      */
     hideGrid(): void;
+    _cluster_(dataList: DataListItem[], color?: string): void;
     /**
      * 聚合
      * @deprecated
      * @param dataList 包含 geometry 信息的数据集
      */
-    _cluster(dataList: DataListItem[], color?: string): MarkersLayer;
+    _cluster(dataList: DataListItem[], color?: string): void;
     setZIndex(zIndex: number): void;
     getZIndex(): number;
     /**
@@ -112,11 +116,14 @@ export default class TileLayer implements ILayer {
         }[];
         originalEvent: import("../../typings/leaflet").LeafletMouseEvent;
     }>;
+    private updateCluster;
     private getLayerBounds;
     /**
      * 获取 wms tile layer
      */
     private getLayer;
+    private zoomHandler;
+    private moveHandler;
     /**
      * 点击事件处理
      * @param e event
@@ -143,5 +150,7 @@ export default class TileLayer implements ILayer {
      * 移除事件监听
      */
     private destroyEvents;
+    private mapDataListItemToGeojsonFeature;
+    private createClusterIcon;
 }
 export {};

@@ -51,6 +51,32 @@ function isNothing(arg: any) {
   return isNull(arg) || isUndefined(arg) || isEmptyStr(arg)
 }
 
+function debounce(func: any, interval: number) {
+  let timer: number = null
+  return function() {
+    // @ts-ignore
+    const context = this
+    const args = arguments
+    clearTimeout(timer)
+    timer = setTimeout(() => func.apply(context, args), interval)
+  }
+}
+
+function throttle(func: any, interval: number) {
+  let timer: number = null
+  return function() {
+    // @ts-ignore
+    const context = this
+    const args = arguments
+    if (!timer) {
+      func.apply(context, args)
+      timer = setTimeout(() => {
+        timer = null
+      }, interval)
+    }
+  }
+}
+
 export {
   lighten,
   darken,
@@ -59,4 +85,6 @@ export {
   isUndefined,
   isEmptyStr,
   isNothing,
+  debounce,
+  throttle,
 }

@@ -56,6 +56,47 @@ export interface IStyles {
 }
 export declare const XMLBaseDeclaration: Styles['_declaration'];
 export declare const StyledLayerDescriptorBaseAttributes: StyledLayerDescriptor['_attributes'];
+export interface WFSQuery {
+    GetFeature: GetFeature;
+}
+export interface GetFeature {
+    _attributes: {
+        'xmlns:wfs': string;
+        'xmlns:sf': string;
+        'xmlns:ogc': string;
+        service: string;
+        version: string;
+    };
+    Query: Query;
+}
+export interface Query {
+    _attributes: {
+        typeName: string;
+    };
+    Filter: Filter;
+}
+export interface DWITHIN {
+    PropertyName: Text;
+    Point?: BaseGeometry;
+    LineString?: BaseGeometry;
+    Polygon?: BaseGeometry;
+    Distance: {
+        _attributes: {
+            units: 'meter';
+        };
+        _text: number;
+    };
+}
+export interface BaseGeometry {
+    _attributes: {
+        srsName: string;
+    };
+    coordinates: Text;
+}
+export interface QueryFunction {
+    PropertyName: Text;
+    Function: FunctionItem;
+}
 export interface RuleItem {
     Name?: string;
     Title?: string;
@@ -202,16 +243,16 @@ export interface Transformation {
 export declare type Functions = FunctionItem[];
 export interface FunctionItem {
     _attributes?: {
-        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid' | 'labelPoint';
+        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid' | 'labelPoint' | 'collectGeometries' | 'queryCollection';
     };
     PropertyName?: Text;
-    Function?: Functions;
+    Function?: FunctionItem | Functions;
     Literal?: Text | Text[];
 }
 export declare type Filter = FilterItem;
 export interface FilterItem {
     And?: FilterItem | FilterItem[];
-    Or?: Filter;
+    Or?: FilterItem | FilterItem[];
     Not?: Filter;
     PropertyIsLike?: FilterProperty;
     PropertyIsLessThan?: FilterProperty;
@@ -220,6 +261,9 @@ export interface FilterItem {
     PropertyIsGreaterThan?: FilterProperty;
     PropertyIsLessThanOrEqualTo?: FilterProperty;
     PropertyIsGreaterThanOrEqualTo?: FilterProperty;
+    PropertyIsBetween?: FilterProperty;
+    INTERSECTS?: QueryFunction;
+    DWITHIN?: DWITHIN;
 }
 declare type FilterProperty = FilterPropertyItem | FilterPropertyItem[];
 interface FilterPropertyItem {
@@ -230,6 +274,12 @@ interface FilterPropertyItem {
         PropertyName: Text;
     };
     PropertyName?: Text;
+    LowerBoundary?: {
+        Literal: Text;
+    };
+    UpperBoundary?: {
+        Literal: Text;
+    };
     Literal?: Text;
 }
 export declare type PolygonSymbolizer = PolygonSymbolizerItem[];

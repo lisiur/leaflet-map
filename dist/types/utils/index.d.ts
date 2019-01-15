@@ -5,4 +5,6 @@ declare function isNull(arg: any): boolean;
 declare function isUndefined(arg: any): boolean;
 declare function isEmptyStr(arg: any): boolean;
 declare function isNothing(arg: any): boolean;
-export { lighten, darken, optionsMerge, isNull, isUndefined, isEmptyStr, isNothing, };
+declare function debounce(func: any, interval: number): () => void;
+declare function throttle(func: any, interval: number): () => void;
+export { lighten, darken, optionsMerge, isNull, isUndefined, isEmptyStr, isNothing, debounce, throttle, };

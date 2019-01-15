@@ -39,7 +39,7 @@ export default class PolygonStyles extends RasterStyles {
     return null
   }
   private getSingleRenderRule(stylesCfg: PolygonStylesConfig): Rule {
-    if (isNothing(stylesCfg.popupProp)) {
+    if (this.isPopupPropSignificant(stylesCfg.popupProp)) {
       return [
         {
           PolygonSymbolizer: [
@@ -50,6 +50,7 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
+          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         },
       ]
     } else {
@@ -63,7 +64,6 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
-          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         },
       ]
     }
@@ -90,7 +90,7 @@ export default class PolygonStyles extends RasterStyles {
     }
     return this.getRangeColorRefs(sizeRange, stylesCfg.segmentedColors).map(
       (ref, index, { length }) => {
-        return {
+        const ruleItem = {
           Filter: this.getRangeFilter(
             stylesCfg.segmentedProp,
             ref.range,
@@ -104,8 +104,11 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
-          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         } as RuleItem
+        if (this.isPopupPropSignificant(stylesCfg.popupProp)) {
+          ruleItem.TextSymbolizer = this.getTextSymbolizer(stylesCfg.popupProp)
+        }
+        return ruleItem
       }
     )
   }
@@ -131,7 +134,7 @@ export default class PolygonStyles extends RasterStyles {
     }
     return this.getPropColorRefs(propRange, stylesCfg.classifiedColors).map(
       (ref) => {
-        return {
+        const ruleItem = {
           Filter: this.getTypeFilter(stylesCfg.classifiedProp, ref.prop),
           PolygonSymbolizer: [
             this.getPolygonSymbolizerItem({
@@ -141,8 +144,11 @@ export default class PolygonStyles extends RasterStyles {
               fillOpacity: stylesCfg.fillOpacity,
             }),
           ],
-          TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
         } as RuleItem
+        if (this.isPopupPropSignificant(stylesCfg.popupProp)) {
+          ruleItem.TextSymbolizer = this.getTextSymbolizer(stylesCfg.popupProp)
+        }
+        return ruleItem
       }
     )
   }
@@ -167,7 +173,7 @@ export default class PolygonStyles extends RasterStyles {
       stylesCfg.rankPropRange,
       stylesCfg.rankColors
     ).map((ref) => {
-      return {
+      const ruleItem = {
         Filter: this.getTypeFilter(stylesCfg.rankProp, ref.prop),
         PolygonSymbolizer: [
           this.getPolygonSymbolizerItem({
@@ -179,6 +185,10 @@ export default class PolygonStyles extends RasterStyles {
         ],
         TextSymbolizer: this.getTextSymbolizer(stylesCfg.popupProp),
       } as RuleItem
+      if (this.isPopupPropSignificant(stylesCfg.popupProp)) {
+        ruleItem.TextSymbolizer = this.getTextSymbolizer(stylesCfg.popupProp)
+      }
+      return ruleItem
     })
   }
 

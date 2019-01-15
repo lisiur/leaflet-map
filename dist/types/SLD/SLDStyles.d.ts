@@ -48,6 +48,7 @@ export declare abstract class SLDStyles implements IStyles {
      * @param prop
      */
     protected isOtherPropRef(prop: string): boolean;
+    protected isPopupPropSignificant(popupProp: string): boolean;
     /**
      * 获取分段渲染的 refs
      */

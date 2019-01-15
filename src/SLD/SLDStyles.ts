@@ -56,6 +56,7 @@ export abstract class SLDStyles implements IStyles {
               'PropertyIsLessThan',
               'PropertyIsEqualTo',
               'PropertyIsNotEqualTo',
+              'PropertyIsBetween',
               'PropertyIsGreaterThan',
               'PropertyIsLessThanOrEqualTo',
               'PropertyIsGreaterThanOrEqualTo',
@@ -311,6 +312,10 @@ export abstract class SLDStyles implements IStyles {
    */
   protected isOtherPropRef(prop: string) {
     return prop.startsWith(OTHERS_DEFAULT_PROP)
+  }
+
+  protected isPopupPropSignificant(popupProp: string) {
+    return !(isNothing(popupProp) || popupProp === '_none')
   }
 
   /**
