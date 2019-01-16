@@ -109,7 +109,7 @@ export default class TileLayer implements ILayer {
     if (this.clusterLayer) {
       this.clusterLayer.destroy()
     }
-    if (this.clusterMarkersLayer) {
+    if (this.map.hasLayer(this.clusterMarkersLayer)) {
       this.clusterMarkersLayer.remove()
     }
     if (this.tileLayer) {
@@ -119,6 +119,24 @@ export default class TileLayer implements ILayer {
     this.tileLayer = await this.getLayer()
     if (this.tileLayer) {
       this.tileLayer.addTo(this.map)
+    }
+  }
+
+  public clearLayers() {
+    if (this.map.hasLayer(this.tileLayer)) {
+      this.tileLayer.remove()
+    }
+    if (this.gridLayer) {
+      this.gridLayer.remove()
+    }
+    if (this.popup) {
+      this.popup.remove()
+    }
+    if (this.clusterLayer) {
+      this.clusterLayer.destroy()
+    }
+    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+      this.clusterMarkersLayer.remove()
     }
   }
 
@@ -271,7 +289,7 @@ export default class TileLayer implements ILayer {
     this.clusterColor = color || this.clusterColor
     this.clusterLayerDataList = dataList
     this.isCluster = true
-    if (this.tileLayer) {
+    if (this.map.hasLayer(this.tileLayer)) {
       this.tileLayer.remove()
     }
     // 已经聚合
@@ -315,12 +333,14 @@ export default class TileLayer implements ILayer {
             },
           })
         } else {
-          this.map.flyTo(
+          this.map.setView(
             e.latLng,
             // @ts-ignore
             this.superCluster.getClusterExpansionZoom(clusterId)
           )
         }
+      } else {
+        this.clickHandler(e)
       }
     })
     this.updateCluster()
@@ -568,7 +588,7 @@ export default class TileLayer implements ILayer {
           this.clusterMarkersLayer.clearLayers()
           this.clusterMarkersLayer.addData(e.data.data)
         } else if (e.data.action === 'zoom') {
-          this.map.flyTo(e.data.center, e.data.expansionZoom)
+          this.map.setView(e.data.center, e.data.expansionZoom)
         }
       }
     }
@@ -588,6 +608,9 @@ export default class TileLayer implements ILayer {
     this.eventHandlers.forEach(([eventName, handler]) => {
       this.map.off(eventName, handler, this)
     })
+    if (this.worker) {
+      this.worker.terminate()
+    }
   }
 
   private mapDataListItemToGeojsonFeature(dataItem: DataListItem) {
@@ -605,7 +628,10 @@ export default class TileLayer implements ILayer {
     if (!feature.properties.cluster) {
       return L.marker(latlng, {
         icon: L.icon({
-          iconUrl: 'http://47.101.142.174:8011/fs/svg/marker.svg?color=4b73b5',
+          iconUrl: `http://47.101.142.174:8011/fs/svg/marker.svg?color=${color.slice(
+            1
+          )}`,
+          iconAnchor: [11, 11],
         }),
       })
     }

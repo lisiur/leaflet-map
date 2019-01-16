@@ -43,6 +43,7 @@ export default class TileLayer implements ILayer {
     draw(options?: {
         showGrid: boolean;
     }): Promise<void>;
+    clearLayers(): void;
     /**
      * 销毁 layer
      */
