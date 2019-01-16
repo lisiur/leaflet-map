@@ -13,6 +13,8 @@ export interface PointStylesConfig extends RasterStylesConfig {
     /** bubble 大小渲染方式 */
     bubbleSizeType: 'prop' | 'range';
     bubbleSizes: number[];
+    /** 总数 - 聚合需要 */
+    total: number;
 }
 export default class PointStyles extends RasterStyles {
     protected layerName: string;
@@ -27,10 +29,13 @@ export default class PointStyles extends RasterStyles {
     private getClassifiedRenderRule;
     private getBubbleRenderRule;
     private getRankRenderRule;
+    private getClusterRenderRule;
     private colorPropXSizeProp;
     private colorPropXSizeRange;
     private colorRangeXSizeProp;
     private colorRangeXSizeRange;
     private getPointSymbolizerItemUsingMark;
     private getPointSymbolizerItemUsingOnlineResource;
+    private getClusterPointRules;
+    private getClusterPointSymbolizer;
 }

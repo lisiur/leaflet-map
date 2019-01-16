@@ -79,7 +79,7 @@ export default class RasterStyles extends SLDStyles {
       ],
     }
   }
-  private getParameterFunction(
+  protected getParameterFunction(
     key: string,
     value?: any,
     functions?: Functions
@@ -102,7 +102,7 @@ export default class RasterStyles extends SLDStyles {
     }
     return functionItem
   }
-  private getEnvFunction(key: string, value?: any): FunctionItem {
+  protected getEnvFunction(key: string, value?: any): FunctionItem {
     if (isNothing(value)) {
       return {
         _attributes: {

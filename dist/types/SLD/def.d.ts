@@ -243,7 +243,7 @@ export interface Transformation {
 export declare type Functions = FunctionItem[];
 export interface FunctionItem {
     _attributes?: {
-        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid' | 'labelPoint' | 'collectGeometries' | 'queryCollection';
+        name: 'vec:Heatmap' | 'parameter' | 'env' | 'centroid' | 'labelPoint' | 'collectGeometries' | 'queryCollection' | 'vec:PointStacker';
     };
     PropertyName?: Text;
     Function?: FunctionItem | Functions;

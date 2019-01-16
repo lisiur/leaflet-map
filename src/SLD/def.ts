@@ -312,6 +312,7 @@ export interface FunctionItem {
       | 'labelPoint'
       | 'collectGeometries'
       | 'queryCollection'
+      | 'vec:PointStacker'
   }
   PropertyName?: Text
   Function?: FunctionItem | Functions

@@ -226,7 +226,7 @@ export default class TileLayer implements ILayer {
         this.draw({ showGrid: this.showGridFlag })
       }
     } else {
-      this.destroy()
+      this.clearLayers()
     }
   }
 

@@ -10,11 +10,13 @@ import {
   Transformation,
   Ref,
   RANGE_TYPE,
+  PointSymbolizer,
 } from './def'
-import { isNothing } from '../utils'
+import { isNothing, lighten } from '../utils'
 import RasterStyles, { RasterStylesConfig } from './RasterStyles'
 
 const DEFAULT_BUBBLE_FILL_OPACITY = 0.6
+const CLUSTER_LEVELS = 4
 export interface PointStylesConfig extends RasterStylesConfig {
   renderType:
     | 'single'
@@ -35,6 +37,8 @@ export interface PointStylesConfig extends RasterStylesConfig {
   /** bubble 大小渲染方式 */
   bubbleSizeType: 'prop' | 'range'
   bubbleSizes: number[]
+  /** 总数 - 聚合需要 */
+  total: number
 }
 
 export default class PointStyles extends RasterStyles {
@@ -79,7 +83,7 @@ export default class PointStyles extends RasterStyles {
         return this.getRankRenderRule(stylesCfg)
       }
       case 'cluster': {
-        // TODO
+        return this.getClusterRenderRule(stylesCfg)
       }
     }
   }
@@ -88,6 +92,29 @@ export default class PointStyles extends RasterStyles {
   ): Transformation | null {
     if (stylesCfg.renderType === 'heat') {
       return super.getTransformation(stylesCfg)
+    } else if (stylesCfg.renderType === 'cluster') {
+      return {
+        Function: [
+          {
+            _attributes: {
+              name: 'vec:PointStacker',
+            },
+            Function: [
+              super.getParameterFunction('data'),
+              super.getParameterFunction('cellSize', 30),
+              super.getParameterFunction('outputBBOX', null, [
+                super.getEnvFunction('wms_bbox'),
+              ]),
+              super.getParameterFunction('outputWidth', null, [
+                super.getEnvFunction('wms_width'),
+              ]),
+              super.getParameterFunction('outputHeight', null, [
+                super.getEnvFunction('wms_height'),
+              ]),
+            ],
+          },
+        ],
+      }
     } else {
       return null
     }
@@ -392,6 +419,34 @@ export default class PointStyles extends RasterStyles {
     })
   }
 
+  private getClusterRenderRule(stylesCfg: PointStylesConfig): Rule {
+    return [
+      {
+        Filter: {
+          PropertyIsLessThanOrEqualTo: {
+            PropertyName: {
+              _text: 'count',
+            },
+            Literal: {
+              _text: '1',
+            },
+          },
+        },
+        PointSymbolizer: [
+          this.getPointSymbolizerItemUsingOnlineResource(
+            stylesCfg.iconUrl,
+            stylesCfg.fill,
+            stylesCfg.iconSize
+          ),
+        ],
+      },
+      ...this.getClusterPointRules({
+        fill: stylesCfg.fill,
+        total: stylesCfg.total,
+      }),
+    ]
+  }
+
   private colorPropXSizeProp(
     colorPropName: string,
     propColorRefs: PropColorRefs,
@@ -593,5 +648,66 @@ export default class PointStyles extends RasterStyles {
         },
       },
     }
+  }
+
+  private getClusterPointRules(params: { fill: string; total: number }): Rule {
+    return new Array(CLUSTER_LEVELS)
+      .map((level) => {
+        const min = (params.total / CLUSTER_LEVELS) * level
+        const max = (params.total / CLUSTER_LEVELS) * level + 1
+        return [min, max]
+      })
+      .map(([min, max]) => {
+        return {
+          Filter: {
+            PropertyIsBetween: {
+              PropertyName: {
+                _text: 'count',
+              },
+              LowerBoundary: {
+                Literal: {
+                  _text: min,
+                },
+              },
+              UpperBoundary: {
+                Literal: {
+                  _text: max,
+                },
+              },
+            },
+          },
+          PointSymbolizer: this.getClusterPointSymbolizer({
+            fill: params.fill,
+            total: params.total,
+            count: (max + min) / 2,
+          }),
+        }
+      })
+  }
+
+  private getClusterPointSymbolizer(params: {
+    fill: string
+    total: number
+    count: number
+  }): PointSymbolizer {
+    const length = params.total
+    const count = params.count
+    const step = length / CLUSTER_LEVELS
+    const scaleStep = (1 - 0.75) / CLUSTER_LEVELS
+    const scale = (Math.floor((count - 1) / step) + 1) * scaleStep + 0.75
+    return [
+      this.getPointSymbolizerItemUsingMark({
+        name: 'circle',
+        fill: lighten(params.fill),
+        fillOpacity: 0.7,
+        size: 50 * scale,
+      }),
+      this.getPointSymbolizerItemUsingMark({
+        name: 'circle',
+        fill: params.fill,
+        fillOpacity: 0.8,
+        size: 32 * scale,
+      }),
+    ]
   }
 }
