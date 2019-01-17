@@ -101,7 +101,8 @@ export default class PointStyles extends RasterStyles {
             },
             Function: [
               super.getParameterFunction('data'),
-              super.getParameterFunction('cellSize', 30),
+              super.getParameterFunction('preserveLocation', 'Superimposed'),
+              super.getParameterFunction('cellSize', 120),
               super.getParameterFunction('outputBBOX', null, [
                 super.getEnvFunction('wms_bbox'),
               ]),
@@ -651,13 +652,14 @@ export default class PointStyles extends RasterStyles {
   }
 
   private getClusterPointRules(params: { fill: string; total: number }): Rule {
-    return new Array(CLUSTER_LEVELS)
-      .map((level) => {
-        const min = (params.total / CLUSTER_LEVELS) * level
-        const max = (params.total / CLUSTER_LEVELS) * level + 1
+    return Array.apply(null, { length: CLUSTER_LEVELS })
+      .map(Number.call, Number)
+      .map((level: number) => {
+        const min = (params.total / CLUSTER_LEVELS) * level + 2
+        const max = (params.total / CLUSTER_LEVELS) * (level + 1) + 2
         return [min, max]
       })
-      .map(([min, max]) => {
+      .map(([min, max]: [number, number]) => {
         return {
           Filter: {
             PropertyIsBetween: {
@@ -681,6 +683,47 @@ export default class PointStyles extends RasterStyles {
             total: params.total,
             count: (max + min) / 2,
           }),
+          TextSymbolizer: [
+            {
+              Label: {
+                PropertyName: {
+                  _text: 'count',
+                },
+              },
+              Font: {
+                CssParameter: [
+                  {
+                    _attributes: {
+                      name: 'font-weight',
+                    },
+                    _text: 'bold',
+                  },
+                ],
+              },
+              LabelPlacement: {
+                PointPlacement: {
+                  AnchorPoint: {
+                    AnchorPointX: {
+                      _text: 0.5,
+                    },
+                    AnchorPointY: {
+                      _text: 0.8,
+                    },
+                  },
+                },
+              },
+              Fill: {
+                CssParameter: [
+                  {
+                    _attributes: {
+                      name: 'fill',
+                    },
+                    _text: '#FFFFFF',
+                  },
+                ],
+              },
+            },
+          ],
         }
       })
   }
