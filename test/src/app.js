@@ -1,7 +1,7 @@
 // @ts-ignore
 // import leafletMap from '../../../leaflet-layer'
 // import { PointStyles, RasterStyles } from 'leaflet-layer'
-// import { StandardGrid, WfsCql } from 'leaflet-layer'
+import { StandardGrid, WfsCql } from 'leaflet-layer'
 const convert = require('xml-js')
 
 // @ts-ignore

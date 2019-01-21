@@ -464,7 +464,7 @@ export default class TileLayer implements ILayer {
       if (this.options.getLayers) {
         this.layers = await this.options.getLayers(this.getData())
       } else {
-        console.warn('[TileLayer.getBounds] wms.config.layers is null')
+        // console.warn('[TileLayer.getBounds] wms.config.layers is null')
         return null
       }
     }
