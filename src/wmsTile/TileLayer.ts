@@ -390,17 +390,39 @@ export default class TileLayer implements ILayer {
     return this.options.zIndex
   }
 
+  public handleClick(e: L.LeafletMouseEvent, data: any) {
+    if (this.popup) {
+      this.popup.remove()
+    }
+    if (data.features.length > 0) {
+      if (isNull(this.popupProp)) {
+        return
+      }
+      this.popupData = data.features[0].properties
+      const popupContent = this.getPopupContent()
+      if (isNull(popupContent)) {
+        return
+      }
+      this.popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent)
+        .openOn(this.map)
+    }
+  }
+
   /**
    * 获取鼠标下的图层数据信息
    * @param e event
    */
   public async getFeatureInfo(e: L.LeafletMouseEvent) {
+    const cqlFilter = await this.options.getCqlFilter(this.getData())
     const res = await getFeatureInfo({
       map: this.map,
       latlng: e.latlng,
       wmsURL: WMS_URL,
       layers: this.layers,
       styles: this.styles,
+      cql_filter: cqlFilter,
     })
     return {
       features: res.features,
@@ -577,8 +599,8 @@ export default class TileLayer implements ILayer {
    */
   private registerEvents() {
     this.eventHandlers = [
-      ['single-contextmenu', this.contextmenuHandler], // single-contextmenu 避免在 layer 上触发 contextmenu，在 map 上触发
-      ['click', this.clickHandler],
+      ['single-contextmenu', this.contextmenuHandler], // single-contextmenu 避免在 layer 上触发 contextmenu，由业务 map 触发
+      ['single-click', this.clickHandler], // single-click 避免在 layer 上触发 click，由业务 map 处理
       ['zoom', debounce(this.zoomHandler, 200)],
       ['moveend', debounce(this.moveHandler, 200)],
     ]

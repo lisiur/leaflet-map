@@ -101,6 +101,7 @@ export default class TileLayer implements ILayer {
     _cluster(dataList: DataListItem[], color?: string): void;
     setZIndex(zIndex: number): void;
     getZIndex(): number;
+    handleClick(e: L.LeafletMouseEvent, data: any): void;
     /**
      * 获取鼠标下的图层数据信息
      * @param e event

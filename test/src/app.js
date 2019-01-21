@@ -1,7 +1,7 @@
 // @ts-ignore
 // import leafletMap from '../../../leaflet-layer'
 // import { PointStyles, RasterStyles } from 'leaflet-layer'
-import { StandardGrid, WfsCql } from 'leaflet-layer'
+// import { StandardGrid, WfsCql } from 'leaflet-layer'
 const convert = require('xml-js')
 
 // @ts-ignore
@@ -1901,4 +1901,12 @@ function wfsXML() {
   console.log(xml.toXMLStr())
 }
 
-wfsXML()
+L.polygon([
+  [
+    [31.311381, 121.80465],
+    [31.311381, 121.866076],
+    [31.363846, 121.866076],
+    [31.363846, 121.80465],
+    [31.311381, 121.80465],
+  ],
+]).addTo(map)

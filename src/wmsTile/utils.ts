@@ -1,5 +1,6 @@
 import * as convert from 'xml-js'
 import { GeometryObject } from 'typings/geojson'
+import { isNothing } from '../utils'
 
 interface FeatureInfo {
   type: 'FeatureCollection'
@@ -24,6 +25,7 @@ export interface GetFeatureInfoParams extends L.WMSOptions {
   map: L.Map
   latlng: L.LatLng
   wmsURL: string
+  cql_filter: string
 }
 
 export async function getFeatureInfo(
@@ -55,7 +57,7 @@ export async function getCapabilities(wmsURL: string) {
 }
 
 function getFeatureInfoUrl(options: GetFeatureInfoParams) {
-  const { wmsURL, map, latlng, layers, styles } = options
+  const { wmsURL, map, latlng, layers, styles, cql_filter } = options
   const point = map.latLngToContainerPoint(latlng)
   const size = map.getSize()
   const params = {
@@ -72,6 +74,9 @@ function getFeatureInfoUrl(options: GetFeatureInfoParams) {
     x: Math.round(point.x),
     y: Math.round(point.y),
     info_format: 'application/json',
+  } as any
+  if (!isNothing(cql_filter)) {
+    params.cql_filter = cql_filter
   }
   return wmsURL + L.Util.getParamString(params, wmsURL)
 }

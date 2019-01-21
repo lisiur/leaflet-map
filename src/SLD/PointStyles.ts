@@ -652,8 +652,8 @@ export default class PointStyles extends RasterStyles {
   }
 
   private getClusterPointRules(params: { fill: string; total: number }): Rule {
-    return Array.apply(null, { length: CLUSTER_LEVELS })
-      .map(Number.call, Number)
+    // return Array.apply(null, { length: CLUSTER_LEVELS }).map(Number.call, Number)
+    return [...Array(CLUSTER_LEVELS).keys()]
       .map((level: number) => {
         const min = (params.total / CLUSTER_LEVELS) * level + 2
         const max = (params.total / CLUSTER_LEVELS) * (level + 1) + 2
@@ -724,7 +724,7 @@ export default class PointStyles extends RasterStyles {
               },
             },
           ],
-        }
+        } as RuleItem
       })
   }
 

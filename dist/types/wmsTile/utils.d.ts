@@ -22,6 +22,7 @@ export interface GetFeatureInfoParams extends L.WMSOptions {
     map: L.Map;
     latlng: L.LatLng;
     wmsURL: string;
+    cql_filter: string;
 }
 export declare function getFeatureInfo(options: GetFeatureInfoParams): Promise<FeatureInfo>;
 export declare function getCapabilities(wmsURL: string): Promise<any>;
