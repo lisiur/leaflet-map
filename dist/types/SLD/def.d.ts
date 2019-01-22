@@ -1,7 +1,8 @@
 export interface StylesConfig {
-    renderType?: 'single' | 'classified' | 'segmented' | 'rank' | string;
+    renderType?: 'single' | 'classified' | 'segmented' | 'rank' | 'top' | string;
     stroke?: string;
     strokeWidth?: number;
+    strokeDasharray?: string;
     fill?: string;
     fillOpacity?: number;
     fontFamily?: string;

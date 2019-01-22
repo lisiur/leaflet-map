@@ -1,4 +1,5 @@
 import { ILayer, ChannelFunc, DataListItem } from '../definitions';
+import { RankOptions } from '../rankLayer/RankLayer';
 declare type GetStyles = (options: any) => Promise<string>;
 declare type GetLayers = (options: any) => Promise<string>;
 declare type GetEnvParams = (options: any) => Promise<object>;
@@ -25,27 +26,31 @@ export default class TileLayer implements ILayer {
     private envParams;
     private cqlFilter;
     private gridLayer;
-    private clusterLayer;
     private superCluster;
-    private clusterMarkersLayer;
-    private clusterFeatureCollectionFeatures;
     private isCluster;
+    private clusterLayer;
+    private clusterFeatureCollectionFeatures;
     private clusterLayerDataList;
     private clusterColor;
+    private isRank;
+    private rankLayer;
+    private rankOptions;
+    private rankLayerDataList;
     private showGridFlag;
     private eventHandlers;
     private worker;
     constructor(map: L.Map, options: WmsTileOptions, channelFunc: ChannelFunc, data: any);
     /**
-     * 绘制 layer
+     * 绘制 geoserver 渲染的图层
      * @param options
      */
     draw(options?: {
         showGrid: boolean;
     }): Promise<void>;
+    /** 清除所有图层 */
     clearLayers(): void;
     /**
-     * 销毁 layer
+     * 销毁所有图层，包括事件
      */
     destroy(): void;
     /**
@@ -92,15 +97,20 @@ export default class TileLayer implements ILayer {
      * 移除全球网格
      */
     hideGrid(): void;
-    _cluster_(dataList: DataListItem[], color?: string): void;
+    /**
+     * top 排名
+     */
+    rank(dataList: DataListItem[], options?: RankOptions): void;
+    getRankDataList(): DataListItem[];
+    _cluster(dataList: DataListItem[], color?: string): void;
     /**
      * 聚合
-     * @deprecated
      * @param dataList 包含 geometry 信息的数据集
      */
-    _cluster(dataList: DataListItem[], color?: string): void;
+    cluster(dataList: DataListItem[], color?: string): void;
     setZIndex(zIndex: number): void;
     getZIndex(): number;
+    isTileLayer(): boolean;
     handleClick(e: L.LeafletMouseEvent, data: any): void;
     /**
      * 获取鼠标下的图层数据信息
@@ -144,8 +154,12 @@ export default class TileLayer implements ILayer {
      * 注册事件监听
      */
     private registerEvents;
+    private initClusterEvents;
+    private destroyClusterEvents;
     /**
-     * 添加事件监听
+     * 添加全局事件监听
+     * 在 clear layer 时不需要 destroy
+     * 只有在 destroy layer 时才需要 destroy
      */
     private initEvents;
     /**

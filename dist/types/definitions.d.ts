@@ -1,5 +1,6 @@
+export declare type DataList = DataListItem[];
 export interface DataListItem {
-    geometry: GeoJSON.GeoJsonObject;
+    geometry: GeoJSON.GeometryObject;
     [prop: string]: any;
 }
 export interface ILayerConstructor {

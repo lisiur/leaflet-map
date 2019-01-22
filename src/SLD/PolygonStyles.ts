@@ -33,6 +33,9 @@ export default class PolygonStyles extends RasterStyles {
       case 'rank': {
         return this.getRankRenderRule(stylesCfg)
       }
+      case 'top': {
+        return this.getSingleRenderRule(stylesCfg)
+      }
     }
   }
   protected getTransformation(_: StylesConfig): Transformation | null {

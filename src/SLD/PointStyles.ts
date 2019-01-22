@@ -26,6 +26,7 @@ export interface PointStylesConfig extends RasterStylesConfig {
     | 'heat'
     | 'bubble'
     | 'rank'
+    | 'top'
   iconUrl: string
   iconSize: number
   bubbleColorProp: string
@@ -81,6 +82,9 @@ export default class PointStyles extends RasterStyles {
       }
       case 'rank': {
         return this.getRankRenderRule(stylesCfg)
+      }
+      case 'top': {
+        return this.getSingleRenderRule(stylesCfg)
       }
       case 'cluster': {
         return this.getClusterRenderRule(stylesCfg)

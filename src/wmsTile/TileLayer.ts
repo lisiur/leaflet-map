@@ -2,9 +2,9 @@ import { ILayer, ChannelFunc, DataListItem } from '../definitions'
 import { getFeatureInfo, getCapabilities } from './utils'
 import { isUndefined, isNull, isNothing, debounce, lighten } from '../utils'
 import GridLayer from '../grid/GridLayer'
-import MarkersLayer from '../marker/MarkersLayer'
 import Supercluster from 'supercluster'
 import { FeatureCollection, GeoJsonObject } from 'typings/geojson'
+import { RankOptions, RankLayer } from '../rankLayer/RankLayer'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
@@ -42,13 +42,19 @@ export default class TileLayer implements ILayer {
   private envParams: object
   private cqlFilter: string
   private gridLayer: GridLayer
-  private clusterLayer: MarkersLayer
   private superCluster: supercluster.Supercluster
-  private clusterMarkersLayer: L.GeoJSON<any>
-  private clusterFeatureCollectionFeatures: FeatureCollection['features']
+
   private isCluster: boolean
+  private clusterLayer: L.GeoJSON<any>
+  private clusterFeatureCollectionFeatures: FeatureCollection['features']
   private clusterLayerDataList: DataListItem[]
   private clusterColor: string
+
+  private isRank: boolean
+  private rankLayer: RankLayer
+  private rankOptions: RankOptions
+  private rankLayerDataList: DataListItem[]
+
   private showGridFlag: boolean
   private eventHandlers: any[]
   private worker: Worker
@@ -72,11 +78,12 @@ export default class TileLayer implements ILayer {
     this.gridLayer = null
     this.envParams = null
     this.cqlFilter = null
+
     this.isCluster = false
     this.clusterColor = '#38f'
     this.superCluster = null
     this.clusterFeatureCollectionFeatures = null
-    this.clusterMarkersLayer = L.geoJSON(null, {
+    this.clusterLayer = L.geoJSON(null, {
       pointToLayer: this.createClusterIcon.bind(this),
     })
     // @ts-ignore
@@ -85,11 +92,17 @@ export default class TileLayer implements ILayer {
     } else {
       this.worker = null
     }
+
+    this.isRank = false
+    this.rankLayer = null
+    this.rankOptions = null
+
     this.registerEvents()
+    this.initEvents()
   }
 
   /**
-   * 绘制 layer
+   * 绘制 geoserver 渲染的图层
    * @param options
    */
   public async draw(options?: { showGrid: boolean }) {
@@ -98,6 +111,7 @@ export default class TileLayer implements ILayer {
     }
 
     this.isCluster = false
+    this.isRank = false
 
     this.showGridFlag = !!(options && options.showGrid)
     if (this.showGridFlag) {
@@ -106,22 +120,15 @@ export default class TileLayer implements ILayer {
       // this.hideGrid()
     }
 
-    if (this.clusterLayer) {
-      this.clusterLayer.destroy()
-    }
-    if (this.map.hasLayer(this.clusterMarkersLayer)) {
-      this.clusterMarkersLayer.remove()
-    }
-    if (this.tileLayer) {
-      this.tileLayer.remove()
-    }
-    this.initEvents()
+    this.clearLayers()
+
     this.tileLayer = await this.getLayer()
     if (this.tileLayer) {
       this.tileLayer.addTo(this.map)
     }
   }
 
+  /** 清除所有图层 */
   public clearLayers() {
     if (this.map.hasLayer(this.tileLayer)) {
       this.tileLayer.remove()
@@ -132,33 +139,19 @@ export default class TileLayer implements ILayer {
     if (this.popup) {
       this.popup.remove()
     }
-    if (this.clusterLayer) {
-      this.clusterLayer.destroy()
+    if (this.map.hasLayer(this.clusterLayer)) {
+      this.clusterLayer.remove()
     }
-    if (this.map.hasLayer(this.clusterMarkersLayer)) {
-      this.clusterMarkersLayer.remove()
+    if (this.rankLayer && this.rankLayer.inMap()) {
+      this.rankLayer.remove()
     }
   }
 
   /**
-   * 销毁 layer
+   * 销毁所有图层，包括事件
    */
-  public destroy(): void {
-    if (this.tileLayer) {
-      this.tileLayer.remove()
-    }
-    if (this.gridLayer) {
-      this.gridLayer.remove()
-    }
-    if (this.popup) {
-      this.popup.remove()
-    }
-    if (this.clusterLayer) {
-      this.clusterLayer.destroy()
-    }
-    if (this.clusterMarkersLayer) {
-      this.clusterMarkersLayer.remove()
-    }
+  public destroy() {
+    this.clearLayers()
     this.destroyEvents()
   }
 
@@ -192,9 +185,8 @@ export default class TileLayer implements ILayer {
    * 将地图缩放到合适比例
    */
   public async fitBounds() {
-    // temp
-    if (this.clusterLayer) {
-      this.clusterLayer.fitBounds()
+    if (this.isRank) {
+      this.rankLayer.fitBounds()
       return
     }
 
@@ -209,6 +201,10 @@ export default class TileLayer implements ILayer {
    * @param fresh 是否强制刷新数据
    */
   public async getBounds() {
+    if (this.isRank) {
+      return this.rankLayer.getBounds()
+    }
+
     // TODO: 获取所有 layer bounds 的并集
     // NOTE: 目前只获取第一个
     const layers = await this.options.getLayers(this.getData())
@@ -221,7 +217,9 @@ export default class TileLayer implements ILayer {
     this.visible = visible
     if (this.visible) {
       if (this.isCluster) {
-        this._cluster(this.clusterLayerDataList)
+        this.cluster(this.clusterLayerDataList)
+      } else if (this.isRank) {
+        this.rank(this.rankLayerDataList)
       } else {
         this.draw({ showGrid: this.showGridFlag })
       }
@@ -285,7 +283,35 @@ export default class TileLayer implements ILayer {
     }
   }
 
-  public _cluster_(dataList: DataListItem[], color?: string) {
+  /**
+   * top 排名
+   */
+  public rank(dataList: DataListItem[], options?: RankOptions) {
+    this.isRank = true
+    this.rankOptions = Object.assign({}, this.rankOptions, options)
+    this.rankLayerDataList = dataList
+
+    // 清除老图层
+    this.clearLayers()
+
+    // 构建新图层
+    const self = this
+    this.rankLayer = new RankLayer(
+      this.map,
+      this.rankLayerDataList,
+      this.rankOptions,
+      {
+        click: (e: any) => self.clickHandler(e),
+        contextmenu: (e: any) => self.contextmenuHandler(e),
+      }
+    )
+  }
+
+  public getRankDataList() {
+    return this.rankLayerDataList
+  }
+
+  public _cluster(dataList: DataListItem[], color?: string) {
     this.clusterColor = color || this.clusterColor
     this.clusterLayerDataList = dataList
     this.isCluster = true
@@ -293,7 +319,7 @@ export default class TileLayer implements ILayer {
       this.tileLayer.remove()
     }
     // 已经聚合
-    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+    if (this.map.hasLayer(this.clusterLayer)) {
       this.updateCluster()
       return
     }
@@ -314,14 +340,14 @@ export default class TileLayer implements ILayer {
         nodeSize: 8,
       }).load(this.clusterFeatureCollectionFeatures)
     }
-    this.clusterMarkersLayer.addTo(this.map)
-    this.clusterMarkersLayer.on('contextmenu', (e: any) => {
+    this.clusterLayer.addTo(this.map)
+    this.clusterLayer.on('contextmenu', (e: any) => {
       const isCluster = e.layer.feature.properties.cluster
       if (!isCluster) {
         this.contextmenuHandler(e)
       }
     })
-    this.clusterMarkersLayer.on('click', (e: any) => {
+    this.clusterLayer.on('click', (e: any) => {
       const clusterId = e.layer.feature.properties.cluster_id
       if (clusterId) {
         if (this.worker) {
@@ -348,32 +374,10 @@ export default class TileLayer implements ILayer {
 
   /**
    * 聚合
-   * @deprecated
    * @param dataList 包含 geometry 信息的数据集
    */
-  public _cluster(dataList: DataListItem[], color?: string) {
-    this._cluster_(dataList, color)
-    // this.clusterLayerDataList = dataList
-    // this.clusterColor = color || this.clusterColor
-    // this.isCluster = true
-    // if (this.tileLayer) {
-    //   this.tileLayer.remove()
-    // }
-    // const clusterLayer = new MarkersLayer(
-    //   this.map,
-    //   dataList,
-    //   {
-    //     renderType: 'cluster',
-    //     iconType: 'unicode',
-    //     iconUnicode: '&#xe655',
-    //     renderClusterColorType: 'single',
-    //     color: color || this.clusterColor,
-    //   },
-    //   this.channelFunc
-    // )
-    // // clusterLayer.draw()
-    // this.clusterLayer = clusterLayer
-    // return clusterLayer
+  public cluster(dataList: DataListItem[], color?: string) {
+    this._cluster(dataList, color)
   }
 
   public setZIndex(zIndex: number) {
@@ -381,13 +385,17 @@ export default class TileLayer implements ILayer {
     if (this.tileLayer) {
       this.tileLayer.setZIndex(zIndex)
     }
-    if (this.clusterLayer) {
-      this.clusterLayer.setZIndex(zIndex)
+    if (this.isRank) {
+      this.rankLayer.setZIndex(zIndex)
     }
   }
 
   public getZIndex() {
     return this.options.zIndex
+  }
+
+  public isTileLayer() {
+    return !(this.isCluster || this.isRank)
   }
 
   public handleClick(e: L.LeafletMouseEvent, data: any) {
@@ -431,7 +439,7 @@ export default class TileLayer implements ILayer {
   }
 
   private updateCluster() {
-    if (!this.map.hasLayer(this.clusterMarkersLayer)) {
+    if (!this.map.hasLayer(this.clusterLayer)) {
       return
     }
     const bounds = this.map.getBounds()
@@ -449,8 +457,8 @@ export default class TileLayer implements ILayer {
         bbox,
         zoom
       ) as unknown) as GeoJsonObject
-      this.clusterMarkersLayer.clearLayers()
-      this.clusterMarkersLayer.addData(data)
+      this.clusterLayer.clearLayers()
+      this.clusterLayer.addData(data)
     }
     return
   }
@@ -528,12 +536,12 @@ export default class TileLayer implements ILayer {
   }
 
   private zoomHandler() {
-    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+    if (this.isCluster && this.map.hasLayer(this.clusterLayer)) {
       this.updateCluster()
     }
   }
   private moveHandler() {
-    if (this.map.hasLayer(this.clusterMarkersLayer)) {
+    if (this.isCluster && this.map.hasLayer(this.clusterLayer)) {
       this.updateCluster()
     }
   }
@@ -543,7 +551,7 @@ export default class TileLayer implements ILayer {
    * @param e event
    */
   private async clickHandler(e: L.LeafletMouseEvent) {
-    // L.DomEvent.stopPropagation(e.originalEvent)
+    L.DomEvent.stopPropagation(e.originalEvent)
     const data = await this.getFeatureInfo(e)
     if (this.popup) {
       this.popup.remove()
@@ -599,29 +607,41 @@ export default class TileLayer implements ILayer {
    */
   private registerEvents() {
     this.eventHandlers = [
-      ['single-contextmenu', this.contextmenuHandler], // single-contextmenu 避免在 layer 上触发 contextmenu，由业务 map 触发
-      ['single-click', this.clickHandler], // single-click 避免在 layer 上触发 click，由业务 map 处理
+      // ['single-contextmenu', this.contextmenuHandler], // single-contextmenu 避免在 layer 上触发 contextmenu，由业务 map 触发
+      // ['single-click', this.clickHandler], // single-click 避免在 layer 上触发 click，由业务 map 处理
       ['zoom', debounce(this.zoomHandler, 200)],
       ['moveend', debounce(this.moveHandler, 200)],
     ]
+  }
+
+  private initClusterEvents() {
     if (this.worker) {
       this.worker.onmessage = (e) => {
         if (e.data.action === 'draw') {
-          this.clusterMarkersLayer.clearLayers()
-          this.clusterMarkersLayer.addData(e.data.data)
+          this.clusterLayer.clearLayers()
+          this.clusterLayer.addData(e.data.data)
         } else if (e.data.action === 'zoom') {
           this.map.setView(e.data.center, e.data.expansionZoom)
         }
       }
     }
   }
+
+  private destroyClusterEvents() {
+    if (this.worker) {
+      this.worker.terminate()
+    }
+  }
   /**
-   * 添加事件监听
+   * 添加全局事件监听
+   * 在 clear layer 时不需要 destroy
+   * 只有在 destroy layer 时才需要 destroy
    */
   private initEvents() {
     this.eventHandlers.forEach(([eventName, handler]) => {
       this.map.on(eventName, handler, this)
     })
+    this.initClusterEvents()
   }
   /**
    * 移除事件监听
@@ -630,9 +650,7 @@ export default class TileLayer implements ILayer {
     this.eventHandlers.forEach(([eventName, handler]) => {
       this.map.off(eventName, handler, this)
     })
-    if (this.worker) {
-      this.worker.terminate()
-    }
+    this.destroyClusterEvents()
   }
 
   private mapDataListItemToGeojsonFeature(dataItem: DataListItem) {

@@ -1,7 +1,7 @@
 import { Rule, RangeColorRefs, Transformation, Ref } from './def';
 import RasterStyles, { RasterStylesConfig } from './RasterStyles';
 export interface PointStylesConfig extends RasterStylesConfig {
-    renderType: 'single' | 'segmented' | 'classified' | 'cluster' | 'heat' | 'bubble' | 'rank';
+    renderType: 'single' | 'segmented' | 'classified' | 'cluster' | 'heat' | 'bubble' | 'rank' | 'top';
     iconUrl: string;
     iconSize: number;
     bubbleColorProp: string;
