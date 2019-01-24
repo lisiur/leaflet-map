@@ -126,7 +126,7 @@ export class RankLayer {
     const rank = this.dataList.findIndex((dataItem) => data === dataItem) + 1
     return L.divIcon({
       className: 'cluster-icon',
-      iconAnchor: [18, 9],
+      iconAnchor: [18, 18],
       html: `
         <div
           style="
@@ -175,7 +175,7 @@ export class RankLayer {
             <span
               style="
                 position: relative;
-                top: -4px;
+                top: -6px;
               "
               >${rank}</span>
           </span>

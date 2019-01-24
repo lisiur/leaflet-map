@@ -100,7 +100,8 @@ export default class TileLayer implements ILayer {
     /**
      * top 排名
      */
-    rank(dataList: DataListItem[], options?: RankOptions): void;
+    rank(dataList: DataListItem[], options?: RankOptions): Promise<void>;
+    markRank(): void;
     getRankDataList(): DataListItem[];
     _cluster(dataList: DataListItem[], color?: string): void;
     /**
@@ -111,6 +112,8 @@ export default class TileLayer implements ILayer {
     setZIndex(zIndex: number): void;
     getZIndex(): number;
     isTileLayer(): boolean;
+    hasTileLayer(): boolean;
+    emit(event: string, ...params: any[]): void;
     handleClick(e: L.LeafletMouseEvent, data: any): void;
     /**
      * 获取鼠标下的图层数据信息

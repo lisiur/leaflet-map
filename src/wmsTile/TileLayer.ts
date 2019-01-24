@@ -286,7 +286,7 @@ export default class TileLayer implements ILayer {
   /**
    * top 排名
    */
-  public rank(dataList: DataListItem[], options?: RankOptions) {
+  public async rank(dataList: DataListItem[], options?: RankOptions) {
     this.isRank = true
     this.rankOptions = Object.assign({}, this.rankOptions, options)
     this.rankLayerDataList = dataList
@@ -295,14 +295,25 @@ export default class TileLayer implements ILayer {
     this.clearLayers()
 
     // 构建新图层
+    this.markRank()
+    this.tileLayer = await this.getLayer()
+    if (this.tileLayer) {
+      this.tileLayer.addTo(this.map)
+    }
+  }
+
+  public markRank() {
+    if (this.rankLayer && this.rankLayer.inMap()) {
+      this.rankLayer.remove()
+    }
     const self = this
     this.rankLayer = new RankLayer(
       this.map,
       this.rankLayerDataList,
       this.rankOptions,
       {
-        click: (e: any) => self.clickHandler(e),
-        contextmenu: (e: any) => self.contextmenuHandler(e),
+        click: self.clickHandler.bind(self),
+        contextmenu: self.contextmenuHandler.bind(self),
       }
     )
   }
@@ -396,6 +407,14 @@ export default class TileLayer implements ILayer {
 
   public isTileLayer() {
     return !(this.isCluster || this.isRank)
+  }
+
+  public hasTileLayer() {
+    return !this.isCluster
+  }
+
+  public emit(event: string, ...params: any[]) {
+    this.channelFunc(event, ...params)
   }
 
   public handleClick(e: L.LeafletMouseEvent, data: any) {
@@ -539,6 +558,9 @@ export default class TileLayer implements ILayer {
     if (this.isCluster && this.map.hasLayer(this.clusterLayer)) {
       this.updateCluster()
     }
+    if (this.isRank) {
+      this.markRank()
+    }
   }
   private moveHandler() {
     if (this.isCluster && this.map.hasLayer(this.clusterLayer)) {
@@ -557,7 +579,7 @@ export default class TileLayer implements ILayer {
       this.popup.remove()
     }
     if (data.features.length > 0) {
-      this.channelFunc('click', data)
+      this.channelFunc('click', data, this)
       if (isNull(this.popupProp)) {
         return
       }
@@ -599,7 +621,7 @@ export default class TileLayer implements ILayer {
       this.popup.remove()
     }
     const data = await this.getFeatureInfo(e)
-    this.channelFunc('contextmenu', data)
+    this.channelFunc('contextmenu', data, this)
   }
 
   /**
