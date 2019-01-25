@@ -49,6 +49,8 @@ export default class PolygonStyles extends RasterStyles {
             this.getPolygonSymbolizerItem({
               stroke: stylesCfg.stroke,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
               fill: stylesCfg.fill,
               fillOpacity: stylesCfg.fillOpacity,
             }),
@@ -63,6 +65,8 @@ export default class PolygonStyles extends RasterStyles {
             this.getPolygonSymbolizerItem({
               stroke: stylesCfg.stroke,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
               fill: stylesCfg.fill,
               fillOpacity: stylesCfg.fillOpacity,
             }),
@@ -103,6 +107,8 @@ export default class PolygonStyles extends RasterStyles {
             this.getPolygonSymbolizerItem({
               stroke: ref.color,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
               fill: ref.color,
               fillOpacity: stylesCfg.fillOpacity,
             }),
@@ -143,6 +149,8 @@ export default class PolygonStyles extends RasterStyles {
             this.getPolygonSymbolizerItem({
               stroke: ref.color,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
               fill: ref.color,
               fillOpacity: stylesCfg.fillOpacity,
             }),
@@ -182,6 +190,8 @@ export default class PolygonStyles extends RasterStyles {
           this.getPolygonSymbolizerItem({
             stroke: ref.color,
             strokeWidth: stylesCfg.strokeWidth,
+            strokeOpacity: stylesCfg.strokeOpacity,
+            strokeDasharray: stylesCfg.strokeDasharray,
             fill: ref.color,
             fillOpacity: stylesCfg.fillOpacity,
           }),
@@ -197,22 +207,34 @@ export default class PolygonStyles extends RasterStyles {
 
   private getPolygonSymbolizerItem(options: {
     stroke: string
+    strokeDasharray: string
+    strokeOpacity: number
     strokeWidth: number
     fill: string
     fillOpacity: number
   }): PolygonSymbolizerItem {
+    let strokeCssParamter = this.getStrokeCssParameters({
+      stroke: options.stroke,
+      strokeWidth: options.strokeWidth,
+      strokeOpacity: options.strokeOpacity,
+    })
+    if (options.strokeDasharray && options.strokeDasharray !== '0') {
+      strokeCssParamter = this.getStrokeCssParameters({
+        stroke: options.stroke,
+        strokeWidth: options.strokeWidth,
+        strokeOpacity: options.strokeOpacity,
+        strokeDasharray: options.strokeDasharray,
+      })
+    }
     return {
       Fill: {
         CssParameter: this.getFillCssParameters({
           fill: options.fill,
-          fillOpacity: options.fillOpacity || 1,
+          fillOpacity: isNothing(options.fillOpacity) ? 1 : options.fillOpacity,
         } as StylesConfig),
       },
       Stroke: {
-        CssParameter: this.getStrokeCssParameters({
-          stroke: options.stroke,
-          strokeWidth: options.strokeWidth,
-        } as StylesConfig),
+        CssParameter: strokeCssParamter,
       },
     }
   }

@@ -95,7 +95,6 @@ export class RankLayer {
 
         // polygon.getCenter 需要 polygon 先添加到图层才能调用
         polygonLayers.forEach(layerGroup.addLayer, layerGroup)
-
         const markerLayers = this.dataList.map((data, index) => {
           const polygon = polygonLayers[index]
           const center = polygon.getCenter()
@@ -106,6 +105,9 @@ export class RankLayer {
           markerLayer.on('contextmenu', this.eventHandlers.contextmenu)
           return markerLayer
         })
+        // 将 polygonLayers 全部移除
+        // polygonLayers.forEach(layerGroup.removeLayer, layerGroup)
+
         markerLayers.forEach(layerGroup.addLayer, layerGroup)
         break
       }

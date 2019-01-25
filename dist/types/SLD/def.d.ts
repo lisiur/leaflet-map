@@ -3,6 +3,7 @@ export interface StylesConfig {
     stroke?: string;
     strokeWidth?: number;
     strokeDasharray?: string;
+    strokeOpacity?: number;
     fill?: string;
     fillOpacity?: number;
     fontFamily?: string;
