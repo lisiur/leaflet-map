@@ -286,7 +286,11 @@ export default class TileLayer implements ILayer {
   /**
    * top 排名
    */
-  public async rank(dataList: DataListItem[], options?: RankOptions) {
+  public async rank(
+    dataList: DataListItem[],
+    options?: RankOptions,
+    allDatas?: DataListItem[]
+  ) {
     if (!this.visible) {
       return
     }
@@ -299,9 +303,16 @@ export default class TileLayer implements ILayer {
 
     // 构建新图层
     this.markRank()
-    this.tileLayer = await this.getLayer()
-    if (this.tileLayer) {
-      this.tileLayer.addTo(this.map)
+    const isMarker = dataList[0].geometry.type === 'Point'
+    if (isMarker) {
+      // 点坐标展示聚合图层
+      this.cluster(allDatas, this.rankOptions.rankFill)
+    } else {
+      // 面展示 geoserver 渲染图
+      this.tileLayer = await this.getLayer()
+      if (this.tileLayer) {
+        this.tileLayer.addTo(this.map)
+      }
     }
   }
 

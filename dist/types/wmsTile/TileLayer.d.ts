@@ -100,7 +100,7 @@ export default class TileLayer implements ILayer {
     /**
      * top 排名
      */
-    rank(dataList: DataListItem[], options?: RankOptions): Promise<void>;
+    rank(dataList: DataListItem[], options?: RankOptions, allDatas?: DataListItem[]): Promise<void>;
     markRank(): void;
     getRankDataList(): DataListItem[];
     _cluster(dataList: DataListItem[], color?: string): void;

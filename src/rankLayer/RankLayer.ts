@@ -69,6 +69,7 @@ export default class RankLayer {
           const center = (layer as L.Marker).getLatLng()
           const markerLayer = new Marker(center, {
             icon: this.getRankMarkerIcon(data),
+            zIndexOffset: 500,
           })
           markerLayer.on('click', (e) => this.eventHandlers.click(e, data))
           markerLayer.on('contextmenu', (e) =>
