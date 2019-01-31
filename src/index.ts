@@ -18,6 +18,7 @@ import GridLayer from './grid/GridLayer'
 import Transform from './utils/transform'
 import StandardGrid from './standardGrid/grid'
 import WfsCql from './wfs/WfsCql'
+import RankLayer from './rankLayer/RankLayer'
 
 export {
   Marker,
@@ -40,4 +41,5 @@ export {
   Transform,
   StandardGrid,
   WfsCql,
+  RankLayer,
 }

@@ -4,7 +4,7 @@ import { isUndefined, isNull, isNothing, debounce, lighten } from '../utils'
 import GridLayer from '../grid/GridLayer'
 import Supercluster from 'supercluster'
 import { FeatureCollection, GeoJsonObject } from 'typings/geojson'
-import { RankOptions, RankLayer } from '../rankLayer/RankLayer'
+import RankLayer, { RankOptions } from '../rankLayer/RankLayer'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
@@ -287,6 +287,9 @@ export default class TileLayer implements ILayer {
    * top 排名
    */
   public async rank(dataList: DataListItem[], options?: RankOptions) {
+    if (!this.visible) {
+      return
+    }
     this.isRank = true
     this.rankOptions = Object.assign({}, this.rankOptions, options)
     this.rankLayerDataList = dataList
@@ -572,9 +575,19 @@ export default class TileLayer implements ILayer {
    * 点击事件处理
    * @param e event
    */
-  private async clickHandler(e: L.LeafletMouseEvent) {
+  private async clickHandler(e: L.LeafletMouseEvent, mockData?: any) {
     L.DomEvent.stopPropagation(e.originalEvent)
-    const data = await this.getFeatureInfo(e)
+    e.originalEvent.preventDefault()
+    e.originalEvent.stopPropagation()
+    let data = null
+    if (mockData) {
+      data = {
+        features: [{ properties: mockData }],
+        originalEvent: e,
+      }
+    } else {
+      data = await this.getFeatureInfo(e)
+    }
     if (this.popup) {
       this.popup.remove()
     }

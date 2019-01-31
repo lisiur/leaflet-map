@@ -4,7 +4,7 @@ export interface RankOptions {
     rankFill: string;
     rankIconUrl: string;
 }
-export declare class RankLayer {
+export default class RankLayer {
     private groupLayer;
     private map;
     private dataList;

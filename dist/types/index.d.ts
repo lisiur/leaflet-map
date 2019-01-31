@@ -18,4 +18,5 @@ import GridLayer from './grid/GridLayer';
 import Transform from './utils/transform';
 import StandardGrid from './standardGrid/grid';
 import WfsCql from './wfs/WfsCql';
-export { Marker, MarkersLayer, MarkersBufferLayer, Polyline, PolylinesLayer, PolylinesBufferLayer, Polygon, PolygonsLayer, GridsLayer, DynamicHeatLayer, WmsTile, PointStyles, LineStyles, PolygonStyles, RasterStyles, TileLayer, GridLayer, Transform, StandardGrid, WfsCql, };
+import RankLayer from './rankLayer/RankLayer';
+export { Marker, MarkersLayer, MarkersBufferLayer, Polyline, PolylinesLayer, PolylinesBufferLayer, Polygon, PolygonsLayer, GridsLayer, DynamicHeatLayer, WmsTile, PointStyles, LineStyles, PolygonStyles, RasterStyles, TileLayer, GridLayer, Transform, StandardGrid, WfsCql, RankLayer, };

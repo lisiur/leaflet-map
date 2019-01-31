@@ -8,7 +8,7 @@ export interface RankOptions {
   rankIconUrl: string
 }
 
-export class RankLayer {
+export default class RankLayer {
   private groupLayer: L.LayerGroup
   private map: L.Map
   private dataList: DataList
@@ -70,8 +70,10 @@ export class RankLayer {
           const markerLayer = new Marker(center, {
             icon: this.getRankMarkerIcon(data),
           })
-          markerLayer.on('click', this.eventHandlers.click)
-          markerLayer.on('contextmenu', this.eventHandlers.contextmenu)
+          markerLayer.on('click', (e) => this.eventHandlers.click(e, data))
+          markerLayer.on('contextmenu', (e) =>
+            this.eventHandlers.contextmenu(e, data)
+          )
           layerGroup.addLayer(markerLayer)
         })
         break
@@ -88,8 +90,14 @@ export class RankLayer {
             opacity: 0.6,
             color: darken(this.options.rankFill),
           })
-          polygonLayer.on('click', this.eventHandlers.click)
-          polygonLayer.on('contextmenu', this.eventHandlers.contextmenu)
+          polygonLayer.on(
+            'click',
+            (e) => this.eventHandlers.click(e, data),
+            this
+          )
+          polygonLayer.on('contextmenu', (e) =>
+            this.eventHandlers.contextmenu(e, data)
+          )
           return polygonLayer
         })
 
@@ -97,12 +105,14 @@ export class RankLayer {
         polygonLayers.forEach(layerGroup.addLayer, layerGroup)
         const markerLayers = this.dataList.map((data, index) => {
           const polygon = polygonLayers[index]
-          const center = polygon.getCenter()
+          const center = polygon.getBounds().getCenter()
           const markerLayer = new Marker(center, {
             icon: this.getRankMarkerIcon(data),
           })
           markerLayer.on('click', this.eventHandlers.click)
-          markerLayer.on('contextmenu', this.eventHandlers.contextmenu)
+          markerLayer.on('contextmenu', (e) =>
+            this.eventHandlers.contextmenu(e, data)
+          )
           return markerLayer
         })
         // 将 polygonLayers 全部移除

@@ -214,13 +214,13 @@ export default class PolygonStyles extends RasterStyles {
     fillOpacity: number
   }): PolygonSymbolizerItem {
     let strokeCssParamter = this.getStrokeCssParameters({
-      stroke: options.stroke,
+      stroke: this.stylesCfg.stroke,
       strokeWidth: options.strokeWidth,
       strokeOpacity: options.strokeOpacity,
     })
     if (options.strokeDasharray && options.strokeDasharray !== '0') {
       strokeCssParamter = this.getStrokeCssParameters({
-        stroke: options.stroke,
+        stroke: this.stylesCfg.stroke,
         strokeWidth: options.strokeWidth,
         strokeOpacity: options.strokeOpacity,
         strokeDasharray: options.strokeDasharray,
