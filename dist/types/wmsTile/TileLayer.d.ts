@@ -4,11 +4,13 @@ declare type GetStyles = (options: any) => Promise<string>;
 declare type GetLayers = (options: any) => Promise<string>;
 declare type GetEnvParams = (options: any) => Promise<object>;
 declare type GetCqlFilter = (options: any) => Promise<string>;
+declare type GetStylesConfig = () => any;
 export interface WmsTileOptions extends L.WMSOptions {
     getLayers?: GetLayers;
     getStyles?: GetStyles;
     getEnvParams?: GetEnvParams;
     getCqlFilter?: GetCqlFilter;
+    getStylesConfig?: GetStylesConfig;
 }
 export default class TileLayer implements ILayer {
     map: L.Map;
@@ -102,6 +104,11 @@ export default class TileLayer implements ILayer {
      */
     rank(dataList: DataListItem[], options?: RankOptions, allDatas?: DataListItem[]): Promise<void>;
     markRank(): void;
+    getRankRefs(): {
+        rankProp: any;
+        rankSort: any;
+        rankData: DataListItem[];
+    };
     getRankDataList(): DataListItem[];
     _cluster(dataList: DataListItem[], color?: string): void;
     /**

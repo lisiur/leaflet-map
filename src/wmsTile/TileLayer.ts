@@ -10,11 +10,13 @@ type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
 type GetEnvParams = (options: any) => Promise<object>
 type GetCqlFilter = (options: any) => Promise<string>
+type GetStylesConfig = () => any
 export interface WmsTileOptions extends L.WMSOptions {
   getLayers?: GetLayers
   getStyles?: GetStyles
   getEnvParams?: GetEnvParams
   getCqlFilter?: GetCqlFilter
+  getStylesConfig?: GetStylesConfig
 }
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
@@ -330,6 +332,16 @@ export default class TileLayer implements ILayer {
         contextmenu: self.contextmenuHandler.bind(self),
       }
     )
+  }
+
+  public getRankRefs() {
+    const styles = this.options.getStylesConfig()
+    const { rankProp, rankSort } = styles
+    return {
+      rankProp,
+      rankSort,
+      rankData: this.rankLayerDataList,
+    }
   }
 
   public getRankDataList() {
