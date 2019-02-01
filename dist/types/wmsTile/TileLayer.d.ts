@@ -1,16 +1,20 @@
 import { ILayer, ChannelFunc, DataListItem } from '../definitions';
 import { RankOptions } from '../rankLayer/RankLayer';
+import { SLDStyles } from '../SLD/SLDStyles';
+import { StylesConfig } from '../SLD/def';
 declare type GetStyles = (options: any) => Promise<string>;
 declare type GetLayers = (options: any) => Promise<string>;
 declare type GetEnvParams = (options: any) => Promise<object>;
 declare type GetCqlFilter = (options: any) => Promise<string>;
-declare type GetStylesConfig = () => any;
+declare type GetStylesConfig = () => StylesConfig;
+declare type GetSldStyle = () => SLDStyles;
 export interface WmsTileOptions extends L.WMSOptions {
     getLayers?: GetLayers;
     getStyles?: GetStyles;
     getEnvParams?: GetEnvParams;
     getCqlFilter?: GetCqlFilter;
     getStylesConfig?: GetStylesConfig;
+    getSldStyle?: GetSldStyle;
 }
 export default class TileLayer implements ILayer {
     map: L.Map;
@@ -104,6 +108,25 @@ export default class TileLayer implements ILayer {
      */
     rank(dataList: DataListItem[], options?: RankOptions, allDatas?: DataListItem[]): Promise<void>;
     markRank(): void;
+    getRefs(): {
+        segmentedProp: string;
+        refs: import("../SLD/def").Ref[];
+        __hasRefs__: boolean;
+        renderType: "segmented";
+    } | {
+        rankProp: any;
+        rankSort: any;
+        rankData: DataListItem[];
+        __hasRefs__: boolean;
+        renderType: "top";
+    } | {
+        __hasRefs__: boolean;
+        renderType: string;
+    };
+    getSegmentedRefs(): {
+        segmentedProp: string;
+        refs: import("../SLD/def").Ref[];
+    };
     getRankRefs(): {
         rankProp: any;
         rankSort: any;

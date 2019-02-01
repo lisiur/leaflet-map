@@ -5,18 +5,22 @@ import GridLayer from '../grid/GridLayer'
 import Supercluster from 'supercluster'
 import { FeatureCollection, GeoJsonObject } from 'typings/geojson'
 import RankLayer, { RankOptions } from '../rankLayer/RankLayer'
+import { SLDStyles } from '../SLD/SLDStyles'
+import { StylesConfig } from '../SLD/def'
 
 type GetStyles = (options: any) => Promise<string>
 type GetLayers = (options: any) => Promise<string>
 type GetEnvParams = (options: any) => Promise<object>
 type GetCqlFilter = (options: any) => Promise<string>
-type GetStylesConfig = () => any
+type GetStylesConfig = () => StylesConfig
+type GetSldStyle = () => SLDStyles
 export interface WmsTileOptions extends L.WMSOptions {
   getLayers?: GetLayers
   getStyles?: GetStyles
   getEnvParams?: GetEnvParams
   getCqlFilter?: GetCqlFilter
   getStylesConfig?: GetStylesConfig
+  getSldStyle?: GetSldStyle
 }
 
 const POPUP_CONTENT_NULL_TEXT = '无数据'
@@ -334,9 +338,44 @@ export default class TileLayer implements ILayer {
     )
   }
 
+  public getRefs() {
+    const styles = this.options.getStylesConfig()
+    switch (styles.renderType) {
+      case 'segmented': {
+        return {
+          __hasRefs__: true,
+          renderType: styles.renderType,
+          ...this.getSegmentedRefs(),
+        }
+      }
+      case 'top': {
+        return {
+          __hasRefs__: true,
+          renderType: styles.renderType,
+          ...this.getRankRefs(),
+        }
+      }
+      default: {
+        return {
+          __hasRefs__: false,
+          renderType: styles.renderType,
+        }
+      }
+    }
+  }
+
+  public getSegmentedRefs() {
+    const styles = this.options.getStylesConfig()
+    const { segmentedProp } = styles
+    return {
+      segmentedProp,
+      refs: this.options.getSldStyle().getRefs(),
+    }
+  }
+
   public getRankRefs() {
     const styles = this.options.getStylesConfig()
-    const { rankProp, rankSort } = styles
+    const { rankProp, rankSort } = styles as any
     return {
       rankProp,
       rankSort,
