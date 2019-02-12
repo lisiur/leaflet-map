@@ -43,6 +43,8 @@ export default class LineStyles extends SLDStyles {
           this.getLineSymbolizerItem({
             stroke: stylesCfg.stroke,
             strokeWidth: stylesCfg.strokeWidth,
+            strokeOpacity: stylesCfg.strokeOpacity,
+            strokeDasharray: stylesCfg.strokeDasharray,
           }),
         ],
       },
@@ -64,7 +66,7 @@ export default class LineStyles extends SLDStyles {
     if (isNothing(sizeRange)) {
       throw this.sldError(
         `invalid PointStylesConfig.rangeSize[${
-          stylesCfg.segmentedProp
+        stylesCfg.segmentedProp
         }]: ${sizeRange}`
       )
     }
@@ -80,6 +82,8 @@ export default class LineStyles extends SLDStyles {
             this.getLineSymbolizerItem({
               stroke: ref.color,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
             }),
           ],
         } as RuleItem
@@ -102,7 +106,7 @@ export default class LineStyles extends SLDStyles {
     if (isNothing(propRange)) {
       throw this.sldError(
         `invalid PointStylesConfig.rangeProp[${
-          stylesCfg.classifiedProp
+        stylesCfg.classifiedProp
         }]: ${propRange}`
       )
     }
@@ -114,6 +118,8 @@ export default class LineStyles extends SLDStyles {
             this.getLineSymbolizerItem({
               stroke: ref.color,
               strokeWidth: stylesCfg.strokeWidth,
+              strokeOpacity: stylesCfg.strokeOpacity,
+              strokeDasharray: stylesCfg.strokeDasharray,
             }),
           ],
         } as RuleItem
@@ -147,6 +153,8 @@ export default class LineStyles extends SLDStyles {
           this.getLineSymbolizerItem({
             stroke: ref.color,
             strokeWidth: stylesCfg.strokeWidth,
+            strokeOpacity: stylesCfg.strokeOpacity,
+            strokeDasharray: stylesCfg.strokeDasharray,
           }),
         ],
       } as RuleItem
@@ -155,14 +163,26 @@ export default class LineStyles extends SLDStyles {
 
   private getLineSymbolizerItem(options: {
     stroke: string
+    strokeDasharray: string
+    strokeOpacity: number
     strokeWidth: number
   }): LineSymbolizerItem {
+    let strokeCssParamter = this.getStrokeCssParameters({
+      stroke: options.stroke,
+      strokeWidth: options.strokeWidth,
+      strokeOpacity: options.strokeOpacity,
+    })
+    if (options.strokeDasharray && options.strokeDasharray !== '0') {
+      strokeCssParamter = this.getStrokeCssParameters({
+        stroke: options.stroke,
+        strokeWidth: options.strokeWidth,
+        strokeOpacity: options.strokeOpacity,
+        strokeDasharray: options.strokeDasharray,
+      })
+    }
     return {
       Stroke: {
-        CssParameter: this.getStrokeCssParameters({
-          stroke: options.stroke,
-          strokeWidth: options.strokeWidth,
-        } as StylesConfig),
+        CssParameter: strokeCssParamter
       },
     }
   }

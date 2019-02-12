@@ -29,7 +29,7 @@ const WMS_URL = window.WMS_URL || '/geo/wms'
 const GET_WMS_LAYER_URL =
   window.GET_WMS_LAYER_URL ||
   // tslint:disable-next-line:only-arrow-functions
-  function(name: string) {
+  function (name: string) {
     if (name.includes(':')) {
       // has workspace
       return `/geo/${name.split(':')[1]}/wms`
@@ -232,6 +232,7 @@ export default class TileLayer implements ILayer {
     } else {
       this.clearLayers()
     }
+    this.channelFunc('toggle-visible', visible, this)
   }
 
   public isVisible() {
