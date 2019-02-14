@@ -248,6 +248,7 @@ export default class TileLayer implements ILayer {
     const bounds = this.pitchedTarget.getBounds()
     this.map.fitBounds(bounds)
     this.map.panTo(bounds.getCenter())
+    this.channelFunc('on-pitch', data, this)
   }
 
   /**

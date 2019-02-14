@@ -102,7 +102,6 @@ export default class RankLayer {
           return polygonLayer
         })
 
-        // polygon.getCenter 需要 polygon 先添加到图层才能调用
         polygonLayers.forEach(layerGroup.addLayer, layerGroup)
         const markerLayers = this.dataList.map((data, index) => {
           const polygon = polygonLayers[index]
@@ -110,7 +109,7 @@ export default class RankLayer {
           const markerLayer = new Marker(center, {
             icon: this.getRankMarkerIcon(data),
           })
-          markerLayer.on('click', this.eventHandlers.click)
+          markerLayer.on('click', (e) => this.eventHandlers.click(e, data))
           markerLayer.on('contextmenu', (e) =>
             this.eventHandlers.contextmenu(e, data)
           )
