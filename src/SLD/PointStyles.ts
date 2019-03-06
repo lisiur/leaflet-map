@@ -635,6 +635,9 @@ export default class PointStyles extends RasterStyles {
     fill: string,
     size: number
   ): PointSymbolizerItem {
+    const iconType = /\.svg/.test(iconUrl) ? 'svg' : 'png'
+    const format = `image/${iconType}`
+    const scaleSize = size * (iconType === 'png' ? 1.1 : 1)
     return {
       Graphic: {
         ExternalGraphic: {
@@ -645,11 +648,11 @@ export default class PointStyles extends RasterStyles {
             },
           },
           Format: {
-            _text: 'image/svg',
+            _text: format as any,
           },
         },
         Size: {
-          _text: size,
+          _text: scaleSize,
         },
       },
     }
