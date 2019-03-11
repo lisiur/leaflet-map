@@ -120,8 +120,17 @@ export default class TileLayer implements ILayer {
         __hasRefs__: boolean;
         renderType: "top";
     } | {
+        classifiedProp: string;
+        refs: import("../SLD/def").Ref[];
+        __hasRefs__: boolean;
+        renderType: "classified";
+    } | {
         __hasRefs__: boolean;
         renderType: string;
+    };
+    getClassifiedRefs(): {
+        classifiedProp: string;
+        refs: import("../SLD/def").Ref[];
     };
     getSegmentedRefs(): {
         segmentedProp: string;
