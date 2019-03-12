@@ -32,6 +32,7 @@ export default class PolygonsLayer implements ILayer {
     protected polygons: Polygon[];
     protected focusedPolygon: Polygon;
     protected focusedDisplayPolygon: Polygon;
+    protected hoverDisplayPolygon: Polygon;
     protected polygonLayer: L.LayerGroup;
     private segmentedRefs;
     /** 记录某个 prop 对应的渲染颜色 */
@@ -66,6 +67,7 @@ export default class PolygonsLayer implements ILayer {
     protected getClassifyPolygonColor(data: DataListItem): string;
     protected cacheSegmentParams(): void;
     protected getSegmentedPolygonColor(data: DataListItem): string;
+    protected polygonHoverHandler(polygon: Polygon): void;
     protected polygonClickHandler(polygon: Polygon, fitBounds?: boolean): void;
     protected initOptions(options: PolygonLayerOptions): void;
     protected initPolygons(): void;

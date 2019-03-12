@@ -40,6 +40,7 @@ export default class PolygonsLayer implements ILayer {
   protected polygons: Polygon[]
   protected focusedPolygon: Polygon
   protected focusedDisplayPolygon: Polygon
+  protected hoverDisplayPolygon: Polygon
   protected polygonLayer: L.LayerGroup
 
   private segmentedRefs: Array<{
@@ -94,6 +95,7 @@ export default class PolygonsLayer implements ILayer {
     this.classifyColorMap = {}
     this.focusedPolygon = null
     this.focusedDisplayPolygon = null
+    this.hoverDisplayPolygon = null
   }
   public draw(options?: PolygonLayerOptions) {
     if (!this.visible) {
@@ -188,7 +190,13 @@ export default class PolygonsLayer implements ILayer {
     return this.classifyColorRefs
   }
   // tslint:disable-next-line:no-empty
-  protected initEvent() {}
+  protected initEvent() {
+    this.map.on('move', () => {
+      if (this.hoverDisplayPolygon) {
+        this.hoverDisplayPolygon.remove()
+      }
+    })
+  }
   protected getToolTipContent(data: DataListItem) {
     return '' + data[this.options.tooltipAttr]
   }
@@ -268,6 +276,24 @@ export default class PolygonsLayer implements ILayer {
     ]
     return color
   }
+  protected polygonHoverHandler(polygon: Polygon) {
+    // 删除前一个 focus
+    if (this.hoverDisplayPolygon) {
+      this.hoverDisplayPolygon.remove()
+    }
+    // 生成当前 focus
+    this.hoverDisplayPolygon = new Polygon(polygon.getLatLngs(), {
+      color: this.getColor(polygon.getData(), 'darken'),
+      fillColor: this.getColor(polygon.getData()),
+    })
+    this.hoverDisplayPolygon.on('click', () => {
+      if (this.hoverDisplayPolygon) {
+        this.hoverDisplayPolygon.remove()
+      }
+      this.polygonClickHandler(polygon)
+    })
+    this.hoverDisplayPolygon.addTo(this.map)
+  }
   protected polygonClickHandler(polygon: Polygon, fitBounds?: boolean) {
     this.focusedPolygon = polygon
     // 删除前一个 focus
@@ -331,6 +357,12 @@ export default class PolygonsLayer implements ILayer {
       }
       newPolygon.on('click', () => {
         this.polygonClickHandler(polygon)
+      })
+      newPolygon.on('mouseover', () => {
+        this.polygonHoverHandler(polygon)
+      })
+      newPolygon.on('mouseout', () => {
+        newPolygon.remove()
       })
       newPolygon.on('contextmenu', (event) => {
         this.channelFunc('contextmenu', {
