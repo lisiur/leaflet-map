@@ -32,7 +32,9 @@ export default class PolygonsLayer implements ILayer {
     protected polygons: Polygon[];
     protected focusedPolygon: Polygon;
     protected focusedDisplayPolygon: Polygon;
-    protected hoverDisplayPolygon: Polygon;
+    protected hoverDisplayPolygon: Polygon & {
+        _clone_from_?: Polygon;
+    };
     protected polygonLayer: L.LayerGroup;
     private segmentedRefs;
     /** 记录某个 prop 对应的渲染颜色 */

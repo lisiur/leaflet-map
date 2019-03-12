@@ -40,7 +40,7 @@ export default class PolygonsLayer implements ILayer {
   protected polygons: Polygon[]
   protected focusedPolygon: Polygon
   protected focusedDisplayPolygon: Polygon
-  protected hoverDisplayPolygon: Polygon
+  protected hoverDisplayPolygon: Polygon & { _clone_from_?: Polygon }
   protected polygonLayer: L.LayerGroup
 
   private segmentedRefs: Array<{
@@ -279,46 +279,62 @@ export default class PolygonsLayer implements ILayer {
   protected polygonHoverHandler(polygon: Polygon) {
     // 删除前一个 focus
     if (this.hoverDisplayPolygon) {
+      if (this.hoverDisplayPolygon._clone_from_ === polygon) {
+        return
+      }
       this.hoverDisplayPolygon.remove()
     }
     // 生成当前 focus
     this.hoverDisplayPolygon = new Polygon(polygon.getLatLngs(), {
       color: this.getColor(polygon.getData(), 'darken'),
       fillColor: this.getColor(polygon.getData()),
+      weight: this.options.weight || 1,
     })
+    this.hoverDisplayPolygon.on('mouseout', () => {
+      if (this.hoverDisplayPolygon) {
+        this.hoverDisplayPolygon.remove()
+        this.hoverDisplayPolygon = null
+      }
+    })
+    this.hoverDisplayPolygon._clone_from_ = polygon
     this.hoverDisplayPolygon.on('click', () => {
       if (this.hoverDisplayPolygon) {
         this.hoverDisplayPolygon.remove()
+        this.hoverDisplayPolygon = null
       }
       this.polygonClickHandler(polygon)
     })
     this.hoverDisplayPolygon.addTo(this.map)
   }
   protected polygonClickHandler(polygon: Polygon, fitBounds?: boolean) {
-    this.focusedPolygon = polygon
-    // 删除前一个 focus
-    if (this.focusedDisplayPolygon) {
-      this.focusedDisplayPolygon.remove()
-    }
-    // 生成当前 focus
-    this.focusedDisplayPolygon = new Polygon(polygon.getLatLngs(), {
-      color: this.getColor(polygon.getData(), 'darken'),
-      fillColor: this.getColor(polygon.getData()),
-    })
-    this.focusedDisplayPolygon.addTo(this.map)
+    if (false) {
+      this.focusedPolygon = polygon
+      // 删除前一个 focus
+      if (this.focusedDisplayPolygon) {
+        this.focusedDisplayPolygon.remove()
+      }
+      // 生成当前 focus
+      this.focusedDisplayPolygon = new Polygon(polygon.getLatLngs(), {
+        color: this.getColor(polygon.getData(), 'darken'),
+        fillColor: this.getColor(polygon.getData()),
+      })
+      this.focusedDisplayPolygon.addTo(this.map)
 
-    this.focusedDisplayPolygon
-      .bindPopup(this.getPopupContent(polygon.getData()))
-      .openPopup()
+      // if (this.options.popupAttr) {
+      //   this.focusedDisplayPolygon
+      //     .bindPopup(this.getPopupContent(polygon.getData()))
+      //     .openPopup()
+      // }
 
-    this.focusedDisplayPolygon.on('popupclose', () => {
-      this.focusedDisplayPolygon.remove()
-    })
-    polygon.closeTooltip()
+      // this.focusedDisplayPolygon.on('popupclose', () => {
+      //   this.focusedDisplayPolygon.remove()
+      // })
+      polygon.closeTooltip()
 
-    this.map.panTo(this.focusedDisplayPolygon.getCenter())
-    if (fitBounds) {
-      this.map.fitBounds(polygon.getBounds())
+      // this.map.panTo(this.focusedDisplayPolygon.getCenter())
+      if (fitBounds) {
+        this.map.fitBounds(polygon.getBounds())
+      }
     }
     this.channelFunc('on-click-polygon', polygon)
   }
@@ -356,13 +372,10 @@ export default class PolygonsLayer implements ILayer {
         newPolygon.bindTooltip(this.getToolTipContent(newPolygon.getData()))
       }
       newPolygon.on('click', () => {
-        this.polygonClickHandler(polygon)
+        this.polygonClickHandler(newPolygon)
       })
       newPolygon.on('mouseover', () => {
-        this.polygonHoverHandler(polygon)
-      })
-      newPolygon.on('mouseout', () => {
-        newPolygon.remove()
+        this.polygonHoverHandler(newPolygon)
       })
       newPolygon.on('contextmenu', (event) => {
         this.channelFunc('contextmenu', {
